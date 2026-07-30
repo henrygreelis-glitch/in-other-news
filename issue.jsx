@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+"use client";
+
+import React, { useEffect, useRef, useState } from "react";
 
 const FALLBACK_IMAGE =
   "data:image/svg+xml;charset=UTF-8," +
@@ -27,7 +29,7 @@ const PICKS = [
     price: "$1,076",
     tag: "Final sale",
     href: "https://www.namu-shop.com/products/kaptain-sunshine-traveller-coat-top-navy-aw25",
-    img: "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?auto=format&fit=crop&w=1200&q=85",
+    img: "/products/traveller-coat.jpg",
     why: "Balmacaan collar, raglan shoulder, cut long enough to cover a jacket. The one coat that works over everything else here.",
   },
   {
@@ -37,7 +39,7 @@ const PICKS = [
     price: "$576",
     tag: "1 left",
     href: "https://wdepartment.com/product/camiel-fortgens-big-shirt-blockprint/",
-    img: "https://images.unsplash.com/photo-1603252109303-2751441dd157?auto=format&fit=crop&w=1200&q=85",
+    img: "/products/big-shirt.jpg",
     why: "Cut like a pattern block someone forgot to grade down. Worn open it becomes a light jacket, which is the job in October.",
   },
   {
@@ -47,7 +49,7 @@ const PICKS = [
     price: "¥27,500",
     tag: "In stock",
     href: "https://www.beams.co.jp/item/beamsplus/tops/38150255148/",
-    img: "https://images.unsplash.com/photo-1576566588028-4147f3842f27?auto=format&fit=crop&w=1200&q=85",
+    img: "/products/shawl-cardigan.jpg",
     why: "Reads as tailoring from the front and a sweatshirt from behind. Beams cut theirs closer through the body, so it goes under the coat without bulking.",
   },
   {
@@ -57,7 +59,7 @@ const PICKS = [
     price: "$1,350",
     tag: "Available",
     href: "https://www.prada.com/us/en/p/cotton-shirt/UCN596_10IV_F0AB7_S_OOO",
-    img: "https://images.unsplash.com/photo-1598033129183-c4f50c736f10?auto=format&fit=crop&w=1200&q=85",
+    img: "/products/prada-shirt.jpg",
     why: "Straight fit, classic collar, rounded hem, mother-of-pearl buttons. The triangle is the only thing telling you what it cost. Here for the collar roll, not the logo.",
   },
   {
@@ -67,7 +69,7 @@ const PICKS = [
     price: "£160",
     tag: "In stock",
     href: "https://www.sunspel.com/products/mens-cotton-riviera-long-sleeve-polo-shirt-in-black",
-    img: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1200&q=85",
+    img: "/products/riviera-polo.jpg",
     why: "Mesh knit breathes under the cardigan and holds its shape at the collar after washing, which is the specific way most white tees die.",
   },
   {
@@ -77,7 +79,7 @@ const PICKS = [
     price: "€360",
     tag: "In stock",
     href: "https://www.ourlegacy.com/third-cut-black-selvedge",
-    img: "https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?auto=format&fit=crop&w=1200&q=85",
+    img: "/products/third-cut.jpg",
     why: "Black fades warmer than the indigo and holds a crease longer. Japanese sellers publish measurements. American ones publish a tag size and a photo of a floor.",
   },
   {
@@ -88,7 +90,7 @@ const PICKS = [
     tag: "Unavailable",
     href: "https://anonymousism.com/collections/20aw-collection",
     linkLabel: "Find similar ↗",
-    img: "https://images.unsplash.com/photo-1582966772680-860e372bb558?auto=format&fit=crop&w=1200&q=85",
+    img: "/products/anonymous-socks.jpg",
     why: "Cheapest thing here and the one that changes the fit most. Waffle sits higher and gives you an edge between boot and hem instead of a gap.",
   },
   {
@@ -98,7 +100,7 @@ const PICKS = [
     price: "¥74,800",
     tag: "Check stock",
     href: "https://online.henderscheme.com/item/detail/1_1_mip-22_1",
-    img: "https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=1200&q=85",
+    img: "/products/mip-22.jpg",
     why: "Natural leather that goes from bone to tobacco over two years. You are buying the patina, not the shoe.",
   },
 ];
@@ -118,10 +120,57 @@ function ProductImage({ pick }) {
 }
 
 export default function Uniform() {
-  const [openIdx, setOpenIdx] = useState(null);
+  const [activeIdx, setActiveIdx] = useState(null);
   const [email, setEmail] = useState("");
   const [signed, setSigned] = useState(false);
+  const openerRef = useRef(null);
+  const drawerRef = useRef(null);
   const submit = () => email.includes("@") && email.length > 4 && setSigned(true);
+  const activePick = activeIdx === null ? null : PICKS[activeIdx];
+
+  const openProduct = (event, index) => {
+    openerRef.current = event.currentTarget;
+    setActiveIdx(index);
+  };
+
+  const closeProduct = () => {
+    setActiveIdx(null);
+    window.setTimeout(() => openerRef.current?.focus(), 0);
+  };
+
+  useEffect(() => {
+    if (!activePick) return undefined;
+
+    const previousOverflow = document.body.style.overflow;
+    const closeOnEscape = (event) => {
+      if (event.key === "Escape") closeProduct();
+      if (event.key !== "Tab" || !drawerRef.current) return;
+
+      const focusable = Array.from(
+        drawerRef.current.querySelectorAll("a[href], button:not([disabled])")
+      );
+      if (!focusable.length) return;
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", closeOnEscape);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [activePick]);
+
   return (
     <div className="s-root">
       <style>{CSS}</style>
@@ -141,17 +190,11 @@ export default function Uniform() {
             <p className="s-slot">{pick.slot}</p>
             <button
               className="s-shot"
-              onClick={() => setOpenIdx(openIdx === index ? null : index)}
-              aria-expanded={openIdx === index}
-              aria-label={`Read why we picked ${pick.brand} ${pick.item}`}
+              onClick={(event) => openProduct(event, index)}
+              aria-haspopup="dialog"
+              aria-label={`Open details for ${pick.brand} ${pick.item}`}
             >
               <ProductImage pick={pick} />
-              {openIdx === index && (
-                <span className="s-why">
-                  {pick.why}
-                  <span className="s-go">Tap to close</span>
-                </span>
-              )}
             </button>
             <div className="s-cap">
               <p className="s-brand">{pick.brand}</p>
@@ -173,6 +216,52 @@ export default function Uniform() {
           </article>
         ))}
       </main>
+
+      {activePick && (
+        <div className="s-drawer-wrap" onMouseDown={closeProduct}>
+          <aside
+            ref={drawerRef}
+            id="product-drawer"
+            className="s-drawer"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="product-drawer-title"
+            aria-describedby="product-drawer-description"
+            onMouseDown={(event) => event.stopPropagation()}
+          >
+            <button
+              className="s-drawer-close"
+              type="button"
+              onClick={closeProduct}
+              aria-label="Close product details"
+              autoFocus
+            >
+              Close ×
+            </button>
+            <ProductImage key={activePick.img} pick={activePick} />
+            <div className="s-drawer-copy">
+              <p className="s-slot">{activePick.slot}</p>
+              <p className="s-drawer-brand">{activePick.brand}</p>
+              <h2 id="product-drawer-title">{activePick.item}</h2>
+              <div className="s-drawer-meta">
+                <span>{activePick.price}</span>
+                <span className="s-tag">{activePick.tag}</span>
+              </div>
+              <p id="product-drawer-description" className="s-drawer-why">
+                {activePick.why}
+              </p>
+              <a
+                className="s-drawer-link"
+                href={activePick.href}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {activePick.linkLabel || "View item ↗"}
+              </a>
+            </div>
+          </aside>
+        </div>
+      )}
 
       <section className="s-sub">
         {signed ? (
@@ -205,18 +294,24 @@ export default function Uniform() {
 
 const CSS = `
 @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600&display=swap');
-.s-root{--fg:#000;--mid:#767676;--line:#e4e4e4;--plate:#f1f1f1;--f:'Archivo',Helvetica,Arial,sans-serif;background:#fff;color:var(--fg);font-family:var(--f);font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased;padding:0 16px}
-.s-root *{box-sizing:border-box}.s-root h1,.s-root p{margin:0}.s-root h1{font-weight:400}.s-root button:focus-visible,.s-root input:focus-visible{outline:1px solid var(--fg);outline-offset:2px}
+.s-root{--fg:#000;--mid:#767676;--line:#e4e4e4;--plate:#f1f1f1;--f:'Archivo',Helvetica,Arial,sans-serif;width:100%;max-width:1600px;margin:0 auto;background:#fff;color:var(--fg);font-family:var(--f);font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased;padding:0 16px}
+.s-root *{box-sizing:border-box}.s-root h1,.s-root h2,.s-root p{margin:0}.s-root h1{font-weight:400}.s-root button:focus-visible,.s-root input:focus-visible,.s-root a:focus-visible{outline:1px solid var(--fg);outline-offset:2px}
 .s-head{display:flex;justify-content:space-between;padding:18px 0;font-size:11px;font-weight:500;letter-spacing:.1em;text-transform:uppercase}
 .s-open{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;padding:56px 0 44px}.s-open h1{font-size:clamp(24px,3.4vw,42px);font-weight:600;line-height:1.04;letter-spacing:-.02em;max-width:16ch}
 .s-n{font-size:11px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--mid);flex:none}
 .s-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:34px 16px}.s-tile{display:flex;flex-direction:column}.s-slot{font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--mid);padding-bottom:8px}
 .s-shot{position:relative;display:block;width:100%;padding:0;border:0;background:var(--plate);cursor:pointer;text-align:left;overflow:hidden}.s-shot img{width:100%;aspect-ratio:4/5;object-fit:cover;display:block}
-.s-why{position:absolute;inset:0;background:#fff;padding:16px;font-size:12.5px;line-height:1.55;display:flex;flex-direction:column;justify-content:space-between;border:1px solid var(--fg)}.s-go{font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--mid)}
 .s-cap{padding-top:10px}.s-brand{font-size:12.5px;font-weight:600}.s-item{font-size:12.5px;color:var(--mid);margin-top:1px}.s-line{display:flex;justify-content:space-between;gap:10px;margin-top:6px;font-size:12.5px}.s-tag{font-size:10px;font-weight:500;letter-spacing:.09em;text-transform:uppercase;color:var(--mid)}
 .s-shop{display:inline-block;margin-top:10px;color:var(--fg);font-size:10px;font-weight:500;letter-spacing:.1em;line-height:1.4;text-decoration:none;text-transform:uppercase;border-bottom:1px solid var(--fg)}.s-shop:hover{color:var(--mid);border-color:var(--mid)}.s-shop:focus-visible{outline:1px solid var(--fg);outline-offset:3px}
+.s-drawer-wrap{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.28);display:flex;justify-content:flex-end}
+.s-drawer{width:min(400px,92vw);height:100%;overflow-y:auto;background:#fff;box-shadow:-12px 0 30px rgba(0,0,0,.12);padding:18px}
+.s-drawer-close{display:block;margin:0 0 18px auto;padding:0;border:0;background:transparent;font-family:var(--f);font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;cursor:pointer}
+.s-drawer>img{display:block;width:100%;aspect-ratio:4/5;object-fit:cover;background:var(--plate)}
+.s-drawer-copy{padding:22px 2px 32px}.s-drawer-copy .s-slot{padding-bottom:12px}.s-drawer-brand{font-size:13px;font-weight:600}.s-drawer h2{margin:2px 0 0;font-size:24px;font-weight:500;line-height:1.1;letter-spacing:-.02em}
+.s-drawer-meta{display:flex;justify-content:space-between;gap:16px;margin-top:18px;padding:12px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.s-drawer-why{margin-top:22px!important;font-size:13px;line-height:1.65;color:#333}.s-drawer-link{display:block;margin-top:28px;padding:13px 14px;background:var(--fg);color:#fff;text-align:center;text-decoration:none;font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase}.s-drawer-link:hover{background:#333}
 .s-sub{margin-top:80px;padding:44px 0;border-top:1px solid var(--line)}.s-sub p{font-size:13px}.s-field{display:flex;margin-top:18px;border-bottom:1px solid var(--fg);max-width:380px}.s-field input{flex:1;min-width:0;border:0;background:transparent;font-family:var(--f);font-size:13px;color:var(--fg);padding:0 0 8px}.s-field input::placeholder{color:var(--mid)}.s-field button{border:0;background:transparent;cursor:pointer;padding:0 0 8px;font-family:var(--f);font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase}.s-field button:hover{color:var(--mid)}
 .s-foot{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:18px 0;border-top:1px solid var(--line);font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--mid)}
-@media (max-width:560px){.s-grid{grid-template-columns:repeat(2,1fr);gap:24px 12px}.s-open{padding:36px 0 30px;flex-direction:column;align-items:flex-start;gap:12px}.s-why{padding:12px;font-size:11.5px}}
+@media (max-width:560px){.s-root{padding:0 12px}.s-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:24px 12px}.s-open{padding:36px 0 30px;flex-direction:column;align-items:flex-start;gap:12px}.s-drawer-wrap{align-items:flex-end}.s-drawer{width:100%;height:min(88dvh,760px);padding:14px;border-radius:16px 16px 0 0;box-shadow:0 -12px 30px rgba(0,0,0,.14)}.s-drawer>img{aspect-ratio:16/10;object-fit:contain}.s-drawer h2{font-size:21px}}
 @media (prefers-reduced-motion:reduce){.s-root *{transition:none!important}}
 `;
