@@ -79,6 +79,9 @@ const PICKS = [
     price: "€360",
     tag: "In stock",
     href: "https://www.ourlegacy.com/third-cut-black-selvedge",
+    ebayProduct: "our-legacy-third-cut",
+    ebaySearchHref:
+      "https://www.ebay.com/sch/i.html?_nkw=Our+Legacy+Third+Cut+Black+Selvedge+Jeans&_sacat=0&LH_ItemCondition=3000",
     img: "/products/third-cut.jpg",
     why: "Black fades warmer than the indigo and holds a crease longer. Japanese sellers publish measurements. American ones publish a tag size and a photo of a floor.",
   },
@@ -119,10 +122,131 @@ function ProductImage({ pick }) {
   );
 }
 
+function formatListingMoney(value, currency) {
+  const amount = Number(value);
+  if (!Number.isFinite(amount) || !currency) return "Price unavailable";
+
+  try {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency,
+    }).format(amount);
+  } catch {
+    return `${currency} ${value}`;
+  }
+}
+
+function UsedMarket({ pick, market }) {
+  const searchUrl = market.searchUrl || pick.ebaySearchHref;
+  const hasListings = market.status === "ready" && market.listings.length > 0;
+
+  return (
+    <section className="s-used" aria-labelledby="used-market-title">
+      <div className="s-used-kicker">
+        <span>Secondhand beta</span>
+        <span>eBay</span>
+      </div>
+      <h3 id="used-market-title">Buy the same piece used</h3>
+      <p className="s-used-intro">
+        Exact product matches first. Close alternatives only when the original
+        is not listed.
+      </p>
+
+      {market.status === "loading" && (
+        <div className="s-used-status" role="status" aria-live="polite">
+          <span className="s-used-pulse" aria-hidden="true" />
+          Looking for used Third Cuts…
+        </div>
+      )}
+
+      {hasListings && (
+        <>
+          <p className="s-used-match" aria-live="polite">
+            {market.matchType === "exact"
+              ? "Exact used matches"
+              : "Closest used matches"}
+          </p>
+          <div className="s-used-list">
+            {market.listings.map((listing) => (
+              <a
+                className="s-used-card"
+                href={listing.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                key={listing.id}
+              >
+                <img
+                  src={listing.imageUrl || FALLBACK_IMAGE}
+                  alt=""
+                  loading="lazy"
+                  onError={(event) => {
+                    event.currentTarget.onerror = null;
+                    event.currentTarget.src = FALLBACK_IMAGE;
+                  }}
+                />
+                <span className="s-used-card-copy">
+                  <strong>{listing.title}</strong>
+                  <span className="s-used-card-price">
+                    {formatListingMoney(listing.price, listing.currency)}
+                  </span>
+                  <span className="s-used-card-meta">
+                    {listing.condition}
+                    {listing.shippingPrice === "0.00"
+                      ? " · Free shipping"
+                      : listing.shippingPrice
+                        ? ` · ${formatListingMoney(
+                            listing.shippingPrice,
+                            listing.shippingCurrency
+                          )} shipping`
+                        : ""}
+                  </span>
+                </span>
+                <span className="s-used-arrow" aria-hidden="true">
+                  ↗
+                </span>
+              </a>
+            ))}
+          </div>
+        </>
+      )}
+
+      {market.status === "error" && (
+        <p className="s-used-status" role="status" aria-live="polite">
+          {market.message}
+        </p>
+      )}
+
+      {market.status === "ready" && !hasListings && (
+        <p className="s-used-status" role="status" aria-live="polite">
+          {market.message}
+        </p>
+      )}
+
+      {market.status !== "loading" && (
+        <a
+          className="s-used-search"
+          href={searchUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {hasListings ? "See all used results ↗" : "Search eBay now ↗"}
+        </a>
+      )}
+    </section>
+  );
+}
+
 export default function Uniform() {
   const [activeIdx, setActiveIdx] = useState(null);
   const [email, setEmail] = useState("");
   const [signed, setSigned] = useState(false);
+  const [usedMarket, setUsedMarket] = useState({
+    status: "idle",
+    listings: [],
+    matchType: "none",
+    message: "",
+    searchUrl: "",
+  });
   const openerRef = useRef(null);
   const drawerRef = useRef(null);
   const submit = () => email.includes("@") && email.length > 4 && setSigned(true);
@@ -137,6 +261,58 @@ export default function Uniform() {
     setActiveIdx(null);
     window.setTimeout(() => openerRef.current?.focus(), 0);
   };
+
+  useEffect(() => {
+    if (!activePick?.ebayProduct) {
+      setUsedMarket({
+        status: "idle",
+        listings: [],
+        matchType: "none",
+        message: "",
+        searchUrl: "",
+      });
+      return undefined;
+    }
+
+    const controller = new AbortController();
+    setUsedMarket({
+      status: "loading",
+      listings: [],
+      matchType: "none",
+      message: "",
+      searchUrl: activePick.ebaySearchHref,
+    });
+
+    fetch(`/api/ebay/search?product=${activePick.ebayProduct}`, {
+      signal: controller.signal,
+    })
+      .then(async (response) => {
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message);
+        return data;
+      })
+      .then((data) => {
+        setUsedMarket({
+          status: "ready",
+          listings: data.listings || [],
+          matchType: data.matchType || "none",
+          message: data.message || "",
+          searchUrl: data.searchUrl || activePick.ebaySearchHref,
+        });
+      })
+      .catch((error) => {
+        if (error.name === "AbortError") return;
+        setUsedMarket({
+          status: "error",
+          listings: [],
+          matchType: "none",
+          message: "Live matches are unavailable. Search eBay directly.",
+          searchUrl: activePick.ebaySearchHref,
+        });
+      });
+
+    return () => controller.abort();
+  }, [activePick?.ebayProduct, activePick?.ebaySearchHref]);
 
   useEffect(() => {
     if (!activePick) return undefined;
@@ -212,6 +388,9 @@ export default function Uniform() {
               >
                 {pick.linkLabel || "View item ↗"}
               </a>
+              {pick.ebayProduct && (
+                <span className="s-used-flag">Used options in PDP</span>
+              )}
             </div>
           </article>
         ))}
@@ -258,6 +437,9 @@ export default function Uniform() {
               >
                 {activePick.linkLabel || "View item ↗"}
               </a>
+              {activePick.ebayProduct && (
+                <UsedMarket pick={activePick} market={usedMarket} />
+              )}
             </div>
           </aside>
         </div>
@@ -303,6 +485,7 @@ const CSS = `
 .s-shot{position:relative;display:block;width:100%;padding:0;border:0;background:var(--plate);cursor:pointer;text-align:left;overflow:hidden}.s-shot img{width:100%;aspect-ratio:4/5;object-fit:cover;display:block}
 .s-cap{padding-top:10px}.s-brand{font-size:12.5px;font-weight:600}.s-item{font-size:12.5px;color:var(--mid);margin-top:1px}.s-line{display:flex;justify-content:space-between;gap:10px;margin-top:6px;font-size:12.5px}.s-tag{font-size:10px;font-weight:500;letter-spacing:.09em;text-transform:uppercase;color:var(--mid)}
 .s-shop{display:inline-block;margin-top:10px;color:var(--fg);font-size:10px;font-weight:500;letter-spacing:.1em;line-height:1.4;text-decoration:none;text-transform:uppercase;border-bottom:1px solid var(--fg)}.s-shop:hover{color:var(--mid);border-color:var(--mid)}.s-shop:focus-visible{outline:1px solid var(--fg);outline-offset:3px}
+.s-used-flag{display:block;margin-top:7px;color:var(--mid);font-size:9px;font-weight:500;letter-spacing:.1em;text-transform:uppercase}
 .s-drawer-wrap{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.28);display:flex;justify-content:flex-end}
 .s-drawer{width:min(400px,92vw);height:100%;overflow-y:auto;background:#fff;box-shadow:-12px 0 30px rgba(0,0,0,.12);padding:18px}
 .s-drawer-close{display:block;margin:0 0 18px auto;padding:0;border:0;background:transparent;font-family:var(--f);font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;cursor:pointer}
@@ -310,8 +493,10 @@ const CSS = `
 .s-drawer-copy{padding:22px 2px 32px}.s-drawer-copy .s-slot{padding-bottom:12px}.s-drawer-brand{font-size:13px;font-weight:600}.s-drawer h2{margin:2px 0 0;font-size:24px;font-weight:500;line-height:1.1;letter-spacing:-.02em}
 .s-drawer-meta{display:flex;justify-content:space-between;gap:16px;margin-top:18px;padding:12px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 .s-drawer-why{margin-top:22px!important;font-size:13px;line-height:1.65;color:#333}.s-drawer-link{display:block;margin-top:28px;padding:13px 14px;background:var(--fg);color:#fff;text-align:center;text-decoration:none;font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase}.s-drawer-link:hover{background:#333}
+.s-used{margin-top:30px;padding-top:24px;border-top:1px solid var(--line)}.s-used-kicker{display:flex;justify-content:space-between;gap:16px;color:var(--mid);font-size:9px;font-weight:500;letter-spacing:.12em;text-transform:uppercase}.s-used h3{margin:9px 0 0;font-size:18px;font-weight:500;line-height:1.2;letter-spacing:-.01em}.s-used-intro{margin-top:8px!important;color:#555;font-size:11.5px;line-height:1.55}.s-used-status{display:flex;align-items:center;gap:8px;margin-top:16px!important;padding:13px;background:#f5f5f3;color:#555;font-size:11px;line-height:1.4}.s-used-pulse{width:7px;height:7px;border-radius:50%;background:#111;animation:s-used-pulse 1.25s ease-in-out infinite}.s-used-match{margin-top:17px!important;color:var(--mid);font-size:9px;font-weight:500;letter-spacing:.1em;text-transform:uppercase}.s-used-list{display:grid;gap:8px;margin-top:9px}.s-used-card{position:relative;display:grid;grid-template-columns:70px minmax(0,1fr);gap:11px;min-height:86px;padding:8px 28px 8px 8px;border:1px solid var(--line);color:var(--fg);text-decoration:none}.s-used-card:hover{border-color:#999}.s-used-card img{width:70px;height:86px;object-fit:cover;background:var(--plate)}.s-used-card-copy{display:flex;min-width:0;flex-direction:column;align-items:flex-start}.s-used-card-copy strong{display:-webkit-box;overflow:hidden;font-size:11px;font-weight:500;line-height:1.35;-webkit-box-orient:vertical;-webkit-line-clamp:2}.s-used-card-price{margin-top:auto;font-size:12px;font-weight:600}.s-used-card-meta{margin-top:1px;color:var(--mid);font-size:9.5px;line-height:1.35}.s-used-arrow{position:absolute;top:8px;right:9px;font-size:11px}.s-used-search{display:inline-block;margin-top:14px;border-bottom:1px solid var(--fg);color:var(--fg);font-size:9.5px;font-weight:500;letter-spacing:.1em;line-height:1.4;text-decoration:none;text-transform:uppercase}.s-used-search:hover{color:var(--mid);border-color:var(--mid)}
 .s-sub{margin-top:80px;padding:44px 0;border-top:1px solid var(--line)}.s-sub p{font-size:13px}.s-field{display:flex;margin-top:18px;border-bottom:1px solid var(--fg);max-width:380px}.s-field input{flex:1;min-width:0;border:0;background:transparent;font-family:var(--f);font-size:13px;color:var(--fg);padding:0 0 8px}.s-field input::placeholder{color:var(--mid)}.s-field button{border:0;background:transparent;cursor:pointer;padding:0 0 8px;font-family:var(--f);font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase}.s-field button:hover{color:var(--mid)}
 .s-foot{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:18px 0;border-top:1px solid var(--line);font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--mid)}
+@keyframes s-used-pulse{0%,100%{opacity:.25}50%{opacity:1}}
 @media (max-width:560px){.s-root{padding:0 12px}.s-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:24px 12px}.s-open{padding:36px 0 30px;flex-direction:column;align-items:flex-start;gap:12px}.s-drawer-wrap{align-items:flex-end}.s-drawer{width:100%;height:min(88dvh,760px);padding:14px;border-radius:16px 16px 0 0;box-shadow:0 -12px 30px rgba(0,0,0,.14)}.s-drawer>img{aspect-ratio:16/10;object-fit:contain}.s-drawer h2{font-size:21px}}
-@media (prefers-reduced-motion:reduce){.s-root *{transition:none!important}}
+@media (prefers-reduced-motion:reduce){.s-root *{animation:none!important;transition:none!important}}
 `;

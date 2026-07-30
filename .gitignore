@@ -9,5 +9,7 @@
 .DS_Store
 *.pem
 *.log
+*.tsbuildinfo
 .env*
+!.env.example
 next-env.d.ts
