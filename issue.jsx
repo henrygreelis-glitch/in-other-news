@@ -159,7 +159,14 @@ function formatListingMoney(value, currency) {
 
 function UsedMarket({ pick, market }) {
   const searchUrl = market.searchUrl || pick.ebaySearchHref;
-  const hasListings = market.status === "ready" && market.listings.length > 0;
+  const hasExactListings =
+    market.status === "ready" &&
+    market.matchType === "exact" &&
+    market.listings.length > 0;
+  const hasSimilarListings =
+    market.status === "ready" &&
+    market.matchType === "similar" &&
+    market.listings.length > 0;
 
   return (
     <section className="s-used" aria-labelledby="used-market-title">
@@ -169,8 +176,8 @@ function UsedMarket({ pick, market }) {
       </div>
       <h3 id="used-market-title">Buy the same piece used</h3>
       <p className="s-used-intro">
-        Exact product matches first. Close alternatives only when the original
-        is not listed.
+        Exact product matches are shown here. Similar pieces stay in a separate
+        search.
       </p>
 
       {market.status === "loading" && (
@@ -180,12 +187,10 @@ function UsedMarket({ pick, market }) {
         </div>
       )}
 
-      {hasListings && (
+      {hasExactListings && (
         <>
           <p className="s-used-match" aria-live="polite">
-            {market.matchType === "exact"
-              ? "Exact used matches"
-              : "Closest used matches"}
+            Exact used matches
           </p>
           <div className="s-used-list">
             {market.listings.map((listing) => (
@@ -237,9 +242,9 @@ function UsedMarket({ pick, market }) {
         </p>
       )}
 
-      {market.status === "ready" && !hasListings && (
+      {market.status === "ready" && !hasExactListings && (
         <p className="s-used-status" role="status" aria-live="polite">
-          {market.message}
+          No exact version listed.
         </p>
       )}
 
@@ -250,7 +255,11 @@ function UsedMarket({ pick, market }) {
           target="_blank"
           rel="noopener noreferrer"
         >
-          {hasListings ? "See all used results ↗" : "Search eBay now ↗"}
+          {hasExactListings
+            ? "See all used results ↗"
+            : hasSimilarListings
+              ? "See similar pre-owned pieces ↗"
+              : "Search eBay now ↗"}
         </a>
       )}
     </section>
