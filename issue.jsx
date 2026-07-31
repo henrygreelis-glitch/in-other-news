@@ -410,7 +410,7 @@ export default function Uniform() {
                 {pick.linkLabel || "View item ↗"}
               </a>
               {pick.ebayProduct && (
-                <span className="s-used-flag">Used options in PDP</span>
+                <span className="s-used-flag">Check pre-owned availability</span>
               )}
             </div>
           </article>
