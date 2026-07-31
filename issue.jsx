@@ -29,6 +29,9 @@ const PICKS = [
     price: "$1,076",
     tag: "Final sale",
     href: "https://www.namu-shop.com/products/kaptain-sunshine-traveller-coat-top-navy-aw25",
+    ebayProduct: "kaptain-sunshine-traveller-coat",
+    ebaySearchHref:
+      "https://www.ebay.com/sch/i.html?_nkw=Kaptain+Sunshine+Traveller+Coat+Navy&_sacat=0&LH_ItemCondition=3000",
     img: "/products/traveller-coat.jpg",
     why: "Balmacaan collar, raglan shoulder, cut long enough to cover a jacket. The one coat that works over everything else here.",
   },
@@ -39,6 +42,9 @@ const PICKS = [
     price: "$576",
     tag: "1 left",
     href: "https://wdepartment.com/product/camiel-fortgens-big-shirt-blockprint/",
+    ebayProduct: "camiel-fortgens-big-shirt",
+    ebaySearchHref:
+      "https://www.ebay.com/sch/i.html?_nkw=Camiel+Fortgens+Big+Shirt+Blockprint&_sacat=0&LH_ItemCondition=3000",
     img: "/products/big-shirt.jpg",
     why: "Cut like a pattern block someone forgot to grade down. Worn open it becomes a light jacket, which is the job in October.",
   },
@@ -49,6 +55,9 @@ const PICKS = [
     price: "¥27,500",
     tag: "In stock",
     href: "https://www.beams.co.jp/item/beamsplus/tops/38150255148/",
+    ebayProduct: "beams-plus-shawl-cardigan",
+    ebaySearchHref:
+      "https://www.ebay.com/sch/i.html?_nkw=BEAMS+PLUS+Shawl+Collar+Cardigan&_sacat=0&LH_ItemCondition=3000",
     img: "/products/shawl-cardigan.jpg",
     why: "Reads as tailoring from the front and a sweatshirt from behind. Beams cut theirs closer through the body, so it goes under the coat without bulking.",
   },
@@ -59,6 +68,9 @@ const PICKS = [
     price: "$1,350",
     tag: "Available",
     href: "https://www.prada.com/us/en/p/cotton-shirt/UCN596_10IV_F0AB7_S_OOO",
+    ebayProduct: "prada-sky-cotton-shirt",
+    ebaySearchHref:
+      "https://www.ebay.com/sch/i.html?_nkw=Prada+UCN596+10IV+F0AB7+Cotton+Shirt&_sacat=0&LH_ItemCondition=3000",
     img: "/products/prada-shirt.jpg",
     why: "Straight fit, classic collar, rounded hem, mother-of-pearl buttons. The triangle is the only thing telling you what it cost. Here for the collar roll, not the logo.",
   },
@@ -69,6 +81,9 @@ const PICKS = [
     price: "£160",
     tag: "In stock",
     href: "https://www.sunspel.com/products/mens-cotton-riviera-long-sleeve-polo-shirt-in-black",
+    ebayProduct: "sunspel-riviera-long-sleeve",
+    ebaySearchHref:
+      "https://www.ebay.com/sch/i.html?_nkw=Sunspel+Long+Sleeve+Riviera+Polo+Black&_sacat=0&LH_ItemCondition=3000",
     img: "/products/riviera-polo.jpg",
     why: "Mesh knit breathes under the cardigan and holds its shape at the collar after washing, which is the specific way most white tees die.",
   },
@@ -93,6 +108,9 @@ const PICKS = [
     tag: "Unavailable",
     href: "https://anonymousism.com/collections/20aw-collection",
     linkLabel: "Find similar ↗",
+    ebayProduct: "anonymous-ism-waffle-sock",
+    ebaySearchHref:
+      "https://www.ebay.com/sch/i.html?_nkw=Anonymous+Ism+Waffle+Crew+Socks&_sacat=0&LH_ItemCondition=3000",
     img: "/products/anonymous-socks.jpg",
     why: "Cheapest thing here and the one that changes the fit most. Waffle sits higher and gives you an edge between boot and hem instead of a gap.",
   },
@@ -103,6 +121,9 @@ const PICKS = [
     price: "¥74,800",
     tag: "Check stock",
     href: "https://online.henderscheme.com/item/detail/1_1_mip-22_1",
+    ebayProduct: "hender-scheme-mip-22",
+    ebaySearchHref:
+      "https://www.ebay.com/sch/i.html?_nkw=Hender+Scheme+MIP+22+Natural+Leather&_sacat=0&LH_ItemCondition=3000",
     img: "/products/mip-22.jpg",
     why: "Natural leather that goes from bone to tobacco over two years. You are buying the patina, not the shoe.",
   },
@@ -155,7 +176,7 @@ function UsedMarket({ pick, market }) {
       {market.status === "loading" && (
         <div className="s-used-status" role="status" aria-live="polite">
           <span className="s-used-pulse" aria-hidden="true" />
-          Looking for used Third Cuts…
+          Looking for used matches…
         </div>
       )}
 

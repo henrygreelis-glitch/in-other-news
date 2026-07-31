@@ -64,9 +64,48 @@ interface EbayTokenResponse {
 }
 
 const EBAY_PRODUCTS = {
+  "kaptain-sunshine-traveller-coat": {
+    query: "Kaptain Sunshine Traveller Coat Navy",
+    requiredTitleTermGroups: [
+      ["kaptain sunshine"],
+      ["traveller", "traveler"],
+      ["coat"],
+    ],
+  },
+  "camiel-fortgens-big-shirt": {
+    query: "Camiel Fortgens Big Shirt Blockprint",
+    requiredTitleTermGroups: [["camiel fortgens"], ["big shirt"]],
+  },
+  "beams-plus-shawl-cardigan": {
+    query: "BEAMS PLUS Shawl Collar Cardigan",
+    requiredTitleTermGroups: [["beams plus", "beams+"], ["shawl"], ["cardigan"]],
+  },
+  "prada-sky-cotton-shirt": {
+    query: "Prada UCN596 10IV F0AB7 Cotton Shirt",
+    requiredTitleTermGroups: [["prada"], ["ucn596", "f0ab7"]],
+  },
+  "sunspel-riviera-long-sleeve": {
+    query: "Sunspel Long Sleeve Riviera Polo Black",
+    requiredTitleTermGroups: [["sunspel"], ["riviera"], ["long sleeve"]],
+  },
   "our-legacy-third-cut": {
     query: "Our Legacy Third Cut Black Selvedge Jeans",
-    requiredTitleTerms: ["our legacy", "third cut"],
+    requiredTitleTermGroups: [["our legacy"], ["third cut"]],
+  },
+  "anonymous-ism-waffle-sock": {
+    query: "Anonymous Ism Waffle Crew Socks",
+    requiredTitleTermGroups: [
+      ["anonymous ism", "anonymousism"],
+      ["waffle"],
+      ["sock", "socks"],
+    ],
+  },
+  "hender-scheme-mip-22": {
+    query: "Hender Scheme MIP 22 Natural Leather",
+    requiredTitleTermGroups: [
+      ["hender scheme"],
+      ["mip 22", "manual industrial product 22"],
+    ],
   },
 } as const;
 
@@ -84,6 +123,15 @@ function ebaySearchUrl(query: string): string {
   url.searchParams.set("_sacat", "0");
   url.searchParams.set("LH_ItemCondition", "3000");
   return url.toString();
+}
+
+function normalizeListingTitle(title: string): string {
+  return title
+    .toLowerCase()
+    .replace(/\+/g, " plus ")
+    .replace(/[-_/]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 async function getEbayAccessToken(
@@ -221,8 +269,10 @@ async function handleEbaySearch(request: Request, env: Env): Promise<Response> {
         (item.itemAffiliateWebUrl || item.itemWebUrl)
     );
     const exactListings = usableListings.filter((item) => {
-      const title = item.title?.toLowerCase() ?? "";
-      return product.requiredTitleTerms.every((term) => title.includes(term));
+      const title = normalizeListingTitle(item.title ?? "");
+      return product.requiredTitleTermGroups.every((termGroup) =>
+        termGroup.some((term) => title.includes(normalizeListingTitle(term)))
+      );
     });
     const matchedListings =
       exactListings.length > 0 ? exactListings : usableListings;
