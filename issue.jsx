@@ -167,6 +167,7 @@ function UsedMarket({ pick, market }) {
     market.status === "ready" &&
     market.matchType === "similar" &&
     market.listings.length > 0;
+  const hasDisplayListings = hasExactListings || hasSimilarListings;
 
   return (
     <section className="s-used" aria-labelledby="used-market-title">
@@ -176,8 +177,8 @@ function UsedMarket({ pick, market }) {
       </div>
       <h3 id="used-market-title">Buy the same piece used</h3>
       <p className="s-used-intro">
-        Exact product matches are shown here. Similar pieces stay in a separate
-        search.
+        Exact matches first. When none are listed, the closest pre-owned
+        alternatives appear.
       </p>
 
       {market.status === "loading" && (
@@ -187,10 +188,18 @@ function UsedMarket({ pick, market }) {
         </div>
       )}
 
-      {hasExactListings && (
+      {market.status === "ready" && !hasExactListings && (
+        <p className="s-used-status" role="status" aria-live="polite">
+          No exact version listed.
+        </p>
+      )}
+
+      {hasDisplayListings && (
         <>
           <p className="s-used-match" aria-live="polite">
-            Exact used matches
+            {hasExactListings
+              ? "Exact used matches"
+              : "Closest pre-owned alternatives"}
           </p>
           <div className="s-used-list">
             {market.listings.map((listing) => (
@@ -242,12 +251,6 @@ function UsedMarket({ pick, market }) {
         </p>
       )}
 
-      {market.status === "ready" && !hasExactListings && (
-        <p className="s-used-status" role="status" aria-live="polite">
-          No exact version listed.
-        </p>
-      )}
-
       {market.status !== "loading" && (
         <a
           className="s-used-search"
@@ -258,7 +261,7 @@ function UsedMarket({ pick, market }) {
           {hasExactListings
             ? "See all used results ↗"
             : hasSimilarListings
-              ? "See similar pre-owned pieces ↗"
+              ? "See more similar pieces ↗"
               : "Search eBay now ↗"}
         </a>
       )}
