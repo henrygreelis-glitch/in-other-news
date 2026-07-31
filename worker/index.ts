@@ -9,8 +9,18 @@ interface AssetFetcher {
   fetch(request: Request): Promise<Response>;
 }
 
+interface D1PreparedStatement {
+  bind(...values: unknown[]): D1PreparedStatement;
+  run(): Promise<unknown>;
+}
+
+interface D1Database {
+  prepare(query: string): D1PreparedStatement;
+}
+
 interface Env {
   ASSETS: AssetFetcher;
+  DB?: D1Database;
   IMAGES: {
     input(stream: ReadableStream): {
       transform(options: Record<string, unknown>): {
@@ -61,6 +71,11 @@ interface EbaySearchResponse {
 interface EbayTokenResponse {
   access_token?: string;
   expires_in?: number;
+}
+
+interface NewsletterRequest {
+  email?: unknown;
+  company?: unknown;
 }
 
 const EBAY_PRODUCTS = {
@@ -333,12 +348,80 @@ async function handleEbaySearch(request: Request, env: Env): Promise<Response> {
   }
 }
 
+function normalizeEmail(value: unknown): string {
+  return typeof value === "string" ? value.trim().toLowerCase() : "";
+}
+
+function isValidEmail(email: string): boolean {
+  return (
+    email.length > 3 &&
+    email.length <= 254 &&
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+  );
+}
+
+async function handleNewsletterSubscribe(
+  request: Request,
+  env: Env
+): Promise<Response> {
+  if (!env.DB) {
+    return Response.json(
+      { message: "Newsletter signup is temporarily unavailable." },
+      { status: 503 }
+    );
+  }
+
+  let body: NewsletterRequest;
+  try {
+    body = (await request.json()) as NewsletterRequest;
+  } catch {
+    return Response.json({ message: "Enter a valid email address." }, { status: 400 });
+  }
+
+  // Bots commonly fill hidden fields. Return success without saving the entry.
+  if (typeof body.company === "string" && body.company.trim()) {
+    return Response.json({ ok: true, message: "You're subscribed." });
+  }
+
+  const email = normalizeEmail(body.email);
+  if (!isValidEmail(email)) {
+    return Response.json({ message: "Enter a valid email address." }, { status: 400 });
+  }
+
+  try {
+    await env.DB.prepare(
+      `INSERT INTO newsletter_subscribers (email, source)
+       VALUES (?1, ?2)
+       ON CONFLICT(email) DO NOTHING`
+    )
+      .bind(email, "uniform-01")
+      .run();
+
+    return Response.json(
+      { ok: true, message: "Subscribed. Uniform 02 lands Sunday." },
+      { headers: { "Cache-Control": "no-store" } }
+    );
+  } catch {
+    return Response.json(
+      { message: "We couldn't save your email. Try again." },
+      { status: 500, headers: { "Cache-Control": "no-store" } }
+    );
+  }
+}
+
 const worker = {
   async fetch(request: Request, env: Env, ctx: ExecutionContext) {
     const url = new URL(request.url);
 
     if (url.pathname === "/api/ebay/search" && request.method === "GET") {
       return handleEbaySearch(request, env);
+    }
+
+    if (
+      url.pathname === "/api/newsletter/subscribe" &&
+      request.method === "POST"
+    ) {
+      return handleNewsletterSubscribe(request, env);
     }
 
     if (url.pathname === "/_vinext/image") {

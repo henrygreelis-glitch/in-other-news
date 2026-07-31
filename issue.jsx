@@ -272,7 +272,8 @@ function UsedMarket({ pick, market }) {
 export default function Uniform() {
   const [activeIdx, setActiveIdx] = useState(null);
   const [email, setEmail] = useState("");
-  const [signed, setSigned] = useState(false);
+  const [subscribeStatus, setSubscribeStatus] = useState("idle");
+  const [subscribeMessage, setSubscribeMessage] = useState("");
   const [usedMarket, setUsedMarket] = useState({
     status: "idle",
     listings: [],
@@ -282,7 +283,36 @@ export default function Uniform() {
   });
   const openerRef = useRef(null);
   const drawerRef = useRef(null);
-  const submit = () => email.includes("@") && email.length > 4 && setSigned(true);
+  const submit = async (event) => {
+    event.preventDefault();
+    if (subscribeStatus === "loading") return;
+
+    const normalizedEmail = email.trim();
+    if (!normalizedEmail || !event.currentTarget.reportValidity()) return;
+
+    setSubscribeStatus("loading");
+    setSubscribeMessage("");
+
+    try {
+      const response = await fetch("/api/newsletter/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: normalizedEmail, company: "" }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message);
+
+      setSubscribeStatus("success");
+      setSubscribeMessage(data.message || "Subscribed. Uniform 02 lands Sunday.");
+    } catch (error) {
+      setSubscribeStatus("error");
+      setSubscribeMessage(
+        error instanceof Error
+          ? error.message
+          : "We couldn't save your email. Try again."
+      );
+    }
+  };
   const activePick = activeIdx === null ? null : PICKS[activeIdx];
 
   const openProduct = (event, index) => {
@@ -479,22 +509,35 @@ export default function Uniform() {
       )}
 
       <section className="s-sub">
-        {signed ? (
-          <p>Subscribed. Uniform 02 lands Sunday.</p>
+        {subscribeStatus === "success" ? (
+          <p className="s-sub-success" role="status" aria-live="polite">
+            {subscribeMessage}
+          </p>
         ) : (
           <>
             <p>One uniform, every Sunday.</p>
-            <div className="s-field">
+            <form className="s-field" onSubmit={submit}>
               <input
                 type="email"
+                name="email"
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
-                onKeyDown={(event) => event.key === "Enter" && submit()}
                 placeholder="Email"
                 aria-label="Email address"
+                autoComplete="email"
+                maxLength={254}
+                required
+                disabled={subscribeStatus === "loading"}
               />
-              <button onClick={submit}>Subscribe</button>
-            </div>
+              <button type="submit" disabled={subscribeStatus === "loading"}>
+                {subscribeStatus === "loading" ? "Saving…" : "Subscribe"}
+              </button>
+            </form>
+            {subscribeStatus === "error" && (
+              <p className="s-sub-error" role="alert">
+                {subscribeMessage}
+              </p>
+            )}
           </>
         )}
       </section>
@@ -527,7 +570,7 @@ const CSS = `
 .s-drawer-meta{display:flex;justify-content:space-between;gap:16px;margin-top:18px;padding:12px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 .s-drawer-why{margin-top:22px!important;font-size:13px;line-height:1.65;color:#333}.s-drawer-link{display:block;margin-top:28px;padding:13px 14px;background:var(--fg);color:#fff;text-align:center;text-decoration:none;font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase}.s-drawer-link:hover{background:#333}
 .s-used{margin-top:30px;padding-top:24px;border-top:1px solid var(--line)}.s-used-kicker{display:flex;justify-content:space-between;gap:16px;color:var(--mid);font-size:9px;font-weight:500;letter-spacing:.12em;text-transform:uppercase}.s-used h3{margin:9px 0 0;font-size:18px;font-weight:500;line-height:1.2;letter-spacing:-.01em}.s-used-intro{margin-top:8px!important;color:#555;font-size:11.5px;line-height:1.55}.s-used-status{display:flex;align-items:center;gap:8px;margin-top:16px!important;padding:13px;background:#f5f5f3;color:#555;font-size:11px;line-height:1.4}.s-used-pulse{width:7px;height:7px;border-radius:50%;background:#111;animation:s-used-pulse 1.25s ease-in-out infinite}.s-used-match{margin-top:17px!important;color:var(--mid);font-size:9px;font-weight:500;letter-spacing:.1em;text-transform:uppercase}.s-used-list{display:grid;gap:8px;margin-top:9px}.s-used-card{position:relative;display:grid;grid-template-columns:70px minmax(0,1fr);gap:11px;min-height:86px;padding:8px 28px 8px 8px;border:1px solid var(--line);color:var(--fg);text-decoration:none}.s-used-card:hover{border-color:#999}.s-used-card img{width:70px;height:86px;object-fit:cover;background:var(--plate)}.s-used-card-copy{display:flex;min-width:0;flex-direction:column;align-items:flex-start}.s-used-card-copy strong{display:-webkit-box;overflow:hidden;font-size:11px;font-weight:500;line-height:1.35;-webkit-box-orient:vertical;-webkit-line-clamp:2}.s-used-card-price{margin-top:auto;font-size:12px;font-weight:600}.s-used-card-meta{margin-top:1px;color:var(--mid);font-size:9.5px;line-height:1.35}.s-used-arrow{position:absolute;top:8px;right:9px;font-size:11px}.s-used-search{display:inline-block;margin-top:14px;border-bottom:1px solid var(--fg);color:var(--fg);font-size:9.5px;font-weight:500;letter-spacing:.1em;line-height:1.4;text-decoration:none;text-transform:uppercase}.s-used-search:hover{color:var(--mid);border-color:var(--mid)}
-.s-sub{margin-top:80px;padding:44px 0;border-top:1px solid var(--line)}.s-sub p{font-size:13px}.s-field{display:flex;margin-top:18px;border-bottom:1px solid var(--fg);max-width:380px}.s-field input{flex:1;min-width:0;border:0;background:transparent;font-family:var(--f);font-size:13px;color:var(--fg);padding:0 0 8px}.s-field input::placeholder{color:var(--mid)}.s-field button{border:0;background:transparent;cursor:pointer;padding:0 0 8px;font-family:var(--f);font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase}.s-field button:hover{color:var(--mid)}
+.s-sub{margin-top:80px;padding:44px 0;border-top:1px solid var(--line)}.s-sub p{font-size:13px}.s-field{display:flex;margin-top:18px;border-bottom:1px solid var(--fg);max-width:380px}.s-field input{flex:1;min-width:0;border:0;background:transparent;font-family:var(--f);font-size:13px;color:var(--fg);padding:0 0 8px}.s-field input::placeholder{color:var(--mid)}.s-field button{border:0;background:transparent;cursor:pointer;padding:0 0 8px;font-family:var(--f);font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase}.s-field button:hover{color:var(--mid)}.s-field button:disabled,.s-field input:disabled{cursor:wait;opacity:.55}.s-sub-success{font-weight:500}.s-sub-error{margin-top:10px!important;color:#9c1c13;font-size:11px!important}
 .s-foot{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:18px 0;border-top:1px solid var(--line);font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--mid)}
 @keyframes s-used-pulse{0%,100%{opacity:.25}50%{opacity:1}}
 @media (max-width:560px){.s-root{padding:0 12px}.s-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:24px 12px}.s-open{padding:36px 0 30px;flex-direction:column;align-items:flex-start;gap:12px}.s-drawer-wrap{align-items:flex-end}.s-drawer{width:100%;height:min(88dvh,760px);padding:14px;border-radius:16px 16px 0 0;box-shadow:0 -12px 30px rgba(0,0,0,.14)}.s-drawer>img{aspect-ratio:16/10;object-fit:contain}.s-drawer h2{font-size:21px}}
