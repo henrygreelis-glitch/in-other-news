@@ -36,6 +36,8 @@ interface Env {
   EBAY_ENVIRONMENT?: string;
   EBAY_MARKETPLACE_ID?: string;
   EBAY_AFFILIATE_CAMPAIGN_ID?: string;
+  RESEND_API_KEY?: string;
+  RESEND_FROM_EMAIL?: string;
 }
 
 interface ExecutionContext {
@@ -380,6 +382,99 @@ function isValidEmail(email: string): boolean {
   );
 }
 
+function isResendConfigured(env: Env): boolean {
+  return Boolean(env.RESEND_API_KEY && env.RESEND_FROM_EMAIL);
+}
+
+async function syncNewsletterContact(env: Env, email: string): Promise<boolean> {
+  if (!isResendConfigured(env)) return false;
+
+  const headers = {
+    Authorization: `Bearer ${env.RESEND_API_KEY}`,
+    "Content-Type": "application/json",
+    "User-Agent": "in-other-news/1.0",
+  };
+  let response = await fetch("https://api.resend.com/contacts", {
+    method: "POST",
+    headers,
+    body: JSON.stringify({ email, unsubscribed: false }),
+  });
+
+  if (response.status === 409) {
+    response = await fetch(
+      `https://api.resend.com/contacts/${encodeURIComponent(email)}`,
+      {
+        method: "PATCH",
+        headers,
+        body: JSON.stringify({ unsubscribed: false }),
+      }
+    );
+  }
+
+  if (!response.ok) {
+    throw new Error(`Resend contact request failed (${response.status})`);
+  }
+
+  return true;
+}
+
+function productWatchEmailHtml(
+  brand: string,
+  item: string,
+  siteUrl: string
+): string {
+  return `<!doctype html>
+<html lang="en">
+  <body style="margin:0;background:#f3f3f0;color:#111;font-family:Arial,sans-serif">
+    <div style="max-width:560px;margin:0 auto;padding:40px 24px">
+      <p style="margin:0 0 48px;font-size:11px;letter-spacing:.12em;text-transform:uppercase">In Other News · Uniform 01</p>
+      <p style="margin:0 0 10px;color:#777;font-size:10px;letter-spacing:.12em;text-transform:uppercase">Product watch saved</p>
+      <h1 style="margin:0;font-size:30px;line-height:1.08;font-weight:500">${brand}<br>${item}</h1>
+      <p style="margin:24px 0 0;font-size:14px;line-height:1.65">Your watch is ready. We’ll use it for new pre-owned matches and meaningful retail price drops as alert delivery comes online.</p>
+      <p style="margin:32px 0 0"><a href="${siteUrl}" style="display:inline-block;background:#111;color:#fff;padding:13px 18px;font-size:11px;letter-spacing:.1em;text-decoration:none;text-transform:uppercase">Return to Uniform 01 →</a></p>
+      <p style="margin:56px 0 0;color:#777;font-size:10px;line-height:1.6">You requested this product watch from In Other News.</p>
+    </div>
+  </body>
+</html>`;
+}
+
+async function sendProductWatchConfirmation(
+  env: Env,
+  email: string,
+  productKey: string,
+  product: { brand: string; item: string },
+  siteUrl: string
+): Promise<boolean> {
+  if (!isResendConfigured(env)) return false;
+
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${env.RESEND_API_KEY}`,
+      "Content-Type": "application/json",
+      "Idempotency-Key": `uniform-01-watch-${productKey}-${email}`.slice(0, 256),
+      "User-Agent": "in-other-news/1.0",
+    },
+    body: JSON.stringify({
+      from: env.RESEND_FROM_EMAIL,
+      to: [email],
+      subject: `Watch saved: ${product.brand} ${product.item}`,
+      html: productWatchEmailHtml(product.brand, product.item, siteUrl),
+      text: `Your watch for ${product.brand} ${product.item} is saved. Return to Uniform 01: ${siteUrl}`,
+      tags: [
+        { name: "message_type", value: "product_watch" },
+        { name: "issue", value: "uniform_01" },
+      ],
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Resend email request failed (${response.status})`);
+  }
+
+  return true;
+}
+
 async function handleNewsletterSubscribe(
   request: Request,
   env: Env
@@ -417,8 +512,21 @@ async function handleNewsletterSubscribe(
       .bind(email, "uniform-01")
       .run();
 
+    let contactSynced = false;
+    try {
+      contactSynced = await syncNewsletterContact(env, email);
+    } catch {
+      // The local subscriber record remains authoritative if Resend is offline.
+    }
+
     return Response.json(
-      { ok: true, message: "Subscribed. Uniform 02 lands Sunday." },
+      {
+        ok: true,
+        message: contactSynced
+          ? "Subscribed. Uniform 02 lands Sunday."
+          : "Subscribed. Email delivery activates after domain setup.",
+        emailConnected: contactSynced,
+      },
       { headers: { "Cache-Control": "no-store" } }
     );
   } catch {
@@ -482,10 +590,26 @@ async function handleProductAlert(
       .bind(email, productKey, product.brand, product.item, "01")
       .run();
 
+    let confirmationSent = false;
+    try {
+      confirmationSent = await sendProductWatchConfirmation(
+        env,
+        email,
+        productKey,
+        product,
+        new URL(request.url).origin
+      );
+    } catch {
+      // The watch remains saved when the external email service is unavailable.
+    }
+
     return Response.json(
       {
         ok: true,
-        message: "Watch saved. Email delivery is the next release.",
+        message: confirmationSent
+          ? "Watch saved. Check your inbox for confirmation."
+          : "Watch saved. Email activates after domain setup.",
+        emailConnected: confirmationSent,
       },
       { headers: { "Cache-Control": "no-store" } }
     );

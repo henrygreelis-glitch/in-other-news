@@ -312,12 +312,12 @@ function ProductWatch({ pick }) {
     <section className="s-watch" aria-labelledby="product-watch-title">
       <div className="s-used-kicker">
         <span>Alert beta</span>
-        <span>Next release</span>
+        <span>Email + pre-owned</span>
       </div>
       <h3 id="product-watch-title">Watch this piece</h3>
       <p className="s-watch-intro">
-        Save your email for retail drops and new pre-owned matches. Email
-        delivery switches on in the next release.
+        Save your email for retail drops and new pre-owned matches. We’ll
+        confirm this watch by email as soon as sending is connected.
       </p>
       {status === "success" ? (
         <p className="s-watch-success" role="status" aria-live="polite">
