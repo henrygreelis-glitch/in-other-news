@@ -78,8 +78,14 @@ interface NewsletterRequest {
   company?: unknown;
 }
 
+interface ProductAlertRequest extends NewsletterRequest {
+  product?: unknown;
+}
+
 const EBAY_PRODUCTS = {
   "kaptain-sunshine-traveller-coat": {
+    brand: "Kaptain Sunshine",
+    item: "Traveller Coat",
     query: "Kaptain Sunshine Traveller Coat Navy",
     requiredTitleTermGroups: [
       ["kaptain sunshine"],
@@ -88,26 +94,38 @@ const EBAY_PRODUCTS = {
     ],
   },
   "camiel-fortgens-big-shirt": {
+    brand: "Camiel Fortgens",
+    item: "Big Shirt",
     query: "Camiel Fortgens Big Shirt Blockprint",
     requiredTitleTermGroups: [["camiel fortgens"], ["big shirt"]],
   },
   "beams-plus-shawl-cardigan": {
+    brand: "BEAMS PLUS",
+    item: "Shawl Collar Cardigan",
     query: "BEAMS PLUS Shawl Collar Cardigan",
     requiredTitleTermGroups: [["beams plus", "beams+"], ["shawl"], ["cardigan"]],
   },
   "prada-sky-cotton-shirt": {
+    brand: "Prada",
+    item: "Sky Cotton Shirt",
     query: "Prada UCN596 10IV F0AB7 Cotton Shirt",
     requiredTitleTermGroups: [["prada"], ["ucn596", "f0ab7"]],
   },
   "sunspel-riviera-long-sleeve": {
+    brand: "Sunspel",
+    item: "Long Sleeve Riviera",
     query: "Sunspel Long Sleeve Riviera Polo Black",
     requiredTitleTermGroups: [["sunspel"], ["riviera"], ["long sleeve"]],
   },
   "our-legacy-third-cut": {
+    brand: "Our Legacy",
+    item: "Third Cut",
     query: "Our Legacy Third Cut Black Selvedge Jeans",
     requiredTitleTermGroups: [["our legacy"], ["third cut"]],
   },
   "anonymous-ism-waffle-sock": {
+    brand: "Anonymous Ism",
+    item: "Waffle Crew Sock",
     query: "Anonymous Ism Waffle Crew Socks",
     requiredTitleTermGroups: [
       ["anonymous ism", "anonymousism"],
@@ -116,6 +134,8 @@ const EBAY_PRODUCTS = {
     ],
   },
   "hender-scheme-mip-22": {
+    brand: "Hender Scheme",
+    item: "Manual Industrial Product 22",
     query: "Hender Scheme MIP 22 Natural Leather",
     requiredTitleTermGroups: [
       ["hender scheme"],
@@ -409,6 +429,74 @@ async function handleNewsletterSubscribe(
   }
 }
 
+async function handleProductAlert(
+  request: Request,
+  env: Env
+): Promise<Response> {
+  if (!env.DB) {
+    return Response.json(
+      { message: "Product watches are temporarily unavailable." },
+      { status: 503 }
+    );
+  }
+
+  let body: ProductAlertRequest;
+  try {
+    body = (await request.json()) as ProductAlertRequest;
+  } catch {
+    return Response.json(
+      { message: "Enter a valid email address." },
+      { status: 400 }
+    );
+  }
+
+  if (typeof body.company === "string" && body.company.trim()) {
+    return Response.json({ ok: true, message: "Watch saved." });
+  }
+
+  const email = normalizeEmail(body.email);
+  const productKey = typeof body.product === "string" ? body.product : "";
+  const product =
+    productKey && productKey in EBAY_PRODUCTS
+      ? EBAY_PRODUCTS[productKey as keyof typeof EBAY_PRODUCTS]
+      : undefined;
+
+  if (!isValidEmail(email)) {
+    return Response.json(
+      { message: "Enter a valid email address." },
+      { status: 400 }
+    );
+  }
+
+  if (!product) {
+    return Response.json({ message: "Choose a valid product." }, { status: 400 });
+  }
+
+  try {
+    await env.DB.prepare(
+      `INSERT INTO product_alerts
+         (email, product_key, brand, item, issue, active)
+       VALUES (?1, ?2, ?3, ?4, ?5, 1)
+       ON CONFLICT(email, product_key) DO UPDATE SET active = 1`
+    )
+      .bind(email, productKey, product.brand, product.item, "01")
+      .run();
+
+    return Response.json(
+      {
+        ok: true,
+        message: "Watch saved. Email delivery is the next release.",
+      },
+      { headers: { "Cache-Control": "no-store" } }
+    );
+  } catch {
+    return Response.json(
+      { message: "We couldn't save this watch. Try again." },
+      { status: 500, headers: { "Cache-Control": "no-store" } }
+    );
+  }
+}
+
 const worker = {
   async fetch(request: Request, env: Env, ctx: ExecutionContext) {
     const url = new URL(request.url);
@@ -422,6 +510,13 @@ const worker = {
       request.method === "POST"
     ) {
       return handleNewsletterSubscribe(request, env);
+    }
+
+    if (
+      url.pathname === "/api/product-alerts" &&
+      request.method === "POST"
+    ) {
+      return handleProductAlert(request, env);
     }
 
     if (url.pathname === "/_vinext/image") {

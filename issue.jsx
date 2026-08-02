@@ -19,6 +19,7 @@ const MASTHEAD = {
   issue: "01",
   date: "02.08.26",
   theme: "The uniform for the first cold week",
+  deck: "Eight pieces selected to work as one. Open any piece to compare the retail listing with live pre-owned options.",
 };
 
 const PICKS = [
@@ -269,11 +270,95 @@ function UsedMarket({ pick, market }) {
   );
 }
 
+function ProductWatch({ pick }) {
+  const [email, setEmail] = useState("");
+  const [status, setStatus] = useState("idle");
+  const [message, setMessage] = useState("");
+
+  const submitWatch = async (event) => {
+    event.preventDefault();
+    if (status === "loading") return;
+    if (!email.trim() || !event.currentTarget.reportValidity()) return;
+
+    setStatus("loading");
+    setMessage("");
+
+    try {
+      const response = await fetch("/api/product-alerts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: email.trim(),
+          product: pick.ebayProduct,
+          company: "",
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message);
+
+      setStatus("success");
+      setMessage(data.message || "Watch saved.");
+    } catch (error) {
+      setStatus("error");
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : "We couldn't save this watch. Try again."
+      );
+    }
+  };
+
+  return (
+    <section className="s-watch" aria-labelledby="product-watch-title">
+      <div className="s-used-kicker">
+        <span>Alert beta</span>
+        <span>Next release</span>
+      </div>
+      <h3 id="product-watch-title">Watch this piece</h3>
+      <p className="s-watch-intro">
+        Save your email for retail drops and new pre-owned matches. Email
+        delivery switches on in the next release.
+      </p>
+      {status === "success" ? (
+        <p className="s-watch-success" role="status" aria-live="polite">
+          {message}
+        </p>
+      ) : (
+        <>
+          <form className="s-watch-field" onSubmit={submitWatch}>
+            <input
+              type="email"
+              name="watch-email"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              placeholder="Email"
+              aria-label={`Email address for ${pick.brand} ${pick.item} alerts`}
+              autoComplete="email"
+              maxLength={254}
+              required
+              disabled={status === "loading"}
+            />
+            <button type="submit" disabled={status === "loading"}>
+              {status === "loading" ? "Saving…" : "Add watch"}
+            </button>
+          </form>
+          {status === "error" && (
+            <p className="s-watch-error" role="alert">
+              {message}
+            </p>
+          )}
+        </>
+      )}
+    </section>
+  );
+}
+
 export default function Uniform() {
   const [activeIdx, setActiveIdx] = useState(null);
   const [email, setEmail] = useState("");
   const [subscribeStatus, setSubscribeStatus] = useState("idle");
   const [subscribeMessage, setSubscribeMessage] = useState("");
+  const [savedProductIds, setSavedProductIds] = useState([]);
   const [usedMarket, setUsedMarket] = useState({
     status: "idle",
     listings: [],
@@ -314,6 +399,49 @@ export default function Uniform() {
     }
   };
   const activePick = activeIdx === null ? null : PICKS[activeIdx];
+  const savedPicks = PICKS.filter((pick) =>
+    savedProductIds.includes(pick.ebayProduct)
+  );
+
+  useEffect(() => {
+    try {
+      const stored = JSON.parse(
+        window.localStorage.getItem("in-other-news:saved-products") || "[]"
+      );
+      if (Array.isArray(stored)) {
+        setSavedProductIds(
+          stored.filter((productId) =>
+            PICKS.some((pick) => pick.ebayProduct === productId)
+          )
+        );
+      }
+    } catch {
+      setSavedProductIds([]);
+    }
+  }, []);
+
+  const toggleSaved = (productId) => {
+    setSavedProductIds((current) => {
+      const next = current.includes(productId)
+        ? current.filter((savedId) => savedId !== productId)
+        : [...current, productId];
+      try {
+        window.localStorage.setItem(
+          "in-other-news:saved-products",
+          JSON.stringify(next)
+        );
+      } catch {
+        // Saving still works for this visit when device storage is unavailable.
+      }
+      return next;
+    });
+  };
+
+  const scrollToSaved = () => {
+    document
+      .getElementById("saved-pieces")
+      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
   const openProduct = (event, index) => {
     openerRef.current = event.currentTarget;
@@ -386,7 +514,9 @@ export default function Uniform() {
       if (event.key !== "Tab" || !drawerRef.current) return;
 
       const focusable = Array.from(
-        drawerRef.current.querySelectorAll("a[href], button:not([disabled])")
+        drawerRef.current.querySelectorAll(
+          "a[href], button:not([disabled]), input:not([disabled])"
+        )
       );
       if (!focusable.length) return;
 
@@ -415,26 +545,57 @@ export default function Uniform() {
       <style>{CSS}</style>
       <header className="s-head">
         <span>{MASTHEAD.title}</span>
-        <span>{MASTHEAD.issue} &nbsp; {MASTHEAD.date}</span>
+        <div className="s-head-meta">
+          <span>{MASTHEAD.issue} &nbsp; {MASTHEAD.date}</span>
+          <button type="button" onClick={scrollToSaved}>
+            Saved {savedPicks.length}
+          </button>
+        </div>
       </header>
 
       <div className="s-open">
-        <h1>{MASTHEAD.theme}</h1>
+        <div className="s-open-copy">
+          <p className="s-eyebrow">This week’s uniform</p>
+          <h1>{MASTHEAD.theme}</h1>
+          <p className="s-deck">{MASTHEAD.deck}</p>
+        </div>
         <span className="s-n">{PICKS.length} pieces &nbsp; 4 currencies</span>
       </div>
+
+      <ol className="s-flow" aria-label="How each weekly issue works">
+        <li><span>01</span>Discover the look</li>
+        <li><span>02</span>Compare options</li>
+        <li><span>03</span>Save a piece</li>
+        <li><span>04</span>Add a watch</li>
+        <li><span>05</span>Return Sunday</li>
+      </ol>
 
       <main className="s-grid">
         {PICKS.map((pick, index) => (
           <article className="s-tile" key={pick.brand + pick.item}>
             <p className="s-slot">{pick.slot}</p>
-            <button
-              className="s-shot"
-              onClick={(event) => openProduct(event, index)}
-              aria-haspopup="dialog"
-              aria-label={`Open details for ${pick.brand} ${pick.item}`}
-            >
-              <ProductImage pick={pick} />
-            </button>
+            <div className="s-media">
+              <button
+                className="s-shot"
+                onClick={(event) => openProduct(event, index)}
+                aria-haspopup="dialog"
+                aria-label={`Open details for ${pick.brand} ${pick.item}`}
+              >
+                <ProductImage pick={pick} />
+              </button>
+              <button
+                className={`s-save ${
+                  savedProductIds.includes(pick.ebayProduct) ? "is-saved" : ""
+                }`}
+                type="button"
+                aria-pressed={savedProductIds.includes(pick.ebayProduct)}
+                onClick={() => toggleSaved(pick.ebayProduct)}
+              >
+                {savedProductIds.includes(pick.ebayProduct)
+                  ? "Saved ✓"
+                  : "Save +"}
+              </button>
+            </div>
             <div className="s-cap">
               <p className="s-brand">{pick.brand}</p>
               <p className="s-item">{pick.item}</p>
@@ -458,6 +619,42 @@ export default function Uniform() {
           </article>
         ))}
       </main>
+
+      <section className="s-saved" id="saved-pieces" aria-labelledby="saved-title">
+        <div className="s-saved-head">
+          <div>
+            <p className="s-eyebrow">Your edit</p>
+            <h2 id="saved-title">Saved from Uniform 01</h2>
+          </div>
+          <span>{savedPicks.length} saved</span>
+        </div>
+        {savedPicks.length ? (
+          <div className="s-saved-list">
+            {savedPicks.map((pick) => {
+              const index = PICKS.findIndex(
+                (candidate) => candidate.ebayProduct === pick.ebayProduct
+              );
+              return (
+                <button
+                  type="button"
+                  className="s-saved-item"
+                  key={pick.ebayProduct}
+                  onClick={(event) => openProduct(event, index)}
+                >
+                  <span>{pick.slot}</span>
+                  <strong>{pick.brand}</strong>
+                  <small>{pick.item}</small>
+                  <b aria-hidden="true">→</b>
+                </button>
+              );
+            })}
+          </div>
+        ) : (
+          <p className="s-saved-empty">
+            Save a piece from the grid. Your edit stays on this device.
+          </p>
+        )}
+      </section>
 
       {activePick && (
         <div className="s-drawer-wrap" onMouseDown={closeProduct}>
@@ -503,6 +700,17 @@ export default function Uniform() {
               {activePick.ebayProduct && (
                 <UsedMarket pick={activePick} market={usedMarket} />
               )}
+              <button
+                className="s-drawer-save"
+                type="button"
+                aria-pressed={savedProductIds.includes(activePick.ebayProduct)}
+                onClick={() => toggleSaved(activePick.ebayProduct)}
+              >
+                {savedProductIds.includes(activePick.ebayProduct)
+                  ? "Saved to your edit ✓"
+                  : "Save to your edit +"}
+              </button>
+              <ProductWatch key={activePick.ebayProduct} pick={activePick} />
             </div>
           </aside>
         </div>
@@ -515,7 +723,7 @@ export default function Uniform() {
           </p>
         ) : (
           <>
-            <p>One uniform, every Sunday.</p>
+            <p>Return for Uniform 02 next Sunday.</p>
             <form className="s-field" onSubmit={submit}>
               <input
                 type="email"
@@ -554,25 +762,30 @@ const CSS = `
 @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600&display=swap');
 .s-root{--fg:#000;--mid:#767676;--line:#e4e4e4;--plate:#f1f1f1;--f:'Archivo',Helvetica,Arial,sans-serif;width:100%;max-width:1600px;margin:0 auto;background:#fff;color:var(--fg);font-family:var(--f);font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased;padding:0 16px}
 .s-root *{box-sizing:border-box}.s-root h1,.s-root h2,.s-root p{margin:0}.s-root h1{font-weight:400}.s-root button:focus-visible,.s-root input:focus-visible,.s-root a:focus-visible{outline:1px solid var(--fg);outline-offset:2px}
-.s-head{display:flex;justify-content:space-between;padding:18px 0;font-size:11px;font-weight:500;letter-spacing:.1em;text-transform:uppercase}
-.s-open{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;padding:56px 0 44px}.s-open h1{font-size:clamp(24px,3.4vw,42px);font-weight:600;line-height:1.04;letter-spacing:-.02em;max-width:16ch}
+.s-head{display:flex;justify-content:space-between;align-items:center;padding:18px 0;font-size:11px;font-weight:500;letter-spacing:.1em;text-transform:uppercase}.s-head-meta{display:flex;align-items:center;gap:22px}.s-head-meta button{padding:0 0 2px;border:0;border-bottom:1px solid var(--fg);background:transparent;color:var(--fg);cursor:pointer;font-family:var(--f);font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase}.s-head-meta button:hover{color:var(--mid);border-color:var(--mid)}
+.s-open{display:flex;justify-content:space-between;align-items:flex-end;gap:40px;padding:56px 0 36px}.s-open-copy{max-width:700px}.s-eyebrow{color:var(--mid);font-size:9px;font-weight:500;letter-spacing:.12em;text-transform:uppercase}.s-open h1{margin-top:10px;font-size:clamp(28px,4vw,52px);font-weight:600;line-height:1.02;letter-spacing:-.03em;max-width:17ch}.s-deck{max-width:62ch;margin-top:17px!important;color:#4c4c4c;font-size:12px;line-height:1.65}
 .s-n{font-size:11px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--mid);flex:none}
-.s-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:34px 16px}.s-tile{display:flex;flex-direction:column}.s-slot{font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--mid);padding-bottom:8px}
+.s-flow{display:grid;grid-template-columns:repeat(5,minmax(145px,1fr));margin:0 0 48px;padding:0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);list-style:none;overflow-x:auto}.s-flow li{display:flex;flex-direction:column;min-height:74px;padding:13px 16px 12px 0;color:#333;font-size:10px;font-weight:500;letter-spacing:.08em;text-transform:uppercase}.s-flow li+li{padding-left:16px;border-left:1px solid var(--line)}.s-flow span{margin-bottom:auto;color:var(--mid);font-size:9px}
+.s-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:34px 16px}.s-tile{display:flex;flex-direction:column}.s-slot{font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--mid);padding-bottom:8px}.s-media{position:relative}
 .s-shot{position:relative;display:block;width:100%;padding:0;border:0;background:var(--plate);cursor:pointer;text-align:left;overflow:hidden}.s-shot img{width:100%;aspect-ratio:4/5;object-fit:cover;display:block}
+.s-save{position:absolute;right:8px;bottom:8px;z-index:2;padding:6px 8px;border:1px solid rgba(0,0,0,.15);background:rgba(255,255,255,.92);color:var(--fg);cursor:pointer;font-family:var(--f);font-size:8.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;backdrop-filter:blur(6px)}.s-save:hover,.s-save.is-saved{background:var(--fg);color:#fff;border-color:var(--fg)}
 .s-cap{padding-top:10px}.s-brand{font-size:12.5px;font-weight:600}.s-item{font-size:12.5px;color:var(--mid);margin-top:1px}.s-line{display:flex;justify-content:space-between;gap:10px;margin-top:6px;font-size:12.5px}.s-tag{font-size:10px;font-weight:500;letter-spacing:.09em;text-transform:uppercase;color:var(--mid)}
 .s-shop{display:inline-block;margin-top:10px;color:var(--fg);font-size:10px;font-weight:500;letter-spacing:.1em;line-height:1.4;text-decoration:none;text-transform:uppercase;border-bottom:1px solid var(--fg)}.s-shop:hover{color:var(--mid);border-color:var(--mid)}.s-shop:focus-visible{outline:1px solid var(--fg);outline-offset:3px}
 .s-used-flag{display:block;margin-top:7px;color:var(--mid);font-size:9px;font-weight:500;letter-spacing:.1em;text-transform:uppercase}
 .s-drawer-wrap{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.28);display:flex;justify-content:flex-end}
-.s-drawer{width:min(400px,92vw);height:100%;overflow-y:auto;background:#fff;box-shadow:-12px 0 30px rgba(0,0,0,.12);padding:18px}
+.s-drawer{width:min(430px,92vw);height:100%;overflow-y:auto;background:#fff;box-shadow:-12px 0 30px rgba(0,0,0,.12);padding:18px}
 .s-drawer-close{display:block;margin:0 0 18px auto;padding:0;border:0;background:transparent;font-family:var(--f);font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;cursor:pointer}
 .s-drawer>img{display:block;width:100%;aspect-ratio:4/5;object-fit:cover;background:var(--plate)}
 .s-drawer-copy{padding:22px 2px 32px}.s-drawer-copy .s-slot{padding-bottom:12px}.s-drawer-brand{font-size:13px;font-weight:600}.s-drawer h2{margin:2px 0 0;font-size:24px;font-weight:500;line-height:1.1;letter-spacing:-.02em}
 .s-drawer-meta{display:flex;justify-content:space-between;gap:16px;margin-top:18px;padding:12px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 .s-drawer-why{margin-top:22px!important;font-size:13px;line-height:1.65;color:#333}.s-drawer-link{display:block;margin-top:28px;padding:13px 14px;background:var(--fg);color:#fff;text-align:center;text-decoration:none;font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase}.s-drawer-link:hover{background:#333}
 .s-used{margin-top:30px;padding-top:24px;border-top:1px solid var(--line)}.s-used-kicker{display:flex;justify-content:space-between;gap:16px;color:var(--mid);font-size:9px;font-weight:500;letter-spacing:.12em;text-transform:uppercase}.s-used h3{margin:9px 0 0;font-size:18px;font-weight:500;line-height:1.2;letter-spacing:-.01em}.s-used-intro{margin-top:8px!important;color:#555;font-size:11.5px;line-height:1.55}.s-used-status{display:flex;align-items:center;gap:8px;margin-top:16px!important;padding:13px;background:#f5f5f3;color:#555;font-size:11px;line-height:1.4}.s-used-pulse{width:7px;height:7px;border-radius:50%;background:#111;animation:s-used-pulse 1.25s ease-in-out infinite}.s-used-match{margin-top:17px!important;color:var(--mid);font-size:9px;font-weight:500;letter-spacing:.1em;text-transform:uppercase}.s-used-list{display:grid;gap:8px;margin-top:9px}.s-used-card{position:relative;display:grid;grid-template-columns:70px minmax(0,1fr);gap:11px;min-height:86px;padding:8px 28px 8px 8px;border:1px solid var(--line);color:var(--fg);text-decoration:none}.s-used-card:hover{border-color:#999}.s-used-card img{width:70px;height:86px;object-fit:cover;background:var(--plate)}.s-used-card-copy{display:flex;min-width:0;flex-direction:column;align-items:flex-start}.s-used-card-copy strong{display:-webkit-box;overflow:hidden;font-size:11px;font-weight:500;line-height:1.35;-webkit-box-orient:vertical;-webkit-line-clamp:2}.s-used-card-price{margin-top:auto;font-size:12px;font-weight:600}.s-used-card-meta{margin-top:1px;color:var(--mid);font-size:9.5px;line-height:1.35}.s-used-arrow{position:absolute;top:8px;right:9px;font-size:11px}.s-used-search{display:inline-block;margin-top:14px;border-bottom:1px solid var(--fg);color:var(--fg);font-size:9.5px;font-weight:500;letter-spacing:.1em;line-height:1.4;text-decoration:none;text-transform:uppercase}.s-used-search:hover{color:var(--mid);border-color:var(--mid)}
+.s-drawer-save{display:block;width:100%;margin-top:18px;padding:12px 14px;border:1px solid var(--fg);background:#fff;color:var(--fg);cursor:pointer;font-family:var(--f);font-size:9.5px;font-weight:500;letter-spacing:.1em;text-transform:uppercase}.s-drawer-save:hover,.s-drawer-save[aria-pressed="true"]{background:#f2f2ef}
+.s-watch{margin-top:30px;padding-top:24px;border-top:1px solid var(--line)}.s-watch h3{margin:9px 0 0;font-size:18px;font-weight:500;line-height:1.2;letter-spacing:-.01em}.s-watch-intro{margin-top:8px!important;color:#555;font-size:11.5px;line-height:1.55}.s-watch-field{display:flex;margin-top:16px;border-bottom:1px solid var(--fg)}.s-watch-field input{flex:1;min-width:0;padding:0 0 8px;border:0;background:transparent;color:var(--fg);font-family:var(--f);font-size:12px}.s-watch-field button{padding:0 0 8px;border:0;background:transparent;color:var(--fg);cursor:pointer;font-family:var(--f);font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase}.s-watch-field button:disabled,.s-watch-field input:disabled{cursor:wait;opacity:.55}.s-watch-success{margin-top:16px!important;padding:13px;background:#f2f2ef;font-size:11px!important}.s-watch-error{margin-top:9px!important;color:#9c1c13;font-size:10.5px!important}
+.s-saved{scroll-margin-top:20px;margin-top:80px;padding:30px 0;border-top:1px solid var(--fg);border-bottom:1px solid var(--line)}.s-saved-head{display:flex;align-items:flex-end;justify-content:space-between;gap:24px}.s-saved-head h2{margin-top:5px;font-size:22px;font-weight:500;letter-spacing:-.02em}.s-saved-head>span{color:var(--mid);font-size:9px;font-weight:500;letter-spacing:.1em;text-transform:uppercase}.s-saved-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;margin-top:22px}.s-saved-item{position:relative;display:flex;min-width:0;flex-direction:column;align-items:flex-start;padding:13px 34px 13px 13px;border:1px solid var(--line);background:#fff;color:var(--fg);cursor:pointer;text-align:left}.s-saved-item:hover{border-color:#999}.s-saved-item span{color:var(--mid);font-size:8.5px;font-weight:500;letter-spacing:.1em;text-transform:uppercase}.s-saved-item strong{margin-top:8px;font-size:11px;font-weight:600}.s-saved-item small{overflow:hidden;width:100%;color:var(--mid);font-size:10.5px;text-overflow:ellipsis;white-space:nowrap}.s-saved-item b{position:absolute;right:13px;top:50%;font-size:12px;font-weight:400;transform:translateY(-50%)}.s-saved-empty{margin-top:20px!important;color:var(--mid);font-size:11.5px!important}
 .s-sub{margin-top:80px;padding:44px 0;border-top:1px solid var(--line)}.s-sub p{font-size:13px}.s-field{display:flex;margin-top:18px;border-bottom:1px solid var(--fg);max-width:380px}.s-field input{flex:1;min-width:0;border:0;background:transparent;font-family:var(--f);font-size:13px;color:var(--fg);padding:0 0 8px}.s-field input::placeholder{color:var(--mid)}.s-field button{border:0;background:transparent;cursor:pointer;padding:0 0 8px;font-family:var(--f);font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase}.s-field button:hover{color:var(--mid)}.s-field button:disabled,.s-field input:disabled{cursor:wait;opacity:.55}.s-sub-success{font-weight:500}.s-sub-error{margin-top:10px!important;color:#9c1c13;font-size:11px!important}
 .s-foot{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:18px 0;border-top:1px solid var(--line);font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--mid)}
 @keyframes s-used-pulse{0%,100%{opacity:.25}50%{opacity:1}}
-@media (max-width:560px){.s-root{padding:0 12px}.s-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:24px 12px}.s-open{padding:36px 0 30px;flex-direction:column;align-items:flex-start;gap:12px}.s-drawer-wrap{align-items:flex-end}.s-drawer{width:100%;height:min(88dvh,760px);padding:14px;border-radius:16px 16px 0 0;box-shadow:0 -12px 30px rgba(0,0,0,.14)}.s-drawer>img{aspect-ratio:16/10;object-fit:contain}.s-drawer h2{font-size:21px}}
+@media (max-width:560px){.s-root{padding:0 12px}.s-head-meta{gap:12px}.s-head-meta>span{display:none}.s-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:24px 12px}.s-open{padding:36px 0 28px;flex-direction:column;align-items:flex-start;gap:16px}.s-flow{margin-bottom:32px}.s-save{right:6px;bottom:6px;padding:5px 6px;font-size:7.5px}.s-saved{margin-top:60px}.s-saved-list{grid-template-columns:1fr 1fr}.s-drawer-wrap{align-items:flex-end}.s-drawer{width:100%;height:min(88dvh,760px);padding:14px;border-radius:16px 16px 0 0;box-shadow:0 -12px 30px rgba(0,0,0,.14)}.s-drawer>img{aspect-ratio:16/10;object-fit:contain}.s-drawer h2{font-size:21px}}
 @media (prefers-reduced-motion:reduce){.s-root *{animation:none!important;transition:none!important}}
 `;

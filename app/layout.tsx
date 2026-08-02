@@ -4,7 +4,7 @@ import "./globals.css";
 
 const title = "In Other News — Uniform 01";
 const description =
-  "One considered uniform for the first cold week, with direct product shopping links.";
+  "A weekly fashion edit: discover one complete look, compare retail and pre-owned options, and save the pieces worth watching.";
 
 export async function generateMetadata(): Promise<Metadata> {
   const requestHeaders = await headers();
