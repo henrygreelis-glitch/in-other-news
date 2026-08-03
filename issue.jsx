@@ -910,7 +910,7 @@ export default function Uniform() {
               >
                 {activePick.linkLabel || "View item ↗"}
               </a>
-              <AiFinder key={activePick.ebayProduct} pick={activePick} />
+              <AiFinder key={`ai-${activePick.ebayProduct}`} pick={activePick} />
               {activePick.ebayProduct && (
                 <UsedMarket pick={activePick} market={usedMarket} />
               )}
@@ -924,7 +924,10 @@ export default function Uniform() {
                   ? "Saved to your edit ✓"
                   : "Save to your edit +"}
               </button>
-              <ProductWatch key={activePick.ebayProduct} pick={activePick} />
+              <ProductWatch
+                key={`watch-${activePick.ebayProduct}`}
+                pick={activePick}
+              />
             </div>
           </aside>
         </div>
