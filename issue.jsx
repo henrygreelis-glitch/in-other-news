@@ -772,7 +772,7 @@ export default function Uniform() {
           <h1>{MASTHEAD.theme}</h1>
           <p className="s-deck">{MASTHEAD.deck}</p>
         </div>
-        <span className="s-n">{PICKS.length} pieces &nbsp; 4 currencies</span>
+        <span className="s-n">{PICKS.length} pieces</span>
       </div>
 
       <ol className="s-flow" aria-label="How each weekly issue works">
