@@ -23,7 +23,7 @@ const MASTHEAD = {
   deck: "An early look at the first cold week: one coat, seven supporting pieces, and enough time to find the right versions pre-owned instead of buying the whole uniform new.",
 };
 
-const PICKS = [
+export const PICKS = [
   {
     slot: "Outer",
     brand: "Kaptain Sunshine",
@@ -131,7 +131,7 @@ const PICKS = [
   },
 ];
 
-function ProductImage({ pick }) {
+export function ProductImage({ pick }) {
   const [src, setSrc] = useState(pick.img);
 
   return (
@@ -159,7 +159,7 @@ function formatListingMoney(value, currency) {
   }
 }
 
-function UsedMarket({ pick, market }) {
+export function UsedMarket({ pick, market }) {
   const searchUrl = market.searchUrl || pick.ebaySearchHref;
   const hasExactListings =
     market.status === "ready" &&
@@ -271,7 +271,7 @@ function UsedMarket({ pick, market }) {
   );
 }
 
-function ProductWatch({ pick }) {
+export function ProductWatch({ pick }) {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState("idle");
   const [message, setMessage] = useState("");
@@ -361,8 +361,8 @@ const AI_QUICK_SEARCHES = [
   "Different color",
 ];
 
-function AiFinder({ pick }) {
-  const [isOpen, setIsOpen] = useState(false);
+export function AiFinder({ pick, defaultOpen = false, standalone = false }) {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("idle");
   const [message, setMessage] = useState("");
@@ -410,15 +410,21 @@ function AiFinder({ pick }) {
   };
 
   return (
-    <section className={`s-ai ${isOpen ? "is-open" : ""}`}>
+    <section
+      id={standalone ? "find-your-version" : undefined}
+      className={`s-ai ${isOpen ? "is-open" : ""} ${
+        standalone ? "is-standalone" : ""
+      }`}
+    >
       <div className="s-used-kicker">
         <span>In Other News AI</span>
         <span>Personal search beta</span>
       </div>
-      <h3>Not quite right?</h3>
+      <h3>{standalone ? "Find your version" : "Not quite right?"}</h3>
       <p className="s-ai-intro">
-        Tell us what you would change. Keep the idea, then make the price,
-        color, size, or attitude more specific to you.
+        {standalone
+          ? "Describe the version you actually want. Keep the idea, then change the price, color, size, or attitude."
+          : "Tell us what you would change. Keep the idea, then make the price, color, size, or attitude more specific to you."}
       </p>
 
       {!isOpen ? (
@@ -572,13 +578,6 @@ export default function Uniform() {
   const [subscribeStatus, setSubscribeStatus] = useState("idle");
   const [subscribeMessage, setSubscribeMessage] = useState("");
   const [savedProductIds, setSavedProductIds] = useState([]);
-  const [usedMarket, setUsedMarket] = useState({
-    status: "idle",
-    listings: [],
-    matchType: "none",
-    message: "",
-    searchUrl: "",
-  });
   const openerRef = useRef(null);
   const drawerRef = useRef(null);
   const submit = async (event) => {
@@ -665,58 +664,6 @@ export default function Uniform() {
     setActiveIdx(null);
     window.setTimeout(() => openerRef.current?.focus(), 0);
   };
-
-  useEffect(() => {
-    if (!activePick?.ebayProduct) {
-      setUsedMarket({
-        status: "idle",
-        listings: [],
-        matchType: "none",
-        message: "",
-        searchUrl: "",
-      });
-      return undefined;
-    }
-
-    const controller = new AbortController();
-    setUsedMarket({
-      status: "loading",
-      listings: [],
-      matchType: "none",
-      message: "",
-      searchUrl: activePick.ebaySearchHref,
-    });
-
-    fetch(`/api/ebay/search?product=${activePick.ebayProduct}`, {
-      signal: controller.signal,
-    })
-      .then(async (response) => {
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.message);
-        return data;
-      })
-      .then((data) => {
-        setUsedMarket({
-          status: "ready",
-          listings: data.listings || [],
-          matchType: data.matchType || "none",
-          message: data.message || "",
-          searchUrl: data.searchUrl || activePick.ebaySearchHref,
-        });
-      })
-      .catch((error) => {
-        if (error.name === "AbortError") return;
-        setUsedMarket({
-          status: "error",
-          listings: [],
-          matchType: "none",
-          message: "Live matches are unavailable. Search eBay directly.",
-          searchUrl: activePick.ebaySearchHref,
-        });
-      });
-
-    return () => controller.abort();
-  }, [activePick?.ebayProduct, activePick?.ebaySearchHref]);
 
   useEffect(() => {
     if (!activePick) return undefined;
@@ -910,10 +857,23 @@ export default function Uniform() {
               >
                 {activePick.linkLabel || "View item ↗"}
               </a>
-              <AiFinder key={`ai-${activePick.ebayProduct}`} pick={activePick} />
-              {activePick.ebayProduct && (
-                <UsedMarket pick={activePick} market={usedMarket} />
-              )}
+              <div className="s-drawer-search-actions">
+                <a
+                  href={`/search?product=${encodeURIComponent(
+                    activePick.ebayProduct
+                  )}`}
+                >
+                  Compare buying options →
+                </a>
+                <a
+                  className="is-ai"
+                  href={`/search?product=${encodeURIComponent(
+                    activePick.ebayProduct
+                  )}#find-your-version`}
+                >
+                  Find your version →
+                </a>
+              </div>
               <button
                 className="s-drawer-save"
                 type="button"
@@ -924,10 +884,6 @@ export default function Uniform() {
                   ? "Saved to your edit ✓"
                   : "Save to your edit +"}
               </button>
-              <ProductWatch
-                key={`watch-${activePick.ebayProduct}`}
-                pick={activePick}
-              />
             </div>
           </aside>
         </div>
@@ -996,7 +952,8 @@ const CSS = `
 .s-drawer-copy{padding:22px 2px 32px}.s-drawer-copy .s-slot{padding-bottom:12px}.s-drawer-brand{font-size:13px;font-weight:600}.s-drawer h2{margin:2px 0 0;font-size:24px;font-weight:500;line-height:1.1;letter-spacing:-.02em}
 .s-drawer-meta{display:flex;justify-content:space-between;gap:16px;margin-top:18px;padding:12px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 .s-drawer-why{margin-top:22px!important;font-size:13px;line-height:1.65;color:#333}.s-drawer-link{display:block;margin-top:28px;padding:13px 14px;background:var(--fg);color:#fff;text-align:center;text-decoration:none;font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase}.s-drawer-link:hover{background:#333}
-.s-ai{margin-top:30px;padding:20px;border:1px solid #dedbd2;background:#f5f2e9}.s-ai h3{margin:9px 0 0;font-size:20px;font-weight:500;line-height:1.15;letter-spacing:-.02em}.s-ai-intro{margin-top:8px!important;color:#4c4a45;font-size:11.5px;line-height:1.55}.s-ai-open{display:block;width:100%;margin-top:16px;padding:12px 14px;border:1px solid var(--fg);background:var(--fg);color:#fff;cursor:pointer;font-family:var(--f);font-size:9.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase}.s-ai-open:hover{background:#333}.s-ai-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:16px}.s-ai-chips button{padding:7px 9px;border:1px solid #c7c3b9;background:rgba(255,255,255,.72);color:var(--fg);cursor:pointer;font-family:var(--f);font-size:9px;line-height:1.2}.s-ai-chips button:hover{border-color:var(--fg)}.s-ai-chips button:disabled{cursor:wait;opacity:.5}.s-ai-form{margin-top:17px}.s-ai-form>label{display:block;color:var(--mid);font-size:8.5px;font-weight:500;letter-spacing:.1em;text-transform:uppercase}.s-ai-field{display:flex;align-items:flex-end;margin-top:7px;border-bottom:1px solid var(--fg)}.s-ai-field input{flex:1;min-width:0;padding:0 8px 8px 0;border:0;background:transparent;color:var(--fg);font-family:var(--f);font-size:11.5px}.s-ai-field button{flex:none;padding:0 0 8px;border:0;background:transparent;color:var(--fg);cursor:pointer;font-family:var(--f);font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase}.s-ai-field button:disabled,.s-ai-field input:disabled{cursor:wait;opacity:.5}.s-ai-status{display:flex;align-items:center;gap:8px;margin-top:17px;padding:12px;background:rgba(255,255,255,.7);color:#555;font-size:10.5px;line-height:1.4}.s-ai-error{margin-top:14px!important;color:#9c1c13;font-size:10.5px!important}.s-ai-result{margin-top:20px;padding-top:18px;border-top:1px solid #d4d0c6}.s-ai-result-head>span{display:block;color:var(--mid);font-size:8.5px;font-weight:500;letter-spacing:.1em;text-transform:uppercase}.s-ai-result-head>strong{display:block;margin-top:5px;font-size:15px;font-weight:600;line-height:1.3}.s-ai-result-head>p{margin-top:6px!important;color:#4c4a45;font-size:11px;line-height:1.55}.s-ai-signals{display:flex;flex-wrap:wrap;gap:5px;margin-top:12px}.s-ai-signals span{padding:4px 6px;border:1px solid #d1cdc3;background:rgba(255,255,255,.5);color:#555;font-size:8.5px;letter-spacing:.04em}.s-ai-list{display:grid;gap:7px;margin-top:18px}.s-ai-list>p{color:var(--mid);font-size:8.5px;font-weight:500;letter-spacing:.1em;text-transform:uppercase}.s-ai-list .s-used-card{background:#fff}.s-ai-empty{margin-top:17px!important;padding:11px;background:rgba(255,255,255,.65);color:#555;font-size:10.5px!important}.s-ai-links{display:grid;gap:8px;margin-top:16px}.s-ai-links a{width:max-content;max-width:100%;border-bottom:1px solid var(--fg);color:var(--fg);font-size:9px;font-weight:500;letter-spacing:.09em;line-height:1.4;text-decoration:none;text-transform:uppercase}.s-ai-links a:hover{color:var(--mid);border-color:var(--mid)}.s-ai-note{margin-top:16px!important;padding-top:12px;border-top:1px solid #d4d0c6;color:#777;font-size:9.5px!important;line-height:1.5}
+.s-drawer-search-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.s-drawer-search-actions a{display:flex;min-height:54px;align-items:center;justify-content:center;padding:11px;border:1px solid var(--fg);color:var(--fg);font-size:9px;font-weight:600;letter-spacing:.08em;line-height:1.35;text-align:center;text-decoration:none;text-transform:uppercase}.s-drawer-search-actions a:hover{background:#f2f2ef}.s-drawer-search-actions a.is-ai{border-color:#cfc9ba;background:#f5f2e9}.s-drawer-search-actions a.is-ai:hover{border-color:var(--fg)}
+.s-ai{scroll-margin-top:24px;margin-top:30px;padding:20px;border:1px solid #dedbd2;background:#f5f2e9}.s-ai h3{margin:9px 0 0;font-size:20px;font-weight:500;line-height:1.15;letter-spacing:-.02em}.s-ai-intro{margin-top:8px!important;color:#4c4a45;font-size:11.5px;line-height:1.55}.s-ai-open{display:block;width:100%;margin-top:16px;padding:12px 14px;border:1px solid var(--fg);background:var(--fg);color:#fff;cursor:pointer;font-family:var(--f);font-size:9.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase}.s-ai-open:hover{background:#333}.s-ai-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:16px}.s-ai-chips button{padding:7px 9px;border:1px solid #c7c3b9;background:rgba(255,255,255,.72);color:var(--fg);cursor:pointer;font-family:var(--f);font-size:9px;line-height:1.2}.s-ai-chips button:hover{border-color:var(--fg)}.s-ai-chips button:disabled{cursor:wait;opacity:.5}.s-ai-form{margin-top:17px}.s-ai-form>label{display:block;color:var(--mid);font-size:8.5px;font-weight:500;letter-spacing:.1em;text-transform:uppercase}.s-ai-field{display:flex;align-items:flex-end;margin-top:7px;border-bottom:1px solid var(--fg)}.s-ai-field input{flex:1;min-width:0;padding:0 8px 8px 0;border:0;background:transparent;color:var(--fg);font-family:var(--f);font-size:11.5px}.s-ai-field button{flex:none;padding:0 0 8px;border:0;background:transparent;color:var(--fg);cursor:pointer;font-family:var(--f);font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase}.s-ai-field button:disabled,.s-ai-field input:disabled{cursor:wait;opacity:.5}.s-ai-status{display:flex;align-items:center;gap:8px;margin-top:17px;padding:12px;background:rgba(255,255,255,.7);color:#555;font-size:10.5px;line-height:1.4}.s-ai-error{margin-top:14px!important;color:#9c1c13;font-size:10.5px!important}.s-ai-result{margin-top:20px;padding-top:18px;border-top:1px solid #d4d0c6}.s-ai-result-head>span{display:block;color:var(--mid);font-size:8.5px;font-weight:500;letter-spacing:.1em;text-transform:uppercase}.s-ai-result-head>strong{display:block;margin-top:5px;font-size:15px;font-weight:600;line-height:1.3}.s-ai-result-head>p{margin-top:6px!important;color:#4c4a45;font-size:11px;line-height:1.55}.s-ai-signals{display:flex;flex-wrap:wrap;gap:5px;margin-top:12px}.s-ai-signals span{padding:4px 6px;border:1px solid #d1cdc3;background:rgba(255,255,255,.5);color:#555;font-size:8.5px;letter-spacing:.04em}.s-ai-list{display:grid;gap:7px;margin-top:18px}.s-ai-list>p{color:var(--mid);font-size:8.5px;font-weight:500;letter-spacing:.1em;text-transform:uppercase}.s-ai-list .s-used-card{background:#fff}.s-ai-empty{margin-top:17px!important;padding:11px;background:rgba(255,255,255,.65);color:#555;font-size:10.5px!important}.s-ai-links{display:grid;gap:8px;margin-top:16px}.s-ai-links a{width:max-content;max-width:100%;border-bottom:1px solid var(--fg);color:var(--fg);font-size:9px;font-weight:500;letter-spacing:.09em;line-height:1.4;text-decoration:none;text-transform:uppercase}.s-ai-links a:hover{color:var(--mid);border-color:var(--mid)}.s-ai-note{margin-top:16px!important;padding-top:12px;border-top:1px solid #d4d0c6;color:#777;font-size:9.5px!important;line-height:1.5}
 .s-used{margin-top:30px;padding-top:24px;border-top:1px solid var(--line)}.s-used-kicker{display:flex;justify-content:space-between;gap:16px;color:var(--mid);font-size:9px;font-weight:500;letter-spacing:.12em;text-transform:uppercase}.s-used h3{margin:9px 0 0;font-size:18px;font-weight:500;line-height:1.2;letter-spacing:-.01em}.s-used-intro{margin-top:8px!important;color:#555;font-size:11.5px;line-height:1.55}.s-used-status{display:flex;align-items:center;gap:8px;margin-top:16px!important;padding:13px;background:#f5f5f3;color:#555;font-size:11px;line-height:1.4}.s-used-pulse{width:7px;height:7px;border-radius:50%;background:#111;animation:s-used-pulse 1.25s ease-in-out infinite}.s-used-match{margin-top:17px!important;color:var(--mid);font-size:9px;font-weight:500;letter-spacing:.1em;text-transform:uppercase}.s-used-list{display:grid;gap:8px;margin-top:9px}.s-used-card{position:relative;display:grid;grid-template-columns:70px minmax(0,1fr);gap:11px;min-height:86px;padding:8px 28px 8px 8px;border:1px solid var(--line);color:var(--fg);text-decoration:none}.s-used-card:hover{border-color:#999}.s-used-card img{width:70px;height:86px;object-fit:cover;background:var(--plate)}.s-used-card-copy{display:flex;min-width:0;flex-direction:column;align-items:flex-start}.s-used-card-copy strong{display:-webkit-box;overflow:hidden;font-size:11px;font-weight:500;line-height:1.35;-webkit-box-orient:vertical;-webkit-line-clamp:2}.s-used-card-price{margin-top:auto;font-size:12px;font-weight:600}.s-used-card-meta{margin-top:1px;color:var(--mid);font-size:9.5px;line-height:1.35}.s-used-arrow{position:absolute;top:8px;right:9px;font-size:11px}.s-used-search{display:inline-block;margin-top:14px;border-bottom:1px solid var(--fg);color:var(--fg);font-size:9.5px;font-weight:500;letter-spacing:.1em;line-height:1.4;text-decoration:none;text-transform:uppercase}.s-used-search:hover{color:var(--mid);border-color:var(--mid)}
 .s-drawer-save{display:block;width:100%;margin-top:18px;padding:12px 14px;border:1px solid var(--fg);background:#fff;color:var(--fg);cursor:pointer;font-family:var(--f);font-size:9.5px;font-weight:500;letter-spacing:.1em;text-transform:uppercase}.s-drawer-save:hover,.s-drawer-save[aria-pressed="true"]{background:#f2f2ef}
 .s-watch{margin-top:30px;padding-top:24px;border-top:1px solid var(--line)}.s-watch h3{margin:9px 0 0;font-size:18px;font-weight:500;line-height:1.2;letter-spacing:-.01em}.s-watch-intro{margin-top:8px!important;color:#555;font-size:11.5px;line-height:1.55}.s-watch-field{display:flex;margin-top:16px;border-bottom:1px solid var(--fg)}.s-watch-field input{flex:1;min-width:0;padding:0 0 8px;border:0;background:transparent;color:var(--fg);font-family:var(--f);font-size:12px}.s-watch-field button{padding:0 0 8px;border:0;background:transparent;color:var(--fg);cursor:pointer;font-family:var(--f);font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase}.s-watch-field button:disabled,.s-watch-field input:disabled{cursor:wait;opacity:.55}.s-watch-success{margin-top:16px!important;padding:13px;background:#f2f2ef;font-size:11px!important}.s-watch-error{margin-top:9px!important;color:#9c1c13;font-size:10.5px!important}
@@ -1007,3 +964,5 @@ const CSS = `
 @media (max-width:560px){.s-root{padding:0 12px}.s-head-meta{gap:12px}.s-head-meta>span{display:none}.s-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:24px 12px}.s-open{padding:36px 0 28px;flex-direction:column;align-items:flex-start;gap:16px}.s-flow{margin-bottom:32px}.s-save{right:6px;bottom:6px;padding:5px 6px;font-size:7.5px}.s-saved{margin-top:60px}.s-saved-list{grid-template-columns:1fr 1fr}.s-drawer-wrap{align-items:flex-end}.s-drawer{width:100%;height:min(88dvh,760px);padding:14px;border-radius:16px 16px 0 0;box-shadow:0 -12px 30px rgba(0,0,0,.14)}.s-drawer>img{aspect-ratio:16/10;object-fit:contain}.s-drawer h2{font-size:21px}.s-ai{padding:17px 14px}.s-ai-chips{display:grid;grid-template-columns:1fr 1fr}.s-ai-chips button{text-align:left}.s-ai-field input{font-size:11px}.s-ai-list .s-used-card{grid-template-columns:62px minmax(0,1fr)}.s-ai-list .s-used-card img{width:62px;height:78px}}
 @media (prefers-reduced-motion:reduce){.s-root *{animation:none!important;transition:none!important}}
 `;
+
+export { CSS as ISSUE_CSS };
