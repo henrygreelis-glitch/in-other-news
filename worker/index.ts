@@ -38,6 +38,8 @@ interface Env {
   EBAY_AFFILIATE_CAMPAIGN_ID?: string;
   RESEND_API_KEY?: string;
   RESEND_FROM_EMAIL?: string;
+  OPENAI_API_KEY?: string;
+  OPENAI_MODEL?: string;
 }
 
 interface ExecutionContext {
@@ -82,6 +84,31 @@ interface NewsletterRequest {
 
 interface ProductAlertRequest extends NewsletterRequest {
   product?: unknown;
+}
+
+interface AiRefineRequest {
+  product?: unknown;
+  request?: unknown;
+  company?: unknown;
+}
+
+interface AiRefinement {
+  title: string;
+  summary: string;
+  ebayQuery: string;
+  retailQuery: string;
+  signals: string[];
+}
+
+interface OpenAiResponse {
+  output_text?: string;
+  output?: Array<{
+    type?: string;
+    content?: Array<{
+      type?: string;
+      text?: string;
+    }>;
+  }>;
 }
 
 const EBAY_PRODUCTS = {
@@ -154,6 +181,14 @@ let ebayTokenCache:
     }
   | undefined;
 
+const aiRateLimits = new Map<
+  string,
+  {
+    count: number;
+    resetAt: number;
+  }
+>();
+
 function ebaySearchUrl(query: string): string {
   const url = new URL("https://www.ebay.com/sch/i.html");
   url.searchParams.set("_nkw", query);
@@ -169,6 +204,230 @@ function normalizeListingTitle(title: string): string {
     .replace(/[-_/]+/g, " ")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+function compactText(value: unknown, maxLength: number): string {
+  return typeof value === "string"
+    ? value.replace(/\s+/g, " ").trim().slice(0, maxLength)
+    : "";
+}
+
+function extractBudget(request: string): number | undefined {
+  const match = request.match(
+    /(?:under|below|less than|max(?:imum)?(?: of)?)\s*\$?\s*([0-9][0-9,]*)/i
+  );
+  if (!match) return undefined;
+
+  const amount = Number(match[1].replace(/,/g, ""));
+  return Number.isFinite(amount) && amount >= 20 && amount <= 100000
+    ? amount
+    : undefined;
+}
+
+function retailSearchUrl(query: string): string {
+  const url = new URL("https://www.google.com/search");
+  url.searchParams.set("tbm", "shop");
+  url.searchParams.set("q", query);
+  return url.toString();
+}
+
+function resaleSearchUrl(query: string): string {
+  const url = new URL("https://www.grailed.com/shop");
+  url.searchParams.set("query", query);
+  return url.toString();
+}
+
+function fallbackAiRefinement(
+  product: { brand: string; item: string; query: string },
+  shopperRequest: string
+): AiRefinement {
+  const request = shopperRequest.toLowerCase();
+  const wantsExact = /exact|same piece|same version/.test(request);
+  const wantsDifferentBrand = /different brand|similar|alternative|look.?alike/.test(
+    request
+  );
+  const wantsQuieter = /less statement|quieter|minimal|more subtle/.test(request);
+  const coreProduct = wantsDifferentBrand || wantsQuieter
+    ? product.item
+    : `${product.brand} ${product.item}`;
+  let searchRequest = shopperRequest
+    .replace(/\bsame\s+(idea|shape|coat|jacket|piece|item)\b/gi, "")
+    .replace(/\bfind\s+it\s+used\b/gi, "")
+    .replace(
+      /(?:under|below|less than|max(?:imum)?(?: of)?)\s*\$?\s*[0-9][0-9,]*/gi,
+      ""
+    )
+    .replace(/\b(show|find|search|look)\s+(me|for)\b/gi, "")
+    .replace(/\b(something|options?|versions?|pieces?)\b/gi, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (wantsQuieter) {
+    searchRequest = searchRequest.replace(
+      /\b(less statement|quieter|more subtle)\b/gi,
+      "minimal"
+    );
+  }
+  if (/^different color$/i.test(searchRequest)) searchRequest = "";
+  const query = `${coreProduct} ${searchRequest}`.trim();
+
+  return {
+    title: wantsExact ? "The exact piece, narrowed" : "A version closer to you",
+    summary: `Searching beyond this week’s edit for ${
+      searchRequest ||
+      (extractBudget(shopperRequest)
+        ? `a version under $${extractBudget(shopperRequest)}`
+        : "a more specific version")
+    }.`,
+    ebayQuery: query || product.query,
+    retailQuery: query || product.query,
+    signals: [
+      wantsDifferentBrand ? "Similar silhouette" : "Original product context",
+      extractBudget(shopperRequest) ? "Within your stated budget" : "Flexible price",
+      "Live availability varies",
+    ],
+  };
+}
+
+function readOpenAiText(data: OpenAiResponse): string {
+  if (typeof data.output_text === "string") return data.output_text;
+
+  for (const item of data.output ?? []) {
+    for (const content of item.content ?? []) {
+      if (content.type === "output_text" && typeof content.text === "string") {
+        return content.text;
+      }
+    }
+  }
+
+  return "";
+}
+
+function normalizeRefinement(
+  value: unknown,
+  fallback: AiRefinement
+): AiRefinement {
+  if (!value || typeof value !== "object") return fallback;
+  const candidate = value as Partial<AiRefinement>;
+  const signals = Array.isArray(candidate.signals)
+    ? candidate.signals
+        .map((signal) => compactText(signal, 48))
+        .filter(Boolean)
+        .slice(0, 3)
+    : fallback.signals;
+
+  return {
+    title: compactText(candidate.title, 72) || fallback.title,
+    summary: compactText(candidate.summary, 220) || fallback.summary,
+    ebayQuery: compactText(candidate.ebayQuery, 160) || fallback.ebayQuery,
+    retailQuery:
+      compactText(candidate.retailQuery, 160) || fallback.retailQuery,
+    signals: signals.length ? signals : fallback.signals,
+  };
+}
+
+async function safetyIdentifier(request: Request): Promise<string> {
+  const source =
+    request.headers.get("CF-Connecting-IP") ||
+    request.headers.get("X-Forwarded-For") ||
+    request.headers.get("User-Agent") ||
+    "anonymous";
+  const digest = await crypto.subtle.digest(
+    "SHA-256",
+    new TextEncoder().encode(source)
+  );
+  const hash = Array.from(new Uint8Array(digest))
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("");
+  return `visitor_${hash.slice(0, 32)}`;
+}
+
+function exceedsAiRateLimit(identifier: string): boolean {
+  const now = Date.now();
+  const existing = aiRateLimits.get(identifier);
+  if (!existing || existing.resetAt <= now) {
+    aiRateLimits.set(identifier, { count: 1, resetAt: now + 10 * 60 * 1000 });
+    return false;
+  }
+
+  existing.count += 1;
+  return existing.count > 12;
+}
+
+async function createAiRefinement(
+  request: Request,
+  env: Env,
+  product: { brand: string; item: string; query: string },
+  shopperRequest: string
+): Promise<{ refinement: AiRefinement; mode: "ai" | "guided" }> {
+  const fallback = fallbackAiRefinement(product, shopperRequest);
+  if (!env.OPENAI_API_KEY) {
+    return { refinement: fallback, mode: "guided" };
+  }
+
+  try {
+    const identifier = await safetyIdentifier(request);
+    const response = await fetch("https://api.openai.com/v1/responses", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${env.OPENAI_API_KEY}`,
+        "Content-Type": "application/json",
+        "User-Agent": "in-other-news/1.0",
+      },
+      body: JSON.stringify({
+        model: env.OPENAI_MODEL || "gpt-5.6-terra",
+        store: false,
+        reasoning: { effort: "low" },
+        max_output_tokens: 500,
+        safety_identifier: identifier,
+        instructions:
+          "You refine fashion shopping searches for In Other News. Preserve the current product category unless the shopper explicitly changes it. Favor useful leeway over exact-only matching. Translate the request into concise retail and pre-owned search queries. Do not invent products, prices, availability, or links. Return only the requested JSON.",
+        input: `Current product: ${product.brand} ${product.item}. Existing search: ${product.query}. Shopper request: ${shopperRequest}`,
+        text: {
+          verbosity: "low",
+          format: {
+            type: "json_schema",
+            name: "shopping_refinement",
+            strict: true,
+            schema: {
+              type: "object",
+              additionalProperties: false,
+              properties: {
+                title: { type: "string" },
+                summary: { type: "string" },
+                ebayQuery: { type: "string" },
+                retailQuery: { type: "string" },
+                signals: {
+                  type: "array",
+                  items: { type: "string" },
+                  minItems: 2,
+                  maxItems: 3,
+                },
+              },
+              required: [
+                "title",
+                "summary",
+                "ebayQuery",
+                "retailQuery",
+                "signals",
+              ],
+            },
+          },
+        },
+      }),
+    });
+
+    if (!response.ok) throw new Error("OpenAI request failed");
+    const data = (await response.json()) as OpenAiResponse;
+    const output = readOpenAiText(data);
+    if (!output) throw new Error("OpenAI response was empty");
+
+    return {
+      refinement: normalizeRefinement(JSON.parse(output), fallback),
+      mode: "ai",
+    };
+  } catch {
+    return { refinement: fallback, mode: "guided" };
+  }
 }
 
 async function getEbayAccessToken(
@@ -368,6 +627,193 @@ async function handleEbaySearch(request: Request, env: Env): Promise<Response> {
       }
     );
   }
+}
+
+async function searchEbayForQuery(
+  env: Env,
+  query: string,
+  maxPrice?: number
+): Promise<{
+  configured: boolean;
+  listings: Array<{
+    id: string | undefined;
+    title: string | undefined;
+    imageUrl: string | null;
+    price: string | undefined;
+    currency: string | undefined;
+    condition: string;
+    shippingPrice: string | null;
+    shippingCurrency: string | null;
+    buyingOptions: string[];
+    url: string | undefined;
+  }>;
+  message: string | null;
+  searchUrl: string;
+}> {
+  const publicSearchUrl = new URL(ebaySearchUrl(query));
+  if (maxPrice) publicSearchUrl.searchParams.set("_udhi", String(maxPrice));
+  const searchUrl = publicSearchUrl.toString();
+
+  if (!env.EBAY_CLIENT_ID || !env.EBAY_CLIENT_SECRET) {
+    return {
+      configured: false,
+      listings: [],
+      message: "Live pre-owned results are ready to connect.",
+      searchUrl,
+    };
+  }
+
+  try {
+    const environment =
+      env.EBAY_ENVIRONMENT?.toLowerCase() === "sandbox"
+        ? "sandbox"
+        : "production";
+    const apiBase =
+      environment === "sandbox"
+        ? "https://api.sandbox.ebay.com"
+        : "https://api.ebay.com";
+    const accessToken = await getEbayAccessToken(env, environment);
+    const marketplaceId = env.EBAY_MARKETPLACE_ID || "EBAY_US";
+    const browseUrl = new URL(`${apiBase}/buy/browse/v1/item_summary/search`);
+    browseUrl.searchParams.set("q", query);
+    browseUrl.searchParams.set("limit", "12");
+    browseUrl.searchParams.set(
+      "filter",
+      maxPrice
+        ? `conditions:{USED},price:[..${maxPrice}],priceCurrency:USD`
+        : "conditions:{USED}"
+    );
+
+    const headers: Record<string, string> = {
+      Accept: "application/json",
+      Authorization: `Bearer ${accessToken}`,
+      "X-EBAY-C-MARKETPLACE-ID": marketplaceId,
+    };
+    if (env.EBAY_AFFILIATE_CAMPAIGN_ID) {
+      headers["X-EBAY-C-ENDUSERCTX"] =
+        `affiliateCampaignId=${encodeURIComponent(
+          env.EBAY_AFFILIATE_CAMPAIGN_ID
+        )},affiliateReferenceId=in-other-news-ai`;
+    }
+
+    const browseResponse = await fetch(browseUrl, { headers });
+    if (!browseResponse.ok) {
+      throw new Error(`eBay browse request failed (${browseResponse.status})`);
+    }
+
+    const browseData = (await browseResponse.json()) as EbaySearchResponse;
+    const listings = (browseData.itemSummaries ?? [])
+      .filter(
+        (item) =>
+          item.itemId &&
+          item.title &&
+          item.price?.value &&
+          item.price.currency &&
+          (item.itemAffiliateWebUrl || item.itemWebUrl)
+      )
+      .slice(0, 3)
+      .map((item) => {
+        const shippingCost = item.shippingOptions?.[0]?.shippingCost;
+        return {
+          id: item.itemId,
+          title: item.title,
+          imageUrl: item.image?.imageUrl ?? null,
+          price: item.price?.value,
+          currency: item.price?.currency,
+          condition: item.condition ?? "Pre-owned",
+          shippingPrice: shippingCost?.value ?? null,
+          shippingCurrency: shippingCost?.currency ?? null,
+          buyingOptions: item.buyingOptions ?? [],
+          url: item.itemAffiliateWebUrl || item.itemWebUrl,
+        };
+      });
+
+    return {
+      configured: true,
+      listings,
+      message: listings.length
+        ? null
+        : "No matching pre-owned listings are available right now.",
+      searchUrl,
+    };
+  } catch {
+    return {
+      configured: true,
+      listings: [],
+      message: "Live pre-owned results are temporarily unavailable.",
+      searchUrl,
+    };
+  }
+}
+
+async function handleAiRefine(request: Request, env: Env): Promise<Response> {
+  let body: AiRefineRequest;
+  try {
+    body = (await request.json()) as AiRefineRequest;
+  } catch {
+    return Response.json(
+      { message: "Describe the version you want." },
+      { status: 400 }
+    );
+  }
+
+  if (typeof body.company === "string" && body.company.trim()) {
+    return Response.json({ ok: true, ignored: true });
+  }
+
+  const productKey = compactText(body.product, 100);
+  const shopperRequest = compactText(body.request, 240);
+  const product =
+    productKey && productKey in EBAY_PRODUCTS
+      ? EBAY_PRODUCTS[productKey as keyof typeof EBAY_PRODUCTS]
+      : undefined;
+
+  if (!product) {
+    return Response.json(
+      { message: "Choose a product before refining the search." },
+      { status: 400 }
+    );
+  }
+  if (shopperRequest.length < 3) {
+    return Response.json(
+      { message: "Add a little more detail to your search." },
+      { status: 400 }
+    );
+  }
+
+  const identifier = await safetyIdentifier(request);
+  if (exceedsAiRateLimit(identifier)) {
+    return Response.json(
+      { message: "Search limit reached. Try again in about 10 minutes." },
+      { status: 429, headers: { "Retry-After": "600" } }
+    );
+  }
+
+  const { refinement, mode } = await createAiRefinement(
+    request,
+    env,
+    product,
+    shopperRequest
+  );
+  const maxPrice = extractBudget(shopperRequest);
+  const ebay = await searchEbayForQuery(env, refinement.ebayQuery, maxPrice);
+
+  return Response.json(
+    {
+      ok: true,
+      mode,
+      aiConfigured: Boolean(env.OPENAI_API_KEY),
+      title: refinement.title,
+      summary: refinement.summary,
+      signals: refinement.signals,
+      listings: ebay.listings,
+      message: ebay.message,
+      ebaySearchUrl: ebay.searchUrl,
+      retailSearchUrl: retailSearchUrl(refinement.retailQuery),
+      resaleSearchUrl: resaleSearchUrl(refinement.ebayQuery),
+    },
+    { headers: { "Cache-Control": "no-store" } }
+  );
 }
 
 function normalizeEmail(value: unknown): string {
@@ -627,6 +1073,10 @@ const worker = {
 
     if (url.pathname === "/api/ebay/search" && request.method === "GET") {
       return handleEbaySearch(request, env);
+    }
+
+    if (url.pathname === "/api/ai/refine" && request.method === "POST") {
+      return handleAiRefine(request, env);
     }
 
     if (

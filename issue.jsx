@@ -354,6 +354,218 @@ function ProductWatch({ pick }) {
   );
 }
 
+const AI_QUICK_SEARCHES = [
+  "Same idea under $500",
+  "Find it used",
+  "Less statement",
+  "Different color",
+];
+
+function AiFinder({ pick }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const [status, setStatus] = useState("idle");
+  const [message, setMessage] = useState("");
+  const [result, setResult] = useState(null);
+
+  const runSearch = async (requestedQuery) => {
+    const normalizedQuery = requestedQuery.trim();
+    if (status === "loading" || normalizedQuery.length < 3) return;
+
+    setIsOpen(true);
+    setQuery(normalizedQuery);
+    setStatus("loading");
+    setMessage("");
+    setResult(null);
+
+    try {
+      const response = await fetch("/api/ai/refine", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          product: pick.ebayProduct,
+          request: normalizedQuery,
+          company: "",
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message);
+
+      setResult(data);
+      setStatus("ready");
+    } catch (error) {
+      setStatus("error");
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : "This search is temporarily unavailable."
+      );
+    }
+  };
+
+  const submitSearch = (event) => {
+    event.preventDefault();
+    if (!event.currentTarget.reportValidity()) return;
+    runSearch(query);
+  };
+
+  return (
+    <section className={`s-ai ${isOpen ? "is-open" : ""}`}>
+      <div className="s-used-kicker">
+        <span>In Other News AI</span>
+        <span>Personal search beta</span>
+      </div>
+      <h3>Not quite right?</h3>
+      <p className="s-ai-intro">
+        Tell us what you would change. Keep the idea, then make the price,
+        color, size, or attitude more specific to you.
+      </p>
+
+      {!isOpen ? (
+        <button
+          className="s-ai-open"
+          type="button"
+          onClick={() => setIsOpen(true)}
+        >
+          Find your version →
+        </button>
+      ) : (
+        <>
+          <div className="s-ai-chips" aria-label="Quick search ideas">
+            {AI_QUICK_SEARCHES.map((quickSearch) => (
+              <button
+                type="button"
+                key={quickSearch}
+                onClick={() => runSearch(quickSearch)}
+                disabled={status === "loading"}
+              >
+                {quickSearch}
+              </button>
+            ))}
+          </div>
+          <form className="s-ai-form" onSubmit={submitSearch}>
+            <label htmlFor={`ai-search-${pick.ebayProduct}`}>
+              Describe your version
+            </label>
+            <div className="s-ai-field">
+              <input
+                id={`ai-search-${pick.ebayProduct}`}
+                type="text"
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="Same shape, but brown and under $400"
+                maxLength={240}
+                minLength={3}
+                required
+                disabled={status === "loading"}
+                autoComplete="off"
+              />
+              <button type="submit" disabled={status === "loading"}>
+                {status === "loading" ? "Searching…" : "Search"}
+              </button>
+            </div>
+          </form>
+        </>
+      )}
+
+      {status === "loading" && (
+        <div className="s-ai-status" role="status" aria-live="polite">
+          <span className="s-used-pulse" aria-hidden="true" />
+          Refining the product and checking live listings…
+        </div>
+      )}
+
+      {status === "error" && (
+        <p className="s-ai-error" role="alert">
+          {message}
+        </p>
+      )}
+
+      {status === "ready" && result && (
+        <div className="s-ai-result" aria-live="polite">
+          <div className="s-ai-result-head">
+            <span>{result.mode === "ai" ? "AI refinement" : "Guided preview"}</span>
+            <strong>{result.title}</strong>
+            <p>{result.summary}</p>
+          </div>
+          <div className="s-ai-signals" aria-label="Search priorities">
+            {(result.signals || []).map((signal) => (
+              <span key={signal}>{signal}</span>
+            ))}
+          </div>
+
+          {result.listings?.length > 0 ? (
+            <div className="s-ai-list">
+              <p>Live pre-owned results</p>
+              {result.listings.map((listing) => (
+                <a
+                  className="s-used-card"
+                  href={listing.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  key={listing.id}
+                >
+                  <img
+                    src={listing.imageUrl || FALLBACK_IMAGE}
+                    alt=""
+                    loading="lazy"
+                    onError={(event) => {
+                      event.currentTarget.onerror = null;
+                      event.currentTarget.src = FALLBACK_IMAGE;
+                    }}
+                  />
+                  <span className="s-used-card-copy">
+                    <strong>{listing.title}</strong>
+                    <span className="s-used-card-price">
+                      {formatListingMoney(listing.price, listing.currency)}
+                    </span>
+                    <span className="s-used-card-meta">{listing.condition}</span>
+                  </span>
+                  <span className="s-used-arrow" aria-hidden="true">↗</span>
+                </a>
+              ))}
+            </div>
+          ) : (
+            <p className="s-ai-empty">
+              {result.message || "No live pre-owned results found yet."}
+            </p>
+          )}
+
+          <div className="s-ai-links">
+            <a
+              href={result.retailSearchUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Search retail + sale ↗
+            </a>
+            <a
+              href={result.ebaySearchUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Search more pre-owned ↗
+            </a>
+            <a
+              href={result.resaleSearchUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Search Grailed ↗
+            </a>
+          </div>
+          {result.mode !== "ai" && (
+            <p className="s-ai-note">
+              The product-aware search works now. Natural-language AI activates
+              when the private API key is connected.
+            </p>
+          )}
+        </div>
+      )}
+    </section>
+  );
+}
+
 export default function Uniform() {
   const [activeIdx, setActiveIdx] = useState(null);
   const [email, setEmail] = useState("");
@@ -698,6 +910,7 @@ export default function Uniform() {
               >
                 {activePick.linkLabel || "View item ↗"}
               </a>
+              <AiFinder key={activePick.ebayProduct} pick={activePick} />
               {activePick.ebayProduct && (
                 <UsedMarket pick={activePick} market={usedMarket} />
               )}
@@ -761,7 +974,7 @@ export default function Uniform() {
 
 const CSS = `
 @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600&display=swap');
-.s-root{--fg:#000;--mid:#767676;--line:#e4e4e4;--plate:#f1f1f1;--f:'Archivo',Helvetica,Arial,sans-serif;width:100%;max-width:1600px;margin:0 auto;background:#fff;color:var(--fg);font-family:var(--f);font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased;padding:0 16px}
+.s-root{box-sizing:border-box;--fg:#000;--mid:#767676;--line:#e4e4e4;--plate:#f1f1f1;--f:'Archivo',Helvetica,Arial,sans-serif;width:100%;max-width:1600px;margin:0 auto;background:#fff;color:var(--fg);font-family:var(--f);font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased;padding:0 16px}
 .s-root *{box-sizing:border-box}.s-root h1,.s-root h2,.s-root p{margin:0}.s-root h1{font-weight:400}.s-root button:focus-visible,.s-root input:focus-visible,.s-root a:focus-visible{outline:1px solid var(--fg);outline-offset:2px}
 .s-head{display:flex;justify-content:space-between;align-items:center;padding:18px 0;font-size:11px;font-weight:500;letter-spacing:.1em;text-transform:uppercase}.s-head-meta{display:flex;align-items:center;gap:22px}.s-head-meta button{padding:0 0 2px;border:0;border-bottom:1px solid var(--fg);background:transparent;color:var(--fg);cursor:pointer;font-family:var(--f);font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase}.s-head-meta button:hover{color:var(--mid);border-color:var(--mid)}
 .s-open{display:flex;justify-content:space-between;align-items:flex-end;gap:40px;padding:56px 0 36px}.s-open-copy{max-width:700px}.s-eyebrow{color:var(--mid);font-size:9px;font-weight:500;letter-spacing:.12em;text-transform:uppercase}.s-open h1{margin-top:10px;font-size:clamp(28px,4vw,52px);font-weight:600;line-height:1.02;letter-spacing:-.03em;max-width:17ch}.s-deck{max-width:62ch;margin-top:17px!important;color:#4c4c4c;font-size:12px;line-height:1.65}
@@ -780,6 +993,7 @@ const CSS = `
 .s-drawer-copy{padding:22px 2px 32px}.s-drawer-copy .s-slot{padding-bottom:12px}.s-drawer-brand{font-size:13px;font-weight:600}.s-drawer h2{margin:2px 0 0;font-size:24px;font-weight:500;line-height:1.1;letter-spacing:-.02em}
 .s-drawer-meta{display:flex;justify-content:space-between;gap:16px;margin-top:18px;padding:12px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 .s-drawer-why{margin-top:22px!important;font-size:13px;line-height:1.65;color:#333}.s-drawer-link{display:block;margin-top:28px;padding:13px 14px;background:var(--fg);color:#fff;text-align:center;text-decoration:none;font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase}.s-drawer-link:hover{background:#333}
+.s-ai{margin-top:30px;padding:20px;border:1px solid #dedbd2;background:#f5f2e9}.s-ai h3{margin:9px 0 0;font-size:20px;font-weight:500;line-height:1.15;letter-spacing:-.02em}.s-ai-intro{margin-top:8px!important;color:#4c4a45;font-size:11.5px;line-height:1.55}.s-ai-open{display:block;width:100%;margin-top:16px;padding:12px 14px;border:1px solid var(--fg);background:var(--fg);color:#fff;cursor:pointer;font-family:var(--f);font-size:9.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase}.s-ai-open:hover{background:#333}.s-ai-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:16px}.s-ai-chips button{padding:7px 9px;border:1px solid #c7c3b9;background:rgba(255,255,255,.72);color:var(--fg);cursor:pointer;font-family:var(--f);font-size:9px;line-height:1.2}.s-ai-chips button:hover{border-color:var(--fg)}.s-ai-chips button:disabled{cursor:wait;opacity:.5}.s-ai-form{margin-top:17px}.s-ai-form>label{display:block;color:var(--mid);font-size:8.5px;font-weight:500;letter-spacing:.1em;text-transform:uppercase}.s-ai-field{display:flex;align-items:flex-end;margin-top:7px;border-bottom:1px solid var(--fg)}.s-ai-field input{flex:1;min-width:0;padding:0 8px 8px 0;border:0;background:transparent;color:var(--fg);font-family:var(--f);font-size:11.5px}.s-ai-field button{flex:none;padding:0 0 8px;border:0;background:transparent;color:var(--fg);cursor:pointer;font-family:var(--f);font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase}.s-ai-field button:disabled,.s-ai-field input:disabled{cursor:wait;opacity:.5}.s-ai-status{display:flex;align-items:center;gap:8px;margin-top:17px;padding:12px;background:rgba(255,255,255,.7);color:#555;font-size:10.5px;line-height:1.4}.s-ai-error{margin-top:14px!important;color:#9c1c13;font-size:10.5px!important}.s-ai-result{margin-top:20px;padding-top:18px;border-top:1px solid #d4d0c6}.s-ai-result-head>span{display:block;color:var(--mid);font-size:8.5px;font-weight:500;letter-spacing:.1em;text-transform:uppercase}.s-ai-result-head>strong{display:block;margin-top:5px;font-size:15px;font-weight:600;line-height:1.3}.s-ai-result-head>p{margin-top:6px!important;color:#4c4a45;font-size:11px;line-height:1.55}.s-ai-signals{display:flex;flex-wrap:wrap;gap:5px;margin-top:12px}.s-ai-signals span{padding:4px 6px;border:1px solid #d1cdc3;background:rgba(255,255,255,.5);color:#555;font-size:8.5px;letter-spacing:.04em}.s-ai-list{display:grid;gap:7px;margin-top:18px}.s-ai-list>p{color:var(--mid);font-size:8.5px;font-weight:500;letter-spacing:.1em;text-transform:uppercase}.s-ai-list .s-used-card{background:#fff}.s-ai-empty{margin-top:17px!important;padding:11px;background:rgba(255,255,255,.65);color:#555;font-size:10.5px!important}.s-ai-links{display:grid;gap:8px;margin-top:16px}.s-ai-links a{width:max-content;max-width:100%;border-bottom:1px solid var(--fg);color:var(--fg);font-size:9px;font-weight:500;letter-spacing:.09em;line-height:1.4;text-decoration:none;text-transform:uppercase}.s-ai-links a:hover{color:var(--mid);border-color:var(--mid)}.s-ai-note{margin-top:16px!important;padding-top:12px;border-top:1px solid #d4d0c6;color:#777;font-size:9.5px!important;line-height:1.5}
 .s-used{margin-top:30px;padding-top:24px;border-top:1px solid var(--line)}.s-used-kicker{display:flex;justify-content:space-between;gap:16px;color:var(--mid);font-size:9px;font-weight:500;letter-spacing:.12em;text-transform:uppercase}.s-used h3{margin:9px 0 0;font-size:18px;font-weight:500;line-height:1.2;letter-spacing:-.01em}.s-used-intro{margin-top:8px!important;color:#555;font-size:11.5px;line-height:1.55}.s-used-status{display:flex;align-items:center;gap:8px;margin-top:16px!important;padding:13px;background:#f5f5f3;color:#555;font-size:11px;line-height:1.4}.s-used-pulse{width:7px;height:7px;border-radius:50%;background:#111;animation:s-used-pulse 1.25s ease-in-out infinite}.s-used-match{margin-top:17px!important;color:var(--mid);font-size:9px;font-weight:500;letter-spacing:.1em;text-transform:uppercase}.s-used-list{display:grid;gap:8px;margin-top:9px}.s-used-card{position:relative;display:grid;grid-template-columns:70px minmax(0,1fr);gap:11px;min-height:86px;padding:8px 28px 8px 8px;border:1px solid var(--line);color:var(--fg);text-decoration:none}.s-used-card:hover{border-color:#999}.s-used-card img{width:70px;height:86px;object-fit:cover;background:var(--plate)}.s-used-card-copy{display:flex;min-width:0;flex-direction:column;align-items:flex-start}.s-used-card-copy strong{display:-webkit-box;overflow:hidden;font-size:11px;font-weight:500;line-height:1.35;-webkit-box-orient:vertical;-webkit-line-clamp:2}.s-used-card-price{margin-top:auto;font-size:12px;font-weight:600}.s-used-card-meta{margin-top:1px;color:var(--mid);font-size:9.5px;line-height:1.35}.s-used-arrow{position:absolute;top:8px;right:9px;font-size:11px}.s-used-search{display:inline-block;margin-top:14px;border-bottom:1px solid var(--fg);color:var(--fg);font-size:9.5px;font-weight:500;letter-spacing:.1em;line-height:1.4;text-decoration:none;text-transform:uppercase}.s-used-search:hover{color:var(--mid);border-color:var(--mid)}
 .s-drawer-save{display:block;width:100%;margin-top:18px;padding:12px 14px;border:1px solid var(--fg);background:#fff;color:var(--fg);cursor:pointer;font-family:var(--f);font-size:9.5px;font-weight:500;letter-spacing:.1em;text-transform:uppercase}.s-drawer-save:hover,.s-drawer-save[aria-pressed="true"]{background:#f2f2ef}
 .s-watch{margin-top:30px;padding-top:24px;border-top:1px solid var(--line)}.s-watch h3{margin:9px 0 0;font-size:18px;font-weight:500;line-height:1.2;letter-spacing:-.01em}.s-watch-intro{margin-top:8px!important;color:#555;font-size:11.5px;line-height:1.55}.s-watch-field{display:flex;margin-top:16px;border-bottom:1px solid var(--fg)}.s-watch-field input{flex:1;min-width:0;padding:0 0 8px;border:0;background:transparent;color:var(--fg);font-family:var(--f);font-size:12px}.s-watch-field button{padding:0 0 8px;border:0;background:transparent;color:var(--fg);cursor:pointer;font-family:var(--f);font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase}.s-watch-field button:disabled,.s-watch-field input:disabled{cursor:wait;opacity:.55}.s-watch-success{margin-top:16px!important;padding:13px;background:#f2f2ef;font-size:11px!important}.s-watch-error{margin-top:9px!important;color:#9c1c13;font-size:10.5px!important}
@@ -787,6 +1001,6 @@ const CSS = `
 .s-sub{margin-top:80px;padding:44px 0;border-top:1px solid var(--line)}.s-sub p{font-size:13px}.s-field{display:flex;margin-top:18px;border-bottom:1px solid var(--fg);max-width:380px}.s-field input{flex:1;min-width:0;border:0;background:transparent;font-family:var(--f);font-size:13px;color:var(--fg);padding:0 0 8px}.s-field input::placeholder{color:var(--mid)}.s-field button{border:0;background:transparent;cursor:pointer;padding:0 0 8px;font-family:var(--f);font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase}.s-field button:hover{color:var(--mid)}.s-field button:disabled,.s-field input:disabled{cursor:wait;opacity:.55}.s-sub-success{font-weight:500}.s-sub-error{margin-top:10px!important;color:#9c1c13;font-size:11px!important}
 .s-foot{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:18px 0;border-top:1px solid var(--line);font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--mid)}
 @keyframes s-used-pulse{0%,100%{opacity:.25}50%{opacity:1}}
-@media (max-width:560px){.s-root{padding:0 12px}.s-head-meta{gap:12px}.s-head-meta>span{display:none}.s-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:24px 12px}.s-open{padding:36px 0 28px;flex-direction:column;align-items:flex-start;gap:16px}.s-flow{margin-bottom:32px}.s-save{right:6px;bottom:6px;padding:5px 6px;font-size:7.5px}.s-saved{margin-top:60px}.s-saved-list{grid-template-columns:1fr 1fr}.s-drawer-wrap{align-items:flex-end}.s-drawer{width:100%;height:min(88dvh,760px);padding:14px;border-radius:16px 16px 0 0;box-shadow:0 -12px 30px rgba(0,0,0,.14)}.s-drawer>img{aspect-ratio:16/10;object-fit:contain}.s-drawer h2{font-size:21px}}
+@media (max-width:560px){.s-root{padding:0 12px}.s-head-meta{gap:12px}.s-head-meta>span{display:none}.s-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:24px 12px}.s-open{padding:36px 0 28px;flex-direction:column;align-items:flex-start;gap:16px}.s-flow{margin-bottom:32px}.s-save{right:6px;bottom:6px;padding:5px 6px;font-size:7.5px}.s-saved{margin-top:60px}.s-saved-list{grid-template-columns:1fr 1fr}.s-drawer-wrap{align-items:flex-end}.s-drawer{width:100%;height:min(88dvh,760px);padding:14px;border-radius:16px 16px 0 0;box-shadow:0 -12px 30px rgba(0,0,0,.14)}.s-drawer>img{aspect-ratio:16/10;object-fit:contain}.s-drawer h2{font-size:21px}.s-ai{padding:17px 14px}.s-ai-chips{display:grid;grid-template-columns:1fr 1fr}.s-ai-chips button{text-align:left}.s-ai-field input{font-size:11px}.s-ai-list .s-used-card{grid-template-columns:62px minmax(0,1fr)}.s-ai-list .s-used-card img{width:62px;height:78px}}
 @media (prefers-reduced-motion:reduce){.s-root *{animation:none!important;transition:none!important}}
 `;
