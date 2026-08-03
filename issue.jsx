@@ -17,9 +17,10 @@ const FALLBACK_IMAGE =
 const MASTHEAD = {
   title: "IN OTHER NEWS",
   issue: "01",
-  date: "02.08.26",
+  date: "09.08.26",
+  eyebrow: "Early fall preview",
   theme: "The uniform for the first cold week",
-  deck: "Eight pieces selected to work as one. Open any piece to compare the retail listing with live pre-owned options.",
+  deck: "An early look at the first cold week: one coat, seven supporting pieces, and enough time to find the right versions pre-owned instead of buying the whole uniform new.",
 };
 
 const PICKS = [
@@ -47,7 +48,7 @@ const PICKS = [
     ebaySearchHref:
       "https://www.ebay.com/sch/i.html?_nkw=Camiel+Fortgens+Big+Shirt+Blockprint&_sacat=0&LH_ItemCondition=3000",
     img: "/products/big-shirt.jpg",
-    why: "Cut like a pattern block someone forgot to grade down. Worn open it becomes a light jacket, which is the job in October.",
+    why: "Cut like a pattern block someone forgot to grade down. Worn open over the plain blue shirt, it becomes the light jacket between shirt and coat.",
   },
   {
     slot: "Knit",
@@ -73,10 +74,10 @@ const PICKS = [
     ebaySearchHref:
       "https://www.ebay.com/sch/i.html?_nkw=Prada+UCN596+10IV+F0AB7+Cotton+Shirt&_sacat=0&LH_ItemCondition=3000",
     img: "/products/prada-shirt.jpg",
-    why: "Straight fit, classic collar, rounded hem, mother-of-pearl buttons. The triangle is the only thing telling you what it cost. Here for the collar roll, not the logo.",
+    why: "The quiet blue base under Camiel Fortgens’ louder block print. Its sharper collar holds the middle of the look without competing with the outer layers.",
   },
   {
-    slot: "Tee",
+    slot: "Polo",
     brand: "Sunspel",
     item: "Long Sleeve Riviera",
     price: "£160",
@@ -86,7 +87,7 @@ const PICKS = [
     ebaySearchHref:
       "https://www.ebay.com/sch/i.html?_nkw=Sunspel+Long+Sleeve+Riviera+Polo+Black&_sacat=0&LH_ItemCondition=3000",
     img: "/products/riviera-polo.jpg",
-    why: "Mesh knit breathes under the cardigan and holds its shape at the collar after washing, which is the specific way most white tees die.",
+    why: "Long-sleeve mesh cotton adds a clean black layer without the bulk of another knit. The collar stays visible under the cardigan and both blue shirts.",
   },
   {
     slot: "Trouser",
@@ -99,7 +100,7 @@ const PICKS = [
     ebaySearchHref:
       "https://www.ebay.com/sch/i.html?_nkw=Our+Legacy+Third+Cut+Black+Selvedge+Jeans&_sacat=0&LH_ItemCondition=3000",
     img: "/products/third-cut.jpg",
-    why: "Black fades warmer than the indigo and holds a crease longer. Japanese sellers publish measurements. American ones publish a tag size and a photo of a floor.",
+    why: "Relaxed black denim balances the coat’s length and lets every blue and grey layer sit above one dark line. Secondhand, look for waist, rise, and hem measurements—not just the tag.",
   },
   {
     slot: "Sock",
@@ -113,7 +114,7 @@ const PICKS = [
     ebaySearchHref:
       "https://www.ebay.com/sch/i.html?_nkw=Anonymous+Ism+Waffle+Crew+Socks&_sacat=0&LH_ItemCondition=3000",
     img: "/products/anonymous-socks.jpg",
-    why: "Cheapest thing here and the one that changes the fit most. Waffle sits higher and gives you an edge between boot and hem instead of a gap.",
+    why: "Marled color breaks the navy, black, and grey uniform at the ankle. The exact pair is unavailable, so the texture and height matter more than the label.",
   },
   {
     slot: "Shoe",
@@ -126,7 +127,7 @@ const PICKS = [
     ebaySearchHref:
       "https://www.ebay.com/sch/i.html?_nkw=Hender+Scheme+MIP+22+Natural+Leather&_sacat=0&LH_ItemCondition=3000",
     img: "/products/mip-22.jpg",
-    why: "Natural leather that goes from bone to tobacco over two years. You are buying the patina, not the shoe.",
+    why: "Natural leather keeps the bottom of the look from turning all black and darkens from bone to tobacco with wear. The patina is the point.",
   },
 ];
 
@@ -555,7 +556,7 @@ export default function Uniform() {
 
       <div className="s-open">
         <div className="s-open-copy">
-          <p className="s-eyebrow">This week’s uniform</p>
+          <p className="s-eyebrow">{MASTHEAD.eyebrow}</p>
           <h1>{MASTHEAD.theme}</h1>
           <p className="s-deck">{MASTHEAD.deck}</p>
         </div>
