@@ -956,89 +956,111 @@ export default function Uniform() {
       <header className="s-head">
         <span>{MASTHEAD.title}</span>
         <div className="s-head-meta">
-          <span>{MASTHEAD.issue} &nbsp; {MASTHEAD.date}</span>
+          <span>Issue {MASTHEAD.issue} &nbsp; {MASTHEAD.date}</span>
           <button type="button" onClick={scrollToSaved}>
             Saved {savedPicks.length}
           </button>
         </div>
       </header>
 
-      <div className="s-open">
-        <div className="s-open-copy">
+      <main className="s-editorial-layout">
+        <aside className="s-editorial-intro" aria-labelledby="issue-title">
+          <div className="s-editorial-meta">
+            <p>Issue {MASTHEAD.issue}</p>
+            <p>{PICKS.length} pieces</p>
+          </div>
           <p className="s-eyebrow">{MASTHEAD.eyebrow}</p>
-          <h1>{MASTHEAD.theme}</h1>
+          <h1 id="issue-title">{MASTHEAD.theme}</h1>
           <p className="s-deck">{MASTHEAD.deck}</p>
-          <p className="s-price-note">{USD_PRICE_NOTE}</p>
-        </div>
-        <span className="s-n">{PICKS.length} pieces</span>
-      </div>
-
-      <ol className="s-flow" aria-label="How each weekly issue works">
-        <li><span>01</span>Discover the look</li>
-        <li><span>02</span>Compare options</li>
-        <li><span>03</span>Save a piece</li>
-        <li><span>04</span>Add a watch</li>
-        <li><span>05</span>Return Sunday</li>
-      </ol>
-
-      <main className="s-grid">
-        {PICKS.map((pick, index) => (
-          <article className="s-tile" key={pick.id}>
-            <p className="s-slot">{pick.slot}</p>
-            <div className="s-media">
-              <button
-                className="s-shot"
-                onClick={(event) => openProduct(event, index)}
-                aria-haspopup="dialog"
-                aria-label={`Open details for ${pick.hero.brand} ${pick.hero.item}`}
-              >
-                <ProductImage pick={pick} />
-              </button>
-              <button
-                className={`s-save ${
-                  savedProductIds.includes(pick.id) ? "is-saved" : ""
-                }`}
-                type="button"
-                aria-pressed={savedProductIds.includes(pick.id)}
-                onClick={() => toggleSaved(pick.id)}
-              >
-                {savedProductIds.includes(pick.id)
-                  ? "Saved ✓"
-                  : "Save +"}
-              </button>
-            </div>
-            <div className="s-cap">
-              <div className="s-cap-head">
-                <p className="s-brand">{pick.hero.brand}</p>
-                <span className="s-source-badge">
-                  {SOURCE_LABELS[pick.hero.source_type]}
-                </span>
-              </div>
-              <p className="s-item">{pick.hero.item}</p>
-              <p className="s-line">
-                <span>{pick.hero.price}</span>
-                <span className="s-tag">{pick.hero.status}</span>
+          <div className="s-editorial-notes">
+            <div>
+              <span>Why this exists</span>
+              <p>
+                The first genuinely cold week is awkward: a winter coat can
+                feel early, while shirt sleeves feel optimistic. This issue
+                builds one system that can gain or lose a layer without losing
+                its shape.
               </p>
-              <a
-                className="s-shop"
-                href={pick.hero.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label={`${pick.hero.link_label || "View selection"}: ${pick.hero.brand} ${pick.hero.item} (opens in a new tab)`}
-              >
-                {pick.hero.link_label || "View selection ↗"}
-              </a>
-              <span className="s-used-flag">Compare every source</span>
             </div>
-          </article>
-        ))}
+            <div>
+              <span>What it is for</span>
+              <p>
+                Cold mornings, warmer afternoons, work, dinner, and long walks.
+                The coat sets the outline; every layer underneath can be added,
+                removed, or worn alone.
+              </p>
+            </div>
+            <div>
+              <span>Who it is for</span>
+              <p>
+                Someone who wants directional clothes without a different
+                outfit for every occasion: fewer pieces, stronger proportions,
+                and enough time to find the right versions used.
+              </p>
+            </div>
+          </div>
+          <p className="s-price-note">{USD_PRICE_NOTE}</p>
+        </aside>
+
+        <section className="s-grid" aria-label="The eight pieces in Issue 01">
+          {PICKS.map((pick, index) => (
+            <article className="s-tile" key={pick.id}>
+              <p className="s-slot">{pick.slot}</p>
+              <div className="s-media">
+                <button
+                  className="s-shot"
+                  onClick={(event) => openProduct(event, index)}
+                  aria-haspopup="dialog"
+                  aria-label={`Open details for ${pick.hero.brand} ${pick.hero.item}`}
+                >
+                  <ProductImage pick={pick} />
+                </button>
+                <button
+                  className={`s-save ${
+                    savedProductIds.includes(pick.id) ? "is-saved" : ""
+                  }`}
+                  type="button"
+                  aria-pressed={savedProductIds.includes(pick.id)}
+                  onClick={() => toggleSaved(pick.id)}
+                >
+                  {savedProductIds.includes(pick.id)
+                    ? "Saved ✓"
+                    : "Save +"}
+                </button>
+              </div>
+              <div className="s-cap">
+                <div className="s-cap-head">
+                  <p className="s-brand">{pick.hero.brand}</p>
+                  <span className="s-source-badge">
+                    {SOURCE_LABELS[pick.hero.source_type]}
+                  </span>
+                </div>
+                <p className="s-item">{pick.hero.item}</p>
+                <p className="s-line">
+                  <span>{pick.hero.price}</span>
+                  <span className="s-tag">{pick.hero.status}</span>
+                </p>
+                <a
+                  className="s-shop"
+                  href={pick.hero.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`${pick.hero.link_label || "View selection"}: ${pick.hero.brand} ${pick.hero.item} (opens in a new tab)`}
+                >
+                  {pick.hero.link_label || "View selection ↗"}
+                </a>
+                <span className="s-used-flag">Compare every source</span>
+              </div>
+            </article>
+          ))}
+        </section>
       </main>
 
       <section className="s-saved" id="saved-pieces" aria-labelledby="saved-title">
         <div className="s-saved-head">
           <div>
             <p className="s-eyebrow">Your edit</p>
-            <h2 id="saved-title">Saved from Uniform 01</h2>
+            <h2 id="saved-title">Saved from Issue 01</h2>
           </div>
           <span>{savedPicks.length} saved</span>
         </div>
@@ -1192,10 +1214,9 @@ const CSS = `
 .s-root{box-sizing:border-box;--fg:#000;--mid:#767676;--line:#e4e4e4;--plate:#f1f1f1;--f:'Archivo',Helvetica,Arial,sans-serif;width:100%;max-width:1600px;margin:0 auto;background:#fff;color:var(--fg);font-family:var(--f);font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased;padding:0 16px}
 .s-root *{box-sizing:border-box}.s-root h1,.s-root h2,.s-root p{margin:0}.s-root h1{font-weight:400}.s-root button:focus-visible,.s-root input:focus-visible,.s-root a:focus-visible{outline:1px solid var(--fg);outline-offset:2px}
 .s-head{display:flex;justify-content:space-between;align-items:center;padding:18px 0;font-size:11px;font-weight:500;letter-spacing:.1em;text-transform:uppercase}.s-head-meta{display:flex;align-items:center;gap:22px}.s-head-meta button{padding:0 0 2px;border:0;border-bottom:1px solid var(--fg);background:transparent;color:var(--fg);cursor:pointer;font-family:var(--f);font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase}.s-head-meta button:hover{color:var(--mid);border-color:var(--mid)}
-.s-open{display:flex;justify-content:space-between;align-items:flex-end;gap:40px;padding:56px 0 36px}.s-open-copy{max-width:700px}.s-eyebrow{color:var(--mid);font-size:9px;font-weight:500;letter-spacing:.12em;text-transform:uppercase}.s-open h1{margin-top:10px;font-size:clamp(28px,4vw,52px);font-weight:600;line-height:1.02;letter-spacing:-.03em;max-width:17ch}.s-deck{max-width:62ch;margin-top:17px!important;color:#4c4c4c;font-size:12px;line-height:1.65}.s-price-note{margin-top:12px!important;color:var(--mid);font-size:8.5px!important;font-weight:500;letter-spacing:.08em;line-height:1.5;text-transform:uppercase}
-.s-n{font-size:11px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--mid);flex:none}
-.s-flow{display:grid;grid-template-columns:repeat(5,minmax(145px,1fr));margin:0 0 48px;padding:0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);list-style:none;overflow-x:auto}.s-flow li{display:flex;flex-direction:column;min-height:74px;padding:13px 16px 12px 0;color:#333;font-size:10px;font-weight:500;letter-spacing:.08em;text-transform:uppercase}.s-flow li+li{padding-left:16px;border-left:1px solid var(--line)}.s-flow span{margin-bottom:auto;color:var(--mid);font-size:9px}
-.s-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:34px 16px}.s-tile{display:flex;flex-direction:column}.s-slot{font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--mid);padding-bottom:8px}.s-media{position:relative}
+.s-eyebrow{color:var(--mid);font-size:9px;font-weight:500;letter-spacing:.12em;text-transform:uppercase}.s-price-note{margin-top:24px!important;color:var(--mid);font-size:8.5px!important;font-weight:500;letter-spacing:.08em;line-height:1.5;text-transform:uppercase}
+.s-editorial-layout{display:grid;grid-template-columns:minmax(260px,360px) minmax(0,1fr);align-items:start;gap:clamp(32px,4.5vw,72px);padding:48px 0 72px;border-top:1px solid var(--line)}.s-editorial-intro{position:sticky;top:24px;min-width:0}.s-editorial-meta{display:flex;justify-content:space-between;gap:20px;margin-bottom:42px;color:var(--mid);font-size:9px;font-weight:500;letter-spacing:.1em;text-transform:uppercase}.s-editorial-intro h1{max-width:12ch;margin-top:10px;font-size:clamp(34px,3.5vw,52px);font-weight:600;line-height:.98;letter-spacing:-.04em}.s-deck{max-width:48ch;margin-top:20px!important;color:#414141;font-size:12px;line-height:1.7}.s-editorial-notes{margin-top:32px;border-top:1px solid var(--fg)}.s-editorial-notes>div{padding:16px 0;border-bottom:1px solid var(--line)}.s-editorial-notes span{display:block;color:var(--mid);font-size:8.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase}.s-editorial-notes p{margin-top:7px!important;color:#3d3d3d;font-size:11px;line-height:1.65}
+.s-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:42px 14px;min-width:0}.s-tile{display:flex;min-width:0;flex-direction:column}.s-slot{font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--mid);padding-bottom:8px}.s-media{position:relative}
 .s-shot{position:relative;display:block;width:100%;padding:0;border:0;background:var(--plate);cursor:pointer;text-align:left;overflow:hidden}.s-shot img{width:100%;aspect-ratio:4/5;object-fit:cover;display:block}
 .s-save{position:absolute;right:8px;bottom:8px;z-index:2;padding:6px 8px;border:1px solid rgba(0,0,0,.15);background:rgba(255,255,255,.92);color:var(--fg);cursor:pointer;font-family:var(--f);font-size:8.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;backdrop-filter:blur(6px)}.s-save:hover,.s-save.is-saved{background:var(--fg);color:#fff;border-color:var(--fg)}
 .s-cap{padding-top:10px}.s-cap-head{display:flex;align-items:center;justify-content:space-between;gap:8px}.s-brand{font-size:12.5px;font-weight:600}.s-source-badge{color:var(--mid);font-size:8px;font-weight:600;letter-spacing:.1em;text-transform:uppercase}.s-item{font-size:12.5px;color:var(--mid);margin-top:1px}.s-line{display:flex;justify-content:space-between;gap:10px;margin-top:6px;font-size:12.5px}.s-tag{font-size:10px;font-weight:500;letter-spacing:.09em;text-transform:uppercase;color:var(--mid)}
@@ -1219,6 +1240,8 @@ const CSS = `
 .s-sub{margin-top:80px;padding:44px 0;border-top:1px solid var(--line)}.s-sub p{font-size:13px}.s-field{display:flex;margin-top:18px;border-bottom:1px solid var(--fg);max-width:380px}.s-field input{flex:1;min-width:0;border:0;background:transparent;font-family:var(--f);font-size:13px;color:var(--fg);padding:0 0 8px}.s-field input::placeholder{color:var(--mid)}.s-field button{border:0;background:transparent;cursor:pointer;padding:0 0 8px;font-family:var(--f);font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase}.s-field button:hover{color:var(--mid)}.s-field button:disabled,.s-field input:disabled{cursor:wait;opacity:.55}.s-sub-success{font-weight:500}.s-sub-error{margin-top:10px!important;color:#9c1c13;font-size:11px!important}
 .s-foot{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:18px 0;border-top:1px solid var(--line);font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--mid)}
 @keyframes s-used-pulse{0%,100%{opacity:.25}50%{opacity:1}}
+@media (max-width:1000px){.s-editorial-layout{grid-template-columns:1fr;gap:48px;padding-top:36px}.s-editorial-intro{position:static}.s-editorial-meta{margin-bottom:28px}.s-editorial-intro h1{max-width:14ch}.s-deck{max-width:62ch}.s-editorial-notes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}.s-editorial-notes>div{padding:16px}.s-editorial-notes>div+div{border-left:1px solid var(--line)}}
+@media (max-width:760px){.s-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:32px 12px}.s-editorial-layout{gap:38px;padding:30px 0 56px}.s-editorial-notes{grid-template-columns:1fr}.s-editorial-notes>div{padding:14px 0}.s-editorial-notes>div+div{border-left:0}.s-price-note{margin-top:18px!important}}
 @media (max-width:560px){.s-root{padding:0 12px}.s-head-meta{gap:12px}.s-head-meta>span{display:none}.s-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:24px 12px}.s-open{padding:36px 0 28px;flex-direction:column;align-items:flex-start;gap:16px}.s-flow{margin-bottom:32px}.s-save{right:6px;bottom:6px;padding:5px 6px;font-size:7.5px}.s-saved{margin-top:60px}.s-saved-list{grid-template-columns:1fr 1fr}.s-drawer-wrap{align-items:flex-end}.s-drawer{width:100%;height:min(88dvh,760px);padding:14px;border-radius:16px 16px 0 0;box-shadow:0 -12px 30px rgba(0,0,0,.14)}.s-drawer>img{aspect-ratio:16/10;object-fit:contain}.s-drawer h2{font-size:21px}.s-piece-hero>img{aspect-ratio:16/11;object-fit:contain}.s-piece-meta{grid-template-columns:1fr}.s-piece-meta span+span{padding:7px 0 0;border-top:1px solid var(--line);border-left:0}.s-piece-actions{grid-template-columns:1fr}.s-piece-editorial{grid-template-columns:1fr}.s-piece-section-head{align-items:flex-start;flex-direction:column}.s-piece-section-head>span{text-align:left}.s-piece-alternative{grid-template-columns:70px minmax(0,1fr) auto;min-height:94px}.s-piece-alternative>img{width:70px;height:94px}.s-ai{padding:17px 14px}.s-ai-chips{display:grid;grid-template-columns:1fr 1fr}.s-ai-chips button{text-align:left}.s-ai-field input{font-size:11px}.s-ai-list .s-used-card{grid-template-columns:62px minmax(0,1fr)}.s-ai-list .s-used-card img{width:62px;height:78px}}
 @media (prefers-reduced-motion:reduce){.s-root *{animation:none!important;transition:none!important}}
 `;
