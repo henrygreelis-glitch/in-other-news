@@ -23,121 +23,254 @@ const MASTHEAD = {
   deck: "An early look at the first cold week: one coat, seven supporting pieces, and enough time to find the right versions pre-owned instead of buying the whole uniform new.",
 };
 
+export const RELATIONSHIP_LABELS = {
+  same_product_cheaper: "Same product, better price",
+  same_product_used: "Same product, pre-owned",
+  same_product_new: "Same product, new",
+  similar_silhouette: "Similar silhouette",
+  archive_reference: "Archive reference",
+  budget_alternative: "Budget alternative",
+};
+
+const RELATIONSHIP_ORDER_BY_SOURCE = {
+  retail: [
+    "same_product_cheaper",
+    "same_product_used",
+    "budget_alternative",
+    "similar_silhouette",
+    "archive_reference",
+    "same_product_new",
+  ],
+  resale: [
+    "same_product_new",
+    "same_product_cheaper",
+    "similar_silhouette",
+    "budget_alternative",
+    "archive_reference",
+    "same_product_used",
+  ],
+  archive: [
+    "same_product_used",
+    "archive_reference",
+    "similar_silhouette",
+    "budget_alternative",
+    "same_product_new",
+    "same_product_cheaper",
+  ],
+};
+
+function definePiece(piece) {
+  return {
+    ...piece,
+    relationship_order:
+      RELATIONSHIP_ORDER_BY_SOURCE[piece.hero.source_type] ||
+      RELATIONSHIP_ORDER_BY_SOURCE.archive,
+  };
+}
+
 export const PICKS = [
-  {
+  definePiece({
+    id: "kaptain-sunshine-traveller-coat",
     slot: "Outer",
-    brand: "Kaptain Sunshine",
-    item: "Traveller Coat",
-    price: "$1,076",
-    tag: "Final sale",
-    href: "https://www.namu-shop.com/products/kaptain-sunshine-traveller-coat-top-navy-aw25",
-    ebayProduct: "kaptain-sunshine-traveller-coat",
-    ebaySearchHref:
+    ebay_search_href:
       "https://www.ebay.com/sch/i.html?_nkw=Kaptain+Sunshine+Traveller+Coat+Navy&_sacat=0&LH_ItemCondition=3000",
-    img: "/products/traveller-coat.jpg",
-    why: "Balmacaan collar, raglan shoulder, cut long enough to cover a jacket. The one coat that works over everything else here.",
-  },
-  {
+    why_selected:
+      "Balmacaan collar, raglan shoulder, cut long enough to cover a jacket. The one coat that works over everything else here.",
+    why_this_source:
+      "The proportion and dense cloth are the point, so this specific seasonal listing is the cleanest reference for measurements, fabric, and color before comparing used versions.",
+    hero: {
+      id: "namu-traveller-coat-aw25",
+      source_type: "retail",
+      source: "Namu Shop",
+      brand: "Kaptain Sunshine",
+      item: "Traveller Coat",
+      price: "$1,076",
+      condition: "New",
+      sizes_available: "Check retailer",
+      status: "Final sale",
+      href: "https://www.namu-shop.com/products/kaptain-sunshine-traveller-coat-top-navy-aw25",
+      image: "/products/traveller-coat.jpg",
+    },
+    alternatives: [],
+  }),
+  definePiece({
+    id: "camiel-fortgens-big-shirt",
     slot: "Layer",
-    brand: "Camiel Fortgens",
-    item: "Big Shirt",
-    price: "$576",
-    tag: "1 left",
-    href: "https://wdepartment.com/product/camiel-fortgens-big-shirt-blockprint/",
-    ebayProduct: "camiel-fortgens-big-shirt",
-    ebaySearchHref:
+    ebay_search_href:
       "https://www.ebay.com/sch/i.html?_nkw=Camiel+Fortgens+Big+Shirt+Blockprint&_sacat=0&LH_ItemCondition=3000",
-    img: "/products/big-shirt.jpg",
-    why: "Cut like a pattern block someone forgot to grade down. Worn open over the plain blue shirt, it becomes the light jacket between shirt and coat.",
-  },
-  {
+    why_selected:
+      "Cut like a pattern block someone forgot to grade down. Worn open over the plain blue shirt, it becomes the light jacket between shirt and coat.",
+    why_this_source:
+      "The block print and unfinished details change by season. This listing identifies the exact version selected instead of treating every Big Shirt as interchangeable.",
+    hero: {
+      id: "wdepartment-big-shirt-blockprint",
+      source_type: "retail",
+      source: "W Department",
+      brand: "Camiel Fortgens",
+      item: "Big Shirt",
+      price: "$576",
+      condition: "New",
+      sizes_available: "Check retailer",
+      status: "1 left",
+      href: "https://wdepartment.com/product/camiel-fortgens-big-shirt-blockprint/",
+      image: "/products/big-shirt.jpg",
+    },
+    alternatives: [],
+  }),
+  definePiece({
+    id: "beams-plus-shawl-cardigan",
     slot: "Knit",
-    brand: "Beams Plus",
-    item: "Shawl Collar Cardigan",
-    price: "¥27,500",
-    tag: "In stock",
-    href: "https://www.beams.co.jp/item/beamsplus/tops/38150255148/",
-    ebayProduct: "beams-plus-shawl-cardigan",
-    ebaySearchHref:
+    ebay_search_href:
       "https://www.ebay.com/sch/i.html?_nkw=BEAMS+PLUS+Shawl+Collar+Cardigan&_sacat=0&LH_ItemCondition=3000",
-    img: "/products/shawl-cardigan.jpg",
-    why: "Reads as tailoring from the front and a sweatshirt from behind. Beams cut theirs closer through the body, so it goes under the coat without bulking.",
-  },
-  {
+    why_selected:
+      "Reads as tailoring from the front and a sweatshirt from behind. The closer body goes under the coat without adding bulk.",
+    why_this_source:
+      "BEAMS sizing can be difficult to translate secondhand. The original listing gives the most useful baseline for choosing the correct size before hunting for a used one.",
+    hero: {
+      id: "beams-shawl-cardigan-38150255148",
+      source_type: "retail",
+      source: "BEAMS",
+      brand: "Beams Plus",
+      item: "Shawl Collar Cardigan",
+      price: "¥27,500",
+      condition: "New",
+      sizes_available: "Check retailer",
+      status: "In stock",
+      href: "https://www.beams.co.jp/item/beamsplus/tops/38150255148/",
+      image: "/products/shawl-cardigan.jpg",
+    },
+    alternatives: [],
+  }),
+  definePiece({
+    id: "prada-sky-cotton-shirt",
     slot: "Shirt",
-    brand: "Prada",
-    item: "Sky Cotton Shirt",
-    price: "$1,350",
-    tag: "Available",
-    href: "https://www.prada.com/us/en/p/cotton-shirt/UCN596_10IV_F0AB7_S_OOO",
-    ebayProduct: "prada-sky-cotton-shirt",
-    ebaySearchHref:
+    ebay_search_href:
       "https://www.ebay.com/sch/i.html?_nkw=Prada+UCN596+10IV+F0AB7+Cotton+Shirt&_sacat=0&LH_ItemCondition=3000",
-    img: "/products/prada-shirt.jpg",
-    why: "The quiet blue base under Camiel Fortgens’ louder block print. Its sharper collar holds the middle of the look without competing with the outer layers.",
-  },
-  {
+    why_selected:
+      "The quiet blue base under Camiel Fortgens’ louder block print. Its sharper collar holds the middle of the look without competing with the outer layers.",
+    why_this_source:
+      "The exact sky blue and sharp collar are doing the work. Retail is the dependable reference for color, fabrication, and a complete size run when used listings are vague.",
+    hero: {
+      id: "prada-ucn596-10iv-f0ab7",
+      source_type: "retail",
+      source: "Prada",
+      brand: "Prada",
+      item: "Sky Cotton Shirt",
+      price: "$1,350",
+      condition: "New",
+      sizes_available: "Check retailer",
+      status: "Available",
+      href: "https://www.prada.com/us/en/p/cotton-shirt/UCN596_10IV_F0AB7_S_OOO",
+      image: "/products/prada-shirt.jpg",
+    },
+    alternatives: [],
+  }),
+  definePiece({
+    id: "sunspel-riviera-long-sleeve",
     slot: "Polo",
-    brand: "Sunspel",
-    item: "Long Sleeve Riviera",
-    price: "£160",
-    tag: "In stock",
-    href: "https://www.sunspel.com/products/mens-cotton-riviera-long-sleeve-polo-shirt-in-black",
-    ebayProduct: "sunspel-riviera-long-sleeve",
-    ebaySearchHref:
+    ebay_search_href:
       "https://www.ebay.com/sch/i.html?_nkw=Sunspel+Long+Sleeve+Riviera+Polo+Black&_sacat=0&LH_ItemCondition=3000",
-    img: "/products/riviera-polo.jpg",
-    why: "Long-sleeve mesh cotton adds a clean black layer without the bulk of another knit. The collar stays visible under the cardigan and both blue shirts.",
-  },
-  {
+    why_selected:
+      "Long-sleeve mesh cotton adds a clean black layer without the bulk of another knit. The collar stays visible under the cardigan and both blue shirts.",
+    why_this_source:
+      "This is a repeatable core piece rather than a patina piece. Buying new makes sense when exact size, collar shape, and washable mesh matter more than age.",
+    hero: {
+      id: "sunspel-riviera-black",
+      source_type: "retail",
+      source: "Sunspel",
+      brand: "Sunspel",
+      item: "Long Sleeve Riviera",
+      price: "£160",
+      condition: "New",
+      sizes_available: "Check retailer",
+      status: "In stock",
+      href: "https://www.sunspel.com/products/mens-cotton-riviera-long-sleeve-polo-shirt-in-black",
+      image: "/products/riviera-polo.jpg",
+    },
+    alternatives: [],
+  }),
+  definePiece({
+    id: "our-legacy-third-cut",
     slot: "Trouser",
-    brand: "Our Legacy",
-    item: "Third Cut",
-    price: "€360",
-    tag: "In stock",
-    href: "https://www.ourlegacy.com/third-cut-black-selvedge",
-    ebayProduct: "our-legacy-third-cut",
-    ebaySearchHref:
+    ebay_search_href:
       "https://www.ebay.com/sch/i.html?_nkw=Our+Legacy+Third+Cut+Black+Selvedge+Jeans&_sacat=0&LH_ItemCondition=3000",
-    img: "/products/third-cut.jpg",
-    why: "Relaxed black denim balances the coat’s length and lets every blue and grey layer sit above one dark line. Secondhand, look for waist, rise, and hem measurements—not just the tag.",
-  },
-  {
+    why_selected:
+      "Relaxed black denim balances the coat’s length and lets every blue and grey layer sit above one dark line.",
+    why_this_source:
+      "Third Cut changes substantially by wash. The retail listing anchors the exact black selvedge version; used pairs become better options only when waist, rise, and hem measurements are supplied.",
+    hero: {
+      id: "our-legacy-third-cut-black-selvedge",
+      source_type: "retail",
+      source: "Our Legacy",
+      brand: "Our Legacy",
+      item: "Third Cut",
+      price: "€360",
+      condition: "New",
+      sizes_available: "Check retailer",
+      status: "In stock",
+      href: "https://www.ourlegacy.com/third-cut-black-selvedge",
+      image: "/products/third-cut.jpg",
+    },
+    alternatives: [],
+  }),
+  definePiece({
+    id: "anonymous-ism-waffle-sock",
     slot: "Sock",
-    brand: "Anonymous Ism",
-    item: "Waffle Crew Sock",
-    price: "—",
-    tag: "Unavailable",
-    href: "https://anonymousism.com/collections/20aw-collection",
-    linkLabel: "Find similar ↗",
-    ebayProduct: "anonymous-ism-waffle-sock",
-    ebaySearchHref:
+    ebay_search_href:
       "https://www.ebay.com/sch/i.html?_nkw=Anonymous+Ism+Waffle+Crew+Socks&_sacat=0&LH_ItemCondition=3000",
-    img: "/products/anonymous-socks.jpg",
-    why: "Marled color breaks the navy, black, and grey uniform at the ankle. The exact pair is unavailable, so the texture and height matter more than the label.",
-  },
-  {
+    why_selected:
+      "Marled color breaks the navy, black, and grey uniform at the ankle. Texture and height matter more here than the label.",
+    why_this_source:
+      "The exact sock is gone. The archived source is more useful as a texture reference than a product to chase, so close substitutes should take priority.",
+    hero: {
+      id: "anonymous-ism-waffle-crew-archive",
+      source_type: "archive",
+      source: "Anonymous Ism archive",
+      brand: "Anonymous Ism",
+      item: "Waffle Crew Sock",
+      price: "—",
+      condition: "Archive reference",
+      sizes_available: "Unavailable",
+      status: "Unavailable",
+      href: "https://anonymousism.com/collections/20aw-collection",
+      link_label: "View archive ↗",
+      image: "/products/anonymous-socks.jpg",
+    },
+    alternatives: [],
+  }),
+  definePiece({
+    id: "hender-scheme-mip-22",
     slot: "Shoe",
-    brand: "Hender Scheme",
-    item: "Manual Industrial Product 22",
-    price: "¥74,800",
-    tag: "Check stock",
-    href: "https://online.henderscheme.com/item/detail/1_1_mip-22_1",
-    ebayProduct: "hender-scheme-mip-22",
-    ebaySearchHref:
+    ebay_search_href:
       "https://www.ebay.com/sch/i.html?_nkw=Hender+Scheme+MIP+22+Natural+Leather&_sacat=0&LH_ItemCondition=3000",
-    img: "/products/mip-22.jpg",
-    why: "Natural leather keeps the bottom of the look from turning all black and darkens from bone to tobacco with wear. The patina is the point.",
-  },
+    why_selected:
+      "Natural leather keeps the bottom of the look from turning all black and darkens from bone to tobacco with wear. The patina is the point.",
+    why_this_source:
+      "Patina improves the shoe, but the official source confirms the exact MIP-22 construction and Japanese size conversion before comparing already-worn pairs.",
+    hero: {
+      id: "hender-scheme-mip-22-official",
+      source_type: "retail",
+      source: "Hender Scheme",
+      brand: "Hender Scheme",
+      item: "Manual Industrial Product 22",
+      price: "¥74,800",
+      condition: "New",
+      sizes_available: "Check retailer",
+      status: "Check stock",
+      href: "https://online.henderscheme.com/item/detail/1_1_mip-22_1",
+      image: "/products/mip-22.jpg",
+    },
+    alternatives: [],
+  }),
 ];
 
 export function ProductImage({ pick }) {
-  const [src, setSrc] = useState(pick.img);
+  const [src, setSrc] = useState(pick.hero.image);
 
   return (
     <img
       src={src}
-      alt={`${pick.brand} ${pick.item}`}
+      alt={`${pick.hero.brand} ${pick.hero.item}`}
       loading="lazy"
       decoding="async"
       onError={() => setSrc(FALLBACK_IMAGE)}
@@ -159,115 +292,167 @@ function formatListingMoney(value, currency) {
   }
 }
 
-export function UsedMarket({ pick, market }) {
-  const searchUrl = market.searchUrl || pick.ebaySearchHref;
-  const hasExactListings =
-    market.status === "ready" &&
-    market.matchType === "exact" &&
-    market.listings.length > 0;
-  const hasSimilarListings =
-    market.status === "ready" &&
-    market.matchType === "similar" &&
-    market.listings.length > 0;
-  const hasDisplayListings = hasExactListings || hasSimilarListings;
+const SOURCE_LABELS = {
+  retail: "Retail",
+  resale: "Resale",
+  archive: "Archive",
+};
+
+function liveMarketAlternatives(market) {
+  if (market.status !== "ready") return [];
+
+  return market.listings.map((listing) => ({
+    id: `ebay-${listing.id}`,
+    source_type: "resale",
+    source: "eBay",
+    item: listing.title,
+    price: formatListingMoney(listing.price, listing.currency),
+    condition: listing.condition || "Pre-owned",
+    sizes_available: "Check listing",
+    relationship:
+      market.matchType === "exact"
+        ? "same_product_used"
+        : "similar_silhouette",
+    href: listing.url,
+    image: listing.imageUrl || FALLBACK_IMAGE,
+  }));
+}
+
+export function PieceCard({ piece, market }) {
+  const hero = piece.hero;
+  const alternatives = [
+    ...piece.alternatives,
+    ...liveMarketAlternatives(market),
+  ];
+  const groups = piece.relationship_order
+    .map((relationship) => ({
+      relationship,
+      items: alternatives.filter(
+        (alternative) => alternative.relationship === relationship
+      ),
+    }))
+    .filter((group) => group.items.length > 0);
+  const searchUrl = market.searchUrl || piece.ebay_search_href;
 
   return (
-    <section className="s-used" aria-labelledby="used-market-title">
-      <div className="s-used-kicker">
-        <span>Secondhand beta</span>
-        <span>eBay</span>
-      </div>
-      <h3 id="used-market-title">Buy the same piece used</h3>
-      <p className="s-used-intro">
-        Exact matches first. When none are listed, the closest pre-owned
-        alternatives appear.
-      </p>
-
-      {market.status === "loading" && (
-        <div className="s-used-status" role="status" aria-live="polite">
-          <span className="s-used-pulse" aria-hidden="true" />
-          Looking for used matches…
+    <article className="s-piece-card">
+      <div className="s-piece-hero">
+        <div className="s-piece-kicker">
+          <span>Henry’s selection</span>
+          <span>{SOURCE_LABELS[hero.source_type]}</span>
         </div>
-      )}
-
-      {market.status === "ready" && !hasExactListings && (
-        <p className="s-used-status" role="status" aria-live="polite">
-          No exact version listed.
-        </p>
-      )}
-
-      {hasDisplayListings && (
-        <>
-          <p className="s-used-match" aria-live="polite">
-            {hasExactListings
-              ? "Exact used matches"
-              : "Closest pre-owned alternatives"}
-          </p>
-          <div className="s-used-list">
-            {market.listings.map((listing) => (
-              <a
-                className="s-used-card"
-                href={listing.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                key={listing.id}
-              >
-                <img
-                  src={listing.imageUrl || FALLBACK_IMAGE}
-                  alt=""
-                  loading="lazy"
-                  onError={(event) => {
-                    event.currentTarget.onerror = null;
-                    event.currentTarget.src = FALLBACK_IMAGE;
-                  }}
-                />
-                <span className="s-used-card-copy">
-                  <strong>{listing.title}</strong>
-                  <span className="s-used-card-price">
-                    {formatListingMoney(listing.price, listing.currency)}
-                  </span>
-                  <span className="s-used-card-meta">
-                    {listing.condition}
-                    {listing.shippingPrice === "0.00"
-                      ? " · Free shipping"
-                      : listing.shippingPrice
-                        ? ` · ${formatListingMoney(
-                            listing.shippingPrice,
-                            listing.shippingCurrency
-                          )} shipping`
-                        : ""}
-                  </span>
-                </span>
-                <span className="s-used-arrow" aria-hidden="true">
-                  ↗
-                </span>
-              </a>
-            ))}
+        <p className="s-slot">{piece.slot}</p>
+        <ProductImage pick={piece} />
+        <div className="s-piece-hero-copy">
+          <p className="s-piece-brand">{hero.brand}</p>
+          <h2>{hero.item}</h2>
+          <div className="s-piece-meta">
+            <span>{hero.price}</span>
+            <span>{hero.condition}</span>
+            <span>{hero.sizes_available}</span>
           </div>
-        </>
-      )}
+          <a
+            className="s-piece-primary"
+            href={hero.href}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {hero.link_label || "View selected listing ↗"}
+          </a>
+        </div>
+      </div>
 
-      {market.status === "error" && (
-        <p className="s-used-status" role="status" aria-live="polite">
-          {market.message}
-        </p>
-      )}
+      <div className="s-piece-editorial">
+        <div>
+          <span>Why selected</span>
+          <p>{piece.why_selected}</p>
+        </div>
+        <div className="is-source">
+          <span>Why this source</span>
+          <p>{piece.why_this_source}</p>
+        </div>
+      </div>
 
-      {market.status !== "loading" && (
-        <a
-          className="s-used-search"
-          href={searchUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          {hasExactListings
-            ? "See all used results ↗"
-            : hasSimilarListings
-              ? "See more similar pieces ↗"
-              : "Search eBay now ↗"}
-        </a>
-      )}
-    </section>
+      <section className="s-piece-alternatives" aria-labelledby={`alternatives-${piece.id}`}>
+        <div className="s-piece-section-head">
+          <div>
+            <p className="s-eyebrow">Other ways to get it</p>
+            <h3 id={`alternatives-${piece.id}`}>Alternatives</h3>
+          </div>
+          <span>Ordered from the hero source</span>
+        </div>
+
+        {market.status === "loading" && (
+          <div className="s-used-status" role="status" aria-live="polite">
+            <span className="s-used-pulse" aria-hidden="true" />
+            Looking for live alternatives…
+          </div>
+        )}
+
+        {market.status === "ready" && market.matchType !== "exact" && (
+          <p className="s-used-status" role="status" aria-live="polite">
+            No exact version listed. Showing the closest available options.
+          </p>
+        )}
+
+        {groups.map((group) => (
+          <section className="s-piece-group" key={group.relationship}>
+            <h4>{RELATIONSHIP_LABELS[group.relationship]}</h4>
+            <div className="s-piece-list">
+              {group.items.map((alternative) => (
+                <a
+                  className="s-piece-alternative"
+                  href={alternative.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  key={alternative.id}
+                >
+                  <img
+                    src={alternative.image || FALLBACK_IMAGE}
+                    alt=""
+                    loading="lazy"
+                    onError={(event) => {
+                      event.currentTarget.onerror = null;
+                      event.currentTarget.src = FALLBACK_IMAGE;
+                    }}
+                  />
+                  <span className="s-piece-alt-copy">
+                    <span className="s-piece-alt-source">
+                      {SOURCE_LABELS[alternative.source_type]} · {alternative.source}
+                    </span>
+                    <strong>{alternative.item}</strong>
+                    <span className="s-piece-alt-meta">
+                      {alternative.price} · {alternative.condition}
+                    </span>
+                    <span className="s-piece-alt-sizes">
+                      Sizes: {alternative.sizes_available}
+                    </span>
+                  </span>
+                  <span aria-hidden="true">↗</span>
+                </a>
+              ))}
+            </div>
+          </section>
+        ))}
+
+        {market.status === "error" && (
+          <p className="s-used-status" role="status" aria-live="polite">
+            {market.message}
+          </p>
+        )}
+
+        {market.status !== "loading" && (
+          <a
+            className="s-used-search"
+            href={searchUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Search all pre-owned listings ↗
+          </a>
+        )}
+      </section>
+    </article>
   );
 }
 
@@ -290,7 +475,7 @@ export function ProductWatch({ pick }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email: email.trim(),
-          product: pick.ebayProduct,
+          product: pick.id,
           company: "",
         }),
       });
@@ -333,7 +518,7 @@ export function ProductWatch({ pick }) {
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               placeholder="Email"
-              aria-label={`Email address for ${pick.brand} ${pick.item} alerts`}
+              aria-label={`Email address for ${pick.hero.brand} ${pick.hero.item} alerts`}
               autoComplete="email"
               maxLength={254}
               required
@@ -383,7 +568,7 @@ export function AiFinder({ pick, defaultOpen = false, standalone = false }) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          product: pick.ebayProduct,
+          product: pick.id,
           request: normalizedQuery,
           company: "",
         }),
@@ -450,12 +635,12 @@ export function AiFinder({ pick, defaultOpen = false, standalone = false }) {
             ))}
           </div>
           <form className="s-ai-form" onSubmit={submitSearch}>
-            <label htmlFor={`ai-search-${pick.ebayProduct}`}>
+            <label htmlFor={`ai-search-${pick.id}`}>
               Describe your version
             </label>
             <div className="s-ai-field">
               <input
-                id={`ai-search-${pick.ebayProduct}`}
+                id={`ai-search-${pick.id}`}
                 type="text"
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
@@ -612,7 +797,7 @@ export default function Uniform() {
   };
   const activePick = activeIdx === null ? null : PICKS[activeIdx];
   const savedPicks = PICKS.filter((pick) =>
-    savedProductIds.includes(pick.ebayProduct)
+    savedProductIds.includes(pick.id)
   );
 
   useEffect(() => {
@@ -623,7 +808,7 @@ export default function Uniform() {
       if (Array.isArray(stored)) {
         setSavedProductIds(
           stored.filter((productId) =>
-            PICKS.some((pick) => pick.ebayProduct === productId)
+            PICKS.some((pick) => pick.id === productId)
           )
         );
       }
@@ -732,49 +917,52 @@ export default function Uniform() {
 
       <main className="s-grid">
         {PICKS.map((pick, index) => (
-          <article className="s-tile" key={pick.brand + pick.item}>
+          <article className="s-tile" key={pick.id}>
             <p className="s-slot">{pick.slot}</p>
             <div className="s-media">
               <button
                 className="s-shot"
                 onClick={(event) => openProduct(event, index)}
                 aria-haspopup="dialog"
-                aria-label={`Open details for ${pick.brand} ${pick.item}`}
+                aria-label={`Open details for ${pick.hero.brand} ${pick.hero.item}`}
               >
                 <ProductImage pick={pick} />
               </button>
               <button
                 className={`s-save ${
-                  savedProductIds.includes(pick.ebayProduct) ? "is-saved" : ""
+                  savedProductIds.includes(pick.id) ? "is-saved" : ""
                 }`}
                 type="button"
-                aria-pressed={savedProductIds.includes(pick.ebayProduct)}
-                onClick={() => toggleSaved(pick.ebayProduct)}
+                aria-pressed={savedProductIds.includes(pick.id)}
+                onClick={() => toggleSaved(pick.id)}
               >
-                {savedProductIds.includes(pick.ebayProduct)
+                {savedProductIds.includes(pick.id)
                   ? "Saved ✓"
                   : "Save +"}
               </button>
             </div>
             <div className="s-cap">
-              <p className="s-brand">{pick.brand}</p>
-              <p className="s-item">{pick.item}</p>
+              <div className="s-cap-head">
+                <p className="s-brand">{pick.hero.brand}</p>
+                <span className="s-source-badge">
+                  {SOURCE_LABELS[pick.hero.source_type]}
+                </span>
+              </div>
+              <p className="s-item">{pick.hero.item}</p>
               <p className="s-line">
-                <span>{pick.price}</span>
-                <span className="s-tag">{pick.tag}</span>
+                <span>{pick.hero.price}</span>
+                <span className="s-tag">{pick.hero.status}</span>
               </p>
               <a
                 className="s-shop"
-                href={pick.href}
+                href={pick.hero.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label={`${pick.linkLabel || "View item"}: ${pick.brand} ${pick.item} (opens in a new tab)`}
+                aria-label={`${pick.hero.link_label || "View selection"}: ${pick.hero.brand} ${pick.hero.item} (opens in a new tab)`}
               >
-                {pick.linkLabel || "View item ↗"}
+                {pick.hero.link_label || "View selection ↗"}
               </a>
-              {pick.ebayProduct && (
-                <span className="s-used-flag">Check pre-owned availability</span>
-              )}
+              <span className="s-used-flag">Compare every source</span>
             </div>
           </article>
         ))}
@@ -792,18 +980,18 @@ export default function Uniform() {
           <div className="s-saved-list">
             {savedPicks.map((pick) => {
               const index = PICKS.findIndex(
-                (candidate) => candidate.ebayProduct === pick.ebayProduct
+                (candidate) => candidate.id === pick.id
               );
               return (
                 <button
                   type="button"
                   className="s-saved-item"
-                  key={pick.ebayProduct}
+                  key={pick.id}
                   onClick={(event) => openProduct(event, index)}
                 >
                   <span>{pick.slot}</span>
-                  <strong>{pick.brand}</strong>
-                  <small>{pick.item}</small>
+                  <strong>{pick.hero.brand}</strong>
+                  <small>{pick.hero.item}</small>
                   <b aria-hidden="true">→</b>
                 </button>
               );
@@ -837,30 +1025,40 @@ export default function Uniform() {
             >
               Close ×
             </button>
-            <ProductImage key={activePick.img} pick={activePick} />
+            <ProductImage key={activePick.hero.image} pick={activePick} />
             <div className="s-drawer-copy">
-              <p className="s-slot">{activePick.slot}</p>
-              <p className="s-drawer-brand">{activePick.brand}</p>
-              <h2 id="product-drawer-title">{activePick.item}</h2>
-              <div className="s-drawer-meta">
-                <span>{activePick.price}</span>
-                <span className="s-tag">{activePick.tag}</span>
+              <div className="s-piece-kicker">
+                <span>{activePick.slot}</span>
+                <span>{SOURCE_LABELS[activePick.hero.source_type]} hero</span>
               </div>
-              <p id="product-drawer-description" className="s-drawer-why">
-                {activePick.why}
-              </p>
+              <p className="s-drawer-brand">{activePick.hero.brand}</p>
+              <h2 id="product-drawer-title">{activePick.hero.item}</h2>
+              <div className="s-drawer-meta">
+                <span>{activePick.hero.price}</span>
+                <span className="s-tag">{activePick.hero.status}</span>
+              </div>
+              <div id="product-drawer-description" className="s-drawer-editorial">
+                <div>
+                  <span>Why selected</span>
+                  <p>{activePick.why_selected}</p>
+                </div>
+                <div className="is-source">
+                  <span>Why this source</span>
+                  <p>{activePick.why_this_source}</p>
+                </div>
+              </div>
               <a
                 className="s-drawer-link"
-                href={activePick.href}
+                href={activePick.hero.href}
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                {activePick.linkLabel || "View item ↗"}
+                {activePick.hero.link_label || "View selected listing ↗"}
               </a>
               <div className="s-drawer-search-actions">
                 <a
                   href={`/search?product=${encodeURIComponent(
-                    activePick.ebayProduct
+                    activePick.id
                   )}`}
                 >
                   Compare buying options →
@@ -869,10 +1067,10 @@ export default function Uniform() {
               <button
                 className="s-drawer-save"
                 type="button"
-                aria-pressed={savedProductIds.includes(activePick.ebayProduct)}
-                onClick={() => toggleSaved(activePick.ebayProduct)}
+                aria-pressed={savedProductIds.includes(activePick.id)}
+                onClick={() => toggleSaved(activePick.id)}
               >
-                {savedProductIds.includes(activePick.ebayProduct)
+                {savedProductIds.includes(activePick.id)
                   ? "Saved to your edit ✓"
                   : "Save to your edit +"}
               </button>
@@ -934,7 +1132,7 @@ const CSS = `
 .s-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:34px 16px}.s-tile{display:flex;flex-direction:column}.s-slot{font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--mid);padding-bottom:8px}.s-media{position:relative}
 .s-shot{position:relative;display:block;width:100%;padding:0;border:0;background:var(--plate);cursor:pointer;text-align:left;overflow:hidden}.s-shot img{width:100%;aspect-ratio:4/5;object-fit:cover;display:block}
 .s-save{position:absolute;right:8px;bottom:8px;z-index:2;padding:6px 8px;border:1px solid rgba(0,0,0,.15);background:rgba(255,255,255,.92);color:var(--fg);cursor:pointer;font-family:var(--f);font-size:8.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;backdrop-filter:blur(6px)}.s-save:hover,.s-save.is-saved{background:var(--fg);color:#fff;border-color:var(--fg)}
-.s-cap{padding-top:10px}.s-brand{font-size:12.5px;font-weight:600}.s-item{font-size:12.5px;color:var(--mid);margin-top:1px}.s-line{display:flex;justify-content:space-between;gap:10px;margin-top:6px;font-size:12.5px}.s-tag{font-size:10px;font-weight:500;letter-spacing:.09em;text-transform:uppercase;color:var(--mid)}
+.s-cap{padding-top:10px}.s-cap-head{display:flex;align-items:center;justify-content:space-between;gap:8px}.s-brand{font-size:12.5px;font-weight:600}.s-source-badge{color:var(--mid);font-size:8px;font-weight:600;letter-spacing:.1em;text-transform:uppercase}.s-item{font-size:12.5px;color:var(--mid);margin-top:1px}.s-line{display:flex;justify-content:space-between;gap:10px;margin-top:6px;font-size:12.5px}.s-tag{font-size:10px;font-weight:500;letter-spacing:.09em;text-transform:uppercase;color:var(--mid)}
 .s-shop{display:inline-block;margin-top:10px;color:var(--fg);font-size:10px;font-weight:500;letter-spacing:.1em;line-height:1.4;text-decoration:none;text-transform:uppercase;border-bottom:1px solid var(--fg)}.s-shop:hover{color:var(--mid);border-color:var(--mid)}.s-shop:focus-visible{outline:1px solid var(--fg);outline-offset:3px}
 .s-used-flag{display:block;margin-top:7px;color:var(--mid);font-size:9px;font-weight:500;letter-spacing:.1em;text-transform:uppercase}
 .s-drawer-wrap{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.28);display:flex;justify-content:flex-end}
@@ -943,8 +1141,10 @@ const CSS = `
 .s-drawer>img{display:block;width:100%;aspect-ratio:4/5;object-fit:cover;background:var(--plate)}
 .s-drawer-copy{padding:22px 2px 32px}.s-drawer-copy .s-slot{padding-bottom:12px}.s-drawer-brand{font-size:13px;font-weight:600}.s-drawer h2{margin:2px 0 0;font-size:24px;font-weight:500;line-height:1.1;letter-spacing:-.02em}
 .s-drawer-meta{display:flex;justify-content:space-between;gap:16px;margin-top:18px;padding:12px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
-.s-drawer-why{margin-top:22px!important;font-size:13px;line-height:1.65;color:#333}.s-drawer-link{display:block;margin-top:28px;padding:13px 14px;background:var(--fg);color:#fff;text-align:center;text-decoration:none;font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase}.s-drawer-link:hover{background:#333}
+.s-drawer-editorial{display:grid;gap:10px;margin-top:22px}.s-drawer-editorial>div{padding:14px;border:1px solid var(--line)}.s-drawer-editorial>div.is-source{border-color:#d8d1c1;background:#f5f2e9}.s-drawer-editorial span{display:block;color:var(--mid);font-size:8.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase}.s-drawer-editorial p{margin-top:6px!important;color:#333;font-size:12px;line-height:1.6}.s-drawer-link{display:block;margin-top:28px;padding:13px 14px;background:var(--fg);color:#fff;text-align:center;text-decoration:none;font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase}.s-drawer-link:hover{background:#333}
 .s-drawer-search-actions{display:grid;grid-template-columns:1fr;gap:8px;margin-top:8px}.s-drawer-search-actions a{display:flex;min-height:48px;align-items:center;justify-content:center;padding:11px;border:1px solid var(--fg);color:var(--fg);font-size:9px;font-weight:600;letter-spacing:.08em;line-height:1.35;text-align:center;text-decoration:none;text-transform:uppercase}.s-drawer-search-actions a:hover{background:#f2f2ef}
+.s-piece-card{min-width:0;border-top:1px solid var(--fg)}.s-piece-hero{padding-top:18px}.s-piece-kicker{display:flex;justify-content:space-between;gap:16px;color:var(--mid);font-size:8.5px;font-weight:600;letter-spacing:.11em;text-transform:uppercase}.s-piece-hero>.s-slot{margin-top:22px}.s-piece-hero>img{display:block;width:100%;aspect-ratio:4/5;object-fit:cover;background:var(--plate)}.s-piece-hero-copy{padding-top:18px}.s-piece-brand{font-size:12px;font-weight:600}.s-piece-hero h2{margin:2px 0 0;font-size:27px;font-weight:500;line-height:1.05;letter-spacing:-.03em}.s-piece-meta{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:18px;padding:11px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-size:10px}.s-piece-meta span+span{padding-left:8px;border-left:1px solid var(--line)}.s-piece-primary{display:block;margin-top:18px;padding:12px 14px;background:var(--fg);color:#fff;font-size:9.5px;font-weight:600;letter-spacing:.1em;text-align:center;text-decoration:none;text-transform:uppercase}.s-piece-primary:hover{background:#333}
+.s-piece-editorial{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:26px}.s-piece-editorial>div{padding:15px;border:1px solid var(--line)}.s-piece-editorial>div.is-source{border-color:#d8d1c1;background:#f5f2e9}.s-piece-editorial span{display:block;color:var(--mid);font-size:8.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase}.s-piece-editorial p{margin-top:8px!important;color:#3d3d3d;font-size:11.5px;line-height:1.65}.s-piece-alternatives{margin-top:38px;padding-top:26px;border-top:1px solid var(--fg)}.s-piece-section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:20px}.s-piece-section-head h3{margin:5px 0 0;font-size:24px;font-weight:500;line-height:1.1;letter-spacing:-.025em}.s-piece-section-head>span{max-width:16ch;color:var(--mid);font-size:8px;font-weight:600;letter-spacing:.1em;line-height:1.45;text-align:right;text-transform:uppercase}.s-piece-group{margin-top:24px}.s-piece-group h4{margin:0;color:var(--mid);font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase}.s-piece-list{display:grid;gap:8px;margin-top:9px}.s-piece-alternative{position:relative;display:grid;grid-template-columns:82px minmax(0,1fr) auto;gap:12px;min-height:106px;padding:8px;border:1px solid var(--line);color:var(--fg);text-decoration:none}.s-piece-alternative:hover{border-color:#999}.s-piece-alternative>img{width:82px;height:106px;object-fit:cover;background:var(--plate)}.s-piece-alt-copy{display:flex;min-width:0;flex-direction:column;align-items:flex-start}.s-piece-alt-source{color:var(--mid);font-size:8px;font-weight:600;letter-spacing:.08em;text-transform:uppercase}.s-piece-alt-copy strong{display:-webkit-box;overflow:hidden;margin-top:5px;font-size:11px;font-weight:500;line-height:1.35;-webkit-box-orient:vertical;-webkit-line-clamp:2}.s-piece-alt-meta{margin-top:auto;font-size:10.5px;font-weight:600}.s-piece-alt-sizes{color:var(--mid);font-size:9px}.s-piece-alternative>span:last-child{font-size:10px}
 .s-ai{scroll-margin-top:24px;margin-top:30px;padding:20px;border:1px solid #dedbd2;background:#f5f2e9}.s-ai h3{margin:9px 0 0;font-size:20px;font-weight:500;line-height:1.15;letter-spacing:-.02em}.s-ai-intro{margin-top:8px!important;color:#4c4a45;font-size:11.5px;line-height:1.55}.s-ai-open{display:block;width:100%;margin-top:16px;padding:12px 14px;border:1px solid var(--fg);background:var(--fg);color:#fff;cursor:pointer;font-family:var(--f);font-size:9.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase}.s-ai-open:hover{background:#333}.s-ai-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:16px}.s-ai-chips button{padding:7px 9px;border:1px solid #c7c3b9;background:rgba(255,255,255,.72);color:var(--fg);cursor:pointer;font-family:var(--f);font-size:9px;line-height:1.2}.s-ai-chips button:hover{border-color:var(--fg)}.s-ai-chips button:disabled{cursor:wait;opacity:.5}.s-ai-form{margin-top:17px}.s-ai-form>label{display:block;color:var(--mid);font-size:8.5px;font-weight:500;letter-spacing:.1em;text-transform:uppercase}.s-ai-field{display:flex;align-items:flex-end;margin-top:7px;border-bottom:1px solid var(--fg)}.s-ai-field input{flex:1;min-width:0;padding:0 8px 8px 0;border:0;background:transparent;color:var(--fg);font-family:var(--f);font-size:11.5px}.s-ai-field button{flex:none;padding:0 0 8px;border:0;background:transparent;color:var(--fg);cursor:pointer;font-family:var(--f);font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase}.s-ai-field button:disabled,.s-ai-field input:disabled{cursor:wait;opacity:.5}.s-ai-status{display:flex;align-items:center;gap:8px;margin-top:17px;padding:12px;background:rgba(255,255,255,.7);color:#555;font-size:10.5px;line-height:1.4}.s-ai-error{margin-top:14px!important;color:#9c1c13;font-size:10.5px!important}.s-ai-result{margin-top:20px;padding-top:18px;border-top:1px solid #d4d0c6}.s-ai-result-head>span{display:block;color:var(--mid);font-size:8.5px;font-weight:500;letter-spacing:.1em;text-transform:uppercase}.s-ai-result-head>strong{display:block;margin-top:5px;font-size:15px;font-weight:600;line-height:1.3}.s-ai-result-head>p{margin-top:6px!important;color:#4c4a45;font-size:11px;line-height:1.55}.s-ai-signals{display:flex;flex-wrap:wrap;gap:5px;margin-top:12px}.s-ai-signals span{padding:4px 6px;border:1px solid #d1cdc3;background:rgba(255,255,255,.5);color:#555;font-size:8.5px;letter-spacing:.04em}.s-ai-list{display:grid;gap:7px;margin-top:18px}.s-ai-list>p{color:var(--mid);font-size:8.5px;font-weight:500;letter-spacing:.1em;text-transform:uppercase}.s-ai-list .s-used-card{background:#fff}.s-ai-empty{margin-top:17px!important;padding:11px;background:rgba(255,255,255,.65);color:#555;font-size:10.5px!important}.s-ai-links{display:grid;gap:8px;margin-top:16px}.s-ai-links a{width:max-content;max-width:100%;border-bottom:1px solid var(--fg);color:var(--fg);font-size:9px;font-weight:500;letter-spacing:.09em;line-height:1.4;text-decoration:none;text-transform:uppercase}.s-ai-links a:hover{color:var(--mid);border-color:var(--mid)}.s-ai-note{margin-top:16px!important;padding-top:12px;border-top:1px solid #d4d0c6;color:#777;font-size:9.5px!important;line-height:1.5}
 .s-used{margin-top:30px;padding-top:24px;border-top:1px solid var(--line)}.s-used-kicker{display:flex;justify-content:space-between;gap:16px;color:var(--mid);font-size:9px;font-weight:500;letter-spacing:.12em;text-transform:uppercase}.s-used h3{margin:9px 0 0;font-size:18px;font-weight:500;line-height:1.2;letter-spacing:-.01em}.s-used-intro{margin-top:8px!important;color:#555;font-size:11.5px;line-height:1.55}.s-used-status{display:flex;align-items:center;gap:8px;margin-top:16px!important;padding:13px;background:#f5f5f3;color:#555;font-size:11px;line-height:1.4}.s-used-pulse{width:7px;height:7px;border-radius:50%;background:#111;animation:s-used-pulse 1.25s ease-in-out infinite}.s-used-match{margin-top:17px!important;color:var(--mid);font-size:9px;font-weight:500;letter-spacing:.1em;text-transform:uppercase}.s-used-list{display:grid;gap:8px;margin-top:9px}.s-used-card{position:relative;display:grid;grid-template-columns:70px minmax(0,1fr);gap:11px;min-height:86px;padding:8px 28px 8px 8px;border:1px solid var(--line);color:var(--fg);text-decoration:none}.s-used-card:hover{border-color:#999}.s-used-card img{width:70px;height:86px;object-fit:cover;background:var(--plate)}.s-used-card-copy{display:flex;min-width:0;flex-direction:column;align-items:flex-start}.s-used-card-copy strong{display:-webkit-box;overflow:hidden;font-size:11px;font-weight:500;line-height:1.35;-webkit-box-orient:vertical;-webkit-line-clamp:2}.s-used-card-price{margin-top:auto;font-size:12px;font-weight:600}.s-used-card-meta{margin-top:1px;color:var(--mid);font-size:9.5px;line-height:1.35}.s-used-arrow{position:absolute;top:8px;right:9px;font-size:11px}.s-used-search{display:inline-block;margin-top:14px;border-bottom:1px solid var(--fg);color:var(--fg);font-size:9.5px;font-weight:500;letter-spacing:.1em;line-height:1.4;text-decoration:none;text-transform:uppercase}.s-used-search:hover{color:var(--mid);border-color:var(--mid)}
 .s-drawer-save{display:block;width:100%;margin-top:18px;padding:12px 14px;border:1px solid var(--fg);background:#fff;color:var(--fg);cursor:pointer;font-family:var(--f);font-size:9.5px;font-weight:500;letter-spacing:.1em;text-transform:uppercase}.s-drawer-save:hover,.s-drawer-save[aria-pressed="true"]{background:#f2f2ef}
@@ -953,7 +1153,7 @@ const CSS = `
 .s-sub{margin-top:80px;padding:44px 0;border-top:1px solid var(--line)}.s-sub p{font-size:13px}.s-field{display:flex;margin-top:18px;border-bottom:1px solid var(--fg);max-width:380px}.s-field input{flex:1;min-width:0;border:0;background:transparent;font-family:var(--f);font-size:13px;color:var(--fg);padding:0 0 8px}.s-field input::placeholder{color:var(--mid)}.s-field button{border:0;background:transparent;cursor:pointer;padding:0 0 8px;font-family:var(--f);font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase}.s-field button:hover{color:var(--mid)}.s-field button:disabled,.s-field input:disabled{cursor:wait;opacity:.55}.s-sub-success{font-weight:500}.s-sub-error{margin-top:10px!important;color:#9c1c13;font-size:11px!important}
 .s-foot{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:18px 0;border-top:1px solid var(--line);font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--mid)}
 @keyframes s-used-pulse{0%,100%{opacity:.25}50%{opacity:1}}
-@media (max-width:560px){.s-root{padding:0 12px}.s-head-meta{gap:12px}.s-head-meta>span{display:none}.s-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:24px 12px}.s-open{padding:36px 0 28px;flex-direction:column;align-items:flex-start;gap:16px}.s-flow{margin-bottom:32px}.s-save{right:6px;bottom:6px;padding:5px 6px;font-size:7.5px}.s-saved{margin-top:60px}.s-saved-list{grid-template-columns:1fr 1fr}.s-drawer-wrap{align-items:flex-end}.s-drawer{width:100%;height:min(88dvh,760px);padding:14px;border-radius:16px 16px 0 0;box-shadow:0 -12px 30px rgba(0,0,0,.14)}.s-drawer>img{aspect-ratio:16/10;object-fit:contain}.s-drawer h2{font-size:21px}.s-ai{padding:17px 14px}.s-ai-chips{display:grid;grid-template-columns:1fr 1fr}.s-ai-chips button{text-align:left}.s-ai-field input{font-size:11px}.s-ai-list .s-used-card{grid-template-columns:62px minmax(0,1fr)}.s-ai-list .s-used-card img{width:62px;height:78px}}
+@media (max-width:560px){.s-root{padding:0 12px}.s-head-meta{gap:12px}.s-head-meta>span{display:none}.s-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:24px 12px}.s-open{padding:36px 0 28px;flex-direction:column;align-items:flex-start;gap:16px}.s-flow{margin-bottom:32px}.s-save{right:6px;bottom:6px;padding:5px 6px;font-size:7.5px}.s-saved{margin-top:60px}.s-saved-list{grid-template-columns:1fr 1fr}.s-drawer-wrap{align-items:flex-end}.s-drawer{width:100%;height:min(88dvh,760px);padding:14px;border-radius:16px 16px 0 0;box-shadow:0 -12px 30px rgba(0,0,0,.14)}.s-drawer>img{aspect-ratio:16/10;object-fit:contain}.s-drawer h2{font-size:21px}.s-piece-hero>img{aspect-ratio:16/11;object-fit:contain}.s-piece-meta{grid-template-columns:1fr}.s-piece-meta span+span{padding:7px 0 0;border-top:1px solid var(--line);border-left:0}.s-piece-editorial{grid-template-columns:1fr}.s-piece-section-head{align-items:flex-start;flex-direction:column}.s-piece-section-head>span{text-align:left}.s-piece-alternative{grid-template-columns:70px minmax(0,1fr) auto;min-height:94px}.s-piece-alternative>img{width:70px;height:94px}.s-ai{padding:17px 14px}.s-ai-chips{display:grid;grid-template-columns:1fr 1fr}.s-ai-chips button{text-align:left}.s-ai-field input{font-size:11px}.s-ai-list .s-used-card{grid-template-columns:62px minmax(0,1fr)}.s-ai-list .s-used-card img{width:62px;height:78px}}
 @media (prefers-reduced-motion:reduce){.s-root *{animation:none!important;transition:none!important}}
 `;
 

@@ -5,13 +5,12 @@ import {
   AiFinder,
   ISSUE_CSS,
   PICKS,
-  ProductImage,
+  PieceCard,
   ProductWatch,
-  UsedMarket,
 } from "./issue";
 
 export default function ProductSearch({ productKey }) {
-  const pick = PICKS.find((candidate) => candidate.ebayProduct === productKey);
+  const pick = PICKS.find((candidate) => candidate.id === productKey);
   const [market, setMarket] = useState({
     status: "idle",
     listings: [],
@@ -21,7 +20,7 @@ export default function ProductSearch({ productKey }) {
   });
 
   useEffect(() => {
-    if (!pick?.ebayProduct) return undefined;
+    if (!pick?.id) return undefined;
 
     const controller = new AbortController();
     setMarket({
@@ -29,10 +28,10 @@ export default function ProductSearch({ productKey }) {
       listings: [],
       matchType: "none",
       message: "",
-      searchUrl: pick.ebaySearchHref,
+      searchUrl: pick.ebay_search_href,
     });
 
-    fetch(`/api/ebay/search?product=${pick.ebayProduct}`, {
+    fetch(`/api/ebay/search?product=${pick.id}`, {
       signal: controller.signal,
     })
       .then(async (response) => {
@@ -46,7 +45,7 @@ export default function ProductSearch({ productKey }) {
           listings: data.listings || [],
           matchType: data.matchType || "none",
           message: data.message || "",
-          searchUrl: data.searchUrl || pick.ebaySearchHref,
+          searchUrl: data.searchUrl || pick.ebay_search_href,
         });
       })
       .catch((error) => {
@@ -56,12 +55,12 @@ export default function ProductSearch({ productKey }) {
           listings: [],
           matchType: "none",
           message: "Live matches are unavailable. Search eBay directly.",
-          searchUrl: pick.ebaySearchHref,
+          searchUrl: pick.ebay_search_href,
         });
       });
 
     return () => controller.abort();
-  }, [pick?.ebayProduct, pick?.ebaySearchHref]);
+  }, [pick?.id, pick?.ebay_search_href]);
 
   if (!pick) {
     return (
@@ -82,7 +81,7 @@ export default function ProductSearch({ productKey }) {
     );
   }
 
-  const exactProductQuery = `${pick.brand} ${pick.item}`;
+  const exactProductQuery = `${pick.hero.brand} ${pick.hero.item}`;
   const retailSearchUrl = `https://www.google.com/search?tbm=shop&q=${encodeURIComponent(
     `${exactProductQuery} sale`
   )}`;
@@ -105,27 +104,7 @@ export default function ProductSearch({ productKey }) {
       </header>
 
       <main className="search-layout">
-        <aside className="search-product" aria-label="Original selection">
-          <p className="s-slot">{pick.slot} · Original selection</p>
-          <ProductImage key={pick.img} pick={pick} />
-          <div className="search-product-copy">
-            <p className="search-brand">{pick.brand}</p>
-            <h2>{pick.item}</h2>
-            <div className="search-meta">
-              <span>{pick.price}</span>
-              <span className="s-tag">{pick.tag}</span>
-            </div>
-            <p className="search-why">{pick.why}</p>
-            <a
-              className="search-retail"
-              href={pick.href}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              {pick.linkLabel || "View original listing ↗"}
-            </a>
-          </div>
-        </aside>
+        <PieceCard piece={pick} market={market} />
 
         <section className="search-tools" aria-labelledby="search-page-title">
           <div className="search-intro">
@@ -170,13 +149,12 @@ export default function ProductSearch({ productKey }) {
           </section>
 
           <AiFinder
-            key={`ai-${pick.ebayProduct}`}
+            key={`ai-${pick.id}`}
             pick={pick}
             defaultOpen
             standalone
           />
-          <UsedMarket pick={pick} market={market} />
-          <ProductWatch key={`watch-${pick.ebayProduct}`} pick={pick} />
+          <ProductWatch key={`watch-${pick.id}`} pick={pick} />
         </section>
       </main>
 
@@ -192,12 +170,11 @@ const SEARCH_CSS = `
 .search-root{max-width:none;min-height:100vh;padding:0 24px 32px}
 .search-head{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:20px;padding:18px 0;border-bottom:1px solid var(--line);font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase}
 .search-head a{width:max-content;color:var(--fg);text-decoration:none}.search-head a:hover{color:var(--mid)}.search-wordmark{font-size:11px;font-weight:600}.search-back{justify-self:end}
-.search-layout{display:grid;grid-template-columns:minmax(280px,380px) minmax(0,700px);align-items:start;justify-content:center;gap:clamp(56px,8vw,120px);max-width:1180px;margin:0 auto;padding:52px 0 88px}
-.search-product{position:sticky;top:24px}.search-product>img{display:block;width:100%;aspect-ratio:4/5;object-fit:cover;background:var(--plate)}.search-product-copy{padding-top:18px}.search-brand{font-size:12px;font-weight:600}.search-product h2{margin:2px 0 0;font-size:25px;font-weight:500;line-height:1.1;letter-spacing:-.025em}.search-meta{display:flex;justify-content:space-between;gap:16px;margin-top:18px;padding:11px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}.search-why{margin-top:19px!important;color:#3f3f3f;font-size:12px;line-height:1.65}.search-retail{display:block;margin-top:22px;padding:12px 14px;background:var(--fg);color:#fff;font-size:9.5px;font-weight:600;letter-spacing:.1em;text-align:center;text-decoration:none;text-transform:uppercase}.search-retail:hover{background:#333}
+.search-layout{display:grid;grid-template-columns:minmax(0,620px) minmax(320px,480px);align-items:start;justify-content:center;gap:clamp(40px,6vw,80px);max-width:1220px;margin:0 auto;padding:52px 0 88px}
 .search-intro{padding-bottom:29px;border-bottom:1px solid var(--fg)}.search-intro h1{max-width:12ch;margin-top:10px;font-size:clamp(34px,5vw,60px);font-weight:600;line-height:.98;letter-spacing:-.04em}.search-intro>p:last-child{max-width:55ch;margin-top:20px!important;color:#4d4d4d;font-size:12px;line-height:1.65}
 .search-shortcuts{margin-top:32px;padding:24px;border:1px solid var(--line)}.search-shortcuts h2{max-width:17ch;margin:10px 0 0;font-size:24px;font-weight:500;line-height:1.08;letter-spacing:-.025em}.search-shortcuts>p{max-width:52ch;margin-top:10px!important;color:#555;font-size:11.5px;line-height:1.6}.search-shortcut-links{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:20px}.search-shortcut-links a{display:flex;min-height:92px;flex-direction:column;justify-content:space-between;padding:14px;border:1px solid var(--fg);color:var(--fg);text-decoration:none}.search-shortcut-links a:hover{background:#f2f2ef}.search-shortcut-links span{color:var(--mid);font-size:8.5px;font-weight:500;letter-spacing:.1em;text-transform:uppercase}.search-shortcut-links strong{font-size:10px;font-weight:600;letter-spacing:.08em;line-height:1.35;text-transform:uppercase}
-.search-tools>.s-ai{margin-top:32px;padding:26px}.search-tools>.s-ai h3{font-size:25px}.search-tools>.s-used,.search-tools>.s-watch{margin-top:46px;padding-top:32px}.search-tools>.s-used h3,.search-tools>.s-watch h3{font-size:22px}.search-tools .s-used-card{grid-template-columns:86px minmax(0,1fr);min-height:108px}.search-tools .s-used-card img{width:86px;height:108px}.search-tools .s-ai-list .s-used-card{grid-template-columns:76px minmax(0,1fr);min-height:96px}.search-tools .s-ai-list .s-used-card img{width:76px;height:96px}
+.search-tools>.s-ai{margin-top:32px;padding:26px}.search-tools>.s-ai h3{font-size:25px}.search-tools>.s-watch{margin-top:46px;padding-top:32px}.search-tools>.s-watch h3{font-size:22px}.search-tools .s-used-card{grid-template-columns:86px minmax(0,1fr);min-height:108px}.search-tools .s-used-card img{width:86px;height:108px}.search-tools .s-ai-list .s-used-card{grid-template-columns:76px minmax(0,1fr);min-height:96px}.search-tools .s-ai-list .s-used-card img{width:76px;height:96px}
 .search-foot{display:flex;justify-content:space-between;gap:20px;padding:18px 0;border-top:1px solid var(--line);color:var(--mid);font-size:9px;font-weight:500;letter-spacing:.1em;text-transform:uppercase}.search-foot a{color:var(--fg);text-decoration:none}.search-foot a:hover{color:var(--mid)}
 .search-missing{max-width:760px;margin:0 auto;padding:15vh 0}.search-missing h1{max-width:16ch;margin-top:10px;font-size:clamp(34px,6vw,64px);font-weight:600;line-height:1;letter-spacing:-.04em}.search-missing a{display:inline-block;margin-top:28px;border-bottom:1px solid var(--fg);color:var(--fg);font-size:10px;font-weight:500;letter-spacing:.1em;text-decoration:none;text-transform:uppercase}
-@media (max-width:760px){.search-root{padding:0 12px 24px}.search-head{grid-template-columns:1fr auto}.search-head>span{display:none}.search-layout{grid-template-columns:1fr;gap:52px;padding:30px 0 64px}.search-product{position:static}.search-product>img{aspect-ratio:16/11;object-fit:contain}.search-product h2{font-size:22px}.search-intro h1{font-size:40px}.search-shortcuts{padding:20px 16px}.search-shortcut-links{grid-template-columns:1fr}.search-shortcut-links a{min-height:76px}.search-tools>.s-ai{padding:20px 16px}.search-tools>.s-used,.search-tools>.s-watch{margin-top:38px;padding-top:28px}.search-foot{align-items:flex-start;flex-direction:column}.search-tools .s-used-card,.search-tools .s-ai-list .s-used-card{grid-template-columns:70px minmax(0,1fr);min-height:90px}.search-tools .s-used-card img,.search-tools .s-ai-list .s-used-card img{width:70px;height:90px}}
+@media (max-width:760px){.search-root{padding:0 12px 24px}.search-head{grid-template-columns:1fr auto}.search-head>span{display:none}.search-layout{grid-template-columns:1fr;gap:52px;padding:30px 0 64px}.search-intro h1{font-size:40px}.search-shortcuts{padding:20px 16px}.search-shortcut-links{grid-template-columns:1fr}.search-shortcut-links a{min-height:76px}.search-tools>.s-ai{padding:20px 16px}.search-tools>.s-watch{margin-top:38px;padding-top:28px}.search-foot{align-items:flex-start;flex-direction:column}.search-tools .s-used-card,.search-tools .s-ai-list .s-used-card{grid-template-columns:70px minmax(0,1fr);min-height:90px}.search-tools .s-used-card img,.search-tools .s-ai-list .s-used-card img{width:70px;height:90px}}
 `;
