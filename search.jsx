@@ -7,6 +7,7 @@ import {
   PICKS,
   PieceCard,
   ProductWatch,
+  USD_PRICE_NOTE,
 } from "./issue";
 
 export default function ProductSearch({ productKey }) {
@@ -117,6 +118,7 @@ export default function ProductSearch({ productKey }) {
               Start with this week’s selection, then change the brief, compare
               pre-owned options, or set an alert for the right listing.
             </p>
+            <p className="s-price-note">{USD_PRICE_NOTE}</p>
           </div>
 
           <section className="search-shortcuts" aria-labelledby="search-elsewhere-title">
@@ -174,7 +176,7 @@ const SEARCH_CSS = `
 .search-head{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:20px;padding:18px 0;border-bottom:1px solid var(--line);font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase}
 .search-head a{width:max-content;color:var(--fg);text-decoration:none}.search-head a:hover{color:var(--mid)}.search-wordmark{font-size:11px;font-weight:600}.search-back{justify-self:end}
 .search-layout{display:grid;grid-template-columns:minmax(0,620px) minmax(320px,480px);align-items:start;justify-content:center;gap:clamp(40px,6vw,80px);max-width:1220px;margin:0 auto;padding:52px 0 88px}
-.search-intro{padding-bottom:29px;border-bottom:1px solid var(--fg)}.search-intro h1{max-width:12ch;margin-top:10px;font-size:clamp(34px,5vw,60px);font-weight:600;line-height:.98;letter-spacing:-.04em}.search-intro>p:last-child{max-width:55ch;margin-top:20px!important;color:#4d4d4d;font-size:12px;line-height:1.65}
+.search-intro{padding-bottom:29px;border-bottom:1px solid var(--fg)}.search-intro h1{max-width:12ch;margin-top:10px;font-size:clamp(34px,5vw,60px);font-weight:600;line-height:.98;letter-spacing:-.04em}.search-intro>p:not(.s-price-note){max-width:55ch;margin-top:20px!important;color:#4d4d4d;font-size:12px;line-height:1.65}.search-intro>.s-price-note{max-width:70ch}
 .search-shortcuts{margin-top:32px;padding:24px;border:1px solid var(--line)}.search-shortcuts h2{max-width:17ch;margin:10px 0 0;font-size:24px;font-weight:500;line-height:1.08;letter-spacing:-.025em}.search-shortcuts>p{max-width:52ch;margin-top:10px!important;color:#555;font-size:11.5px;line-height:1.6}.search-shortcut-links{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:20px}.search-shortcut-links a{display:flex;min-height:92px;flex-direction:column;justify-content:space-between;padding:14px;border:1px solid var(--fg);color:var(--fg);text-decoration:none}.search-shortcut-links a:hover{background:#f2f2ef}.search-shortcut-links span{color:var(--mid);font-size:8.5px;font-weight:500;letter-spacing:.1em;text-transform:uppercase}.search-shortcut-links strong{font-size:10px;font-weight:600;letter-spacing:.08em;line-height:1.35;text-transform:uppercase}
 .search-tools>.s-ai{margin-top:32px;padding:26px}.search-tools>.s-ai h3{font-size:25px}.search-tools>.s-watch{margin-top:46px;padding-top:32px}.search-tools>.s-watch h3{font-size:22px}.search-tools .s-used-card{grid-template-columns:86px minmax(0,1fr);min-height:108px}.search-tools .s-used-card img{width:86px;height:108px}.search-tools .s-ai-list .s-used-card{grid-template-columns:76px minmax(0,1fr);min-height:96px}.search-tools .s-ai-list .s-used-card img{width:76px;height:96px}
 .search-foot{display:flex;justify-content:space-between;gap:20px;padding:18px 0;border-top:1px solid var(--line);color:var(--mid);font-size:9px;font-weight:500;letter-spacing:.1em;text-transform:uppercase}.search-foot a{color:var(--fg);text-decoration:none}.search-foot a:hover{color:var(--mid)}

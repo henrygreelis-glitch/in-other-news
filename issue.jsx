@@ -23,6 +23,42 @@ const MASTHEAD = {
   deck: "An early look at the first cold week: one coat, seven supporting pieces, and enough time to find the right versions pre-owned instead of buying the whole uniform new.",
 };
 
+export const USD_PRICE_NOTE =
+  "All prices in USD. Foreign prices use ECB reference rates from Aug. 7, 2026 and are rounded.";
+
+const ECB_EUR_REFERENCE_RATES = {
+  EUR: 1,
+  USD: 1.1535,
+  JPY: 182.64,
+  CZK: 24.261,
+  DKK: 7.4756,
+  GBP: 0.85765,
+  HUF: 364.5,
+  PLN: 4.2983,
+  RON: 5.2525,
+  SEK: 10.9455,
+  CHF: 0.9347,
+  ISK: 142.6,
+  NOK: 10.975,
+  TRY: 55.0287,
+  AUD: 1.6384,
+  BRL: 5.8826,
+  CAD: 1.616,
+  CNY: 7.7834,
+  HKD: 9.0491,
+  IDR: 20584.96,
+  ILS: 3.4638,
+  INR: 109.8275,
+  KRW: 1633.3,
+  MXN: 19.7884,
+  MYR: 4.719,
+  NZD: 1.9646,
+  PHP: 70.21,
+  SGD: 1.4775,
+  THB: 38.129,
+  ZAR: 18.7136,
+};
+
 export const RELATIONSHIP_LABELS = {
   same_product_cheaper: "Same product, better price",
   same_product_used: "Same product, pre-owned",
@@ -132,7 +168,7 @@ export const PICKS = [
       source: "BEAMS",
       brand: "Beams Plus",
       item: "Shawl Collar Cardigan",
-      price: "¥27,500",
+      price: "$174",
       condition: "New",
       sizes_available: "Check retailer",
       status: "In stock",
@@ -180,7 +216,7 @@ export const PICKS = [
       source: "Sunspel",
       brand: "Sunspel",
       item: "Long Sleeve Riviera",
-      price: "£160",
+      price: "$215",
       condition: "New",
       sizes_available: "Check retailer",
       status: "In stock",
@@ -205,7 +241,7 @@ export const PICKS = [
       source: "Rick Owens",
       brand: "Rick Owens",
       item: "Geth Jeans",
-      price: "€745",
+      price: "$859",
       condition: "New",
       sizes_available: "29–34",
       status: "In stock",
@@ -219,7 +255,7 @@ export const PICKS = [
         source: "Our Legacy",
         brand: "Our Legacy",
         item: "Third Cut Black Selvedge",
-        price: "€360",
+        price: "$415",
         condition: "New",
         sizes_available: "Check retailer",
         relationship: "budget_alternative",
@@ -268,7 +304,7 @@ export const PICKS = [
       source: "Hender Scheme",
       brand: "Hender Scheme",
       item: "Manual Industrial Product 22",
-      price: "¥74,800",
+      price: "$472",
       condition: "New",
       sizes_available: "Check retailer",
       status: "Check stock",
@@ -296,14 +332,20 @@ export function ProductImage({ pick }) {
 function formatListingMoney(value, currency) {
   const amount = Number(value);
   if (!Number.isFinite(amount) || !currency) return "Price unavailable";
+  const currencyCode = String(currency).toUpperCase();
+  const referenceRate = ECB_EUR_REFERENCE_RATES[currencyCode];
+  if (!referenceRate) return "Price unavailable";
+  const usdAmount =
+    (amount / referenceRate) * ECB_EUR_REFERENCE_RATES.USD;
 
   try {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
-      currency,
-    }).format(amount);
+      currency: "USD",
+      maximumFractionDigits: 0,
+    }).format(usdAmount);
   } catch {
-    return `${currency} ${value}`;
+    return `$${Math.round(usdAmount).toLocaleString("en-US")}`;
   }
 }
 
@@ -925,6 +967,7 @@ export default function Uniform() {
           <p className="s-eyebrow">{MASTHEAD.eyebrow}</p>
           <h1>{MASTHEAD.theme}</h1>
           <p className="s-deck">{MASTHEAD.deck}</p>
+          <p className="s-price-note">{USD_PRICE_NOTE}</p>
         </div>
         <span className="s-n">{PICKS.length} pieces</span>
       </div>
@@ -1148,7 +1191,7 @@ const CSS = `
 .s-root{box-sizing:border-box;--fg:#000;--mid:#767676;--line:#e4e4e4;--plate:#f1f1f1;--f:'Archivo',Helvetica,Arial,sans-serif;width:100%;max-width:1600px;margin:0 auto;background:#fff;color:var(--fg);font-family:var(--f);font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased;padding:0 16px}
 .s-root *{box-sizing:border-box}.s-root h1,.s-root h2,.s-root p{margin:0}.s-root h1{font-weight:400}.s-root button:focus-visible,.s-root input:focus-visible,.s-root a:focus-visible{outline:1px solid var(--fg);outline-offset:2px}
 .s-head{display:flex;justify-content:space-between;align-items:center;padding:18px 0;font-size:11px;font-weight:500;letter-spacing:.1em;text-transform:uppercase}.s-head-meta{display:flex;align-items:center;gap:22px}.s-head-meta button{padding:0 0 2px;border:0;border-bottom:1px solid var(--fg);background:transparent;color:var(--fg);cursor:pointer;font-family:var(--f);font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase}.s-head-meta button:hover{color:var(--mid);border-color:var(--mid)}
-.s-open{display:flex;justify-content:space-between;align-items:flex-end;gap:40px;padding:56px 0 36px}.s-open-copy{max-width:700px}.s-eyebrow{color:var(--mid);font-size:9px;font-weight:500;letter-spacing:.12em;text-transform:uppercase}.s-open h1{margin-top:10px;font-size:clamp(28px,4vw,52px);font-weight:600;line-height:1.02;letter-spacing:-.03em;max-width:17ch}.s-deck{max-width:62ch;margin-top:17px!important;color:#4c4c4c;font-size:12px;line-height:1.65}
+.s-open{display:flex;justify-content:space-between;align-items:flex-end;gap:40px;padding:56px 0 36px}.s-open-copy{max-width:700px}.s-eyebrow{color:var(--mid);font-size:9px;font-weight:500;letter-spacing:.12em;text-transform:uppercase}.s-open h1{margin-top:10px;font-size:clamp(28px,4vw,52px);font-weight:600;line-height:1.02;letter-spacing:-.03em;max-width:17ch}.s-deck{max-width:62ch;margin-top:17px!important;color:#4c4c4c;font-size:12px;line-height:1.65}.s-price-note{margin-top:12px!important;color:var(--mid);font-size:8.5px!important;font-weight:500;letter-spacing:.08em;line-height:1.5;text-transform:uppercase}
 .s-n{font-size:11px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--mid);flex:none}
 .s-flow{display:grid;grid-template-columns:repeat(5,minmax(145px,1fr));margin:0 0 48px;padding:0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);list-style:none;overflow-x:auto}.s-flow li{display:flex;flex-direction:column;min-height:74px;padding:13px 16px 12px 0;color:#333;font-size:10px;font-weight:500;letter-spacing:.08em;text-transform:uppercase}.s-flow li+li{padding-left:16px;border-left:1px solid var(--line)}.s-flow span{margin-bottom:auto;color:var(--mid);font-size:9px}
 .s-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:34px 16px}.s-tile{display:flex;flex-direction:column}.s-slot{font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--mid);padding-bottom:8px}.s-media{position:relative}
