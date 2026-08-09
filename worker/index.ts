@@ -168,13 +168,14 @@ const EBAY_PRODUCTS = {
       ["sock", "socks"],
     ],
   },
-  "hender-scheme-mip-22": {
-    brand: "Hender Scheme",
-    item: "Manual Industrial Product 22",
-    query: "Hender Scheme MIP 22 Natural Leather",
+  "kiko-kostadinov-farkas-boots": {
+    brand: "Kiko Kostadinov",
+    item: "Black Farkas Boots",
+    query: "Kiko Kostadinov Farkas Boots 261985M228002 Black",
     requiredTitleTermGroups: [
-      ["hender scheme"],
-      ["mip 22", "manual industrial product 22"],
+      ["kiko kostadinov"],
+      ["farkas"],
+      ["boot", "boots"],
     ],
   },
 } as const;
