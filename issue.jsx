@@ -317,6 +317,70 @@ export const PICKS = [
   }),
 ];
 
+const WARDROBE_CATEGORIES = [
+  { id: "all", label: "All pieces", slots: null },
+  { id: "outerwear", label: "Outerwear", slots: ["Outer"] },
+  {
+    id: "layers",
+    label: "Layers",
+    slots: ["Layer", "Knit", "Shirt", "Polo"],
+  },
+  { id: "bottoms", label: "Bottoms", slots: ["Black trouser"] },
+  { id: "accessories", label: "Accessories", slots: ["Sock"] },
+  { id: "footwear", label: "Footwear", slots: ["Boot"] },
+];
+
+const WARDROBE_POSITIONS = {
+  "kaptain-sunshine-traveller-coat": {
+    "--float-x": "4%",
+    "--float-y": "7%",
+    "--float-w": "22%",
+    "--float-r": "-1.5deg",
+  },
+  "camiel-fortgens-big-shirt": {
+    "--float-x": "34%",
+    "--float-y": "2%",
+    "--float-w": "17%",
+    "--float-r": "1deg",
+  },
+  "brooks-brothers-cashmere-v-neck": {
+    "--float-x": "72%",
+    "--float-y": "8%",
+    "--float-w": "20%",
+    "--float-r": "-1deg",
+  },
+  "prada-sky-cotton-shirt": {
+    "--float-x": "18%",
+    "--float-y": "37%",
+    "--float-w": "16%",
+    "--float-r": "1.5deg",
+  },
+  "sunspel-riviera-long-sleeve": {
+    "--float-x": "51%",
+    "--float-y": "34%",
+    "--float-w": "17%",
+    "--float-r": "-1deg",
+  },
+  "rick-owens-geth-jeans": {
+    "--float-x": "77%",
+    "--float-y": "39%",
+    "--float-w": "18%",
+    "--float-r": "1deg",
+  },
+  "fgs-originals-waffle-crew-socks-m-gray": {
+    "--float-x": "5%",
+    "--float-y": "69%",
+    "--float-w": "13%",
+    "--float-r": "-2deg",
+  },
+  "kiko-kostadinov-farkas-boots": {
+    "--float-x": "42%",
+    "--float-y": "64%",
+    "--float-w": "24%",
+    "--float-r": "1deg",
+  },
+};
+
 export function ProductImage({ pick }) {
   const [src, setSrc] = useState(pick.hero.image);
 
@@ -818,6 +882,7 @@ export function AiFinder({ pick, defaultOpen = false, standalone = false }) {
 
 export default function Uniform() {
   const [activeIdx, setActiveIdx] = useState(null);
+  const [activeCategory, setActiveCategory] = useState("all");
   const [email, setEmail] = useState("");
   const [subscribeStatus, setSubscribeStatus] = useState("idle");
   const [subscribeMessage, setSubscribeMessage] = useState("");
@@ -857,6 +922,15 @@ export default function Uniform() {
   const activePick = activeIdx === null ? null : PICKS[activeIdx];
   const savedPicks = PICKS.filter((pick) =>
     savedProductIds.includes(pick.id)
+  );
+  const activeCategoryDetails =
+    WARDROBE_CATEGORIES.find(
+      (category) => category.id === activeCategory
+    ) || WARDROBE_CATEGORIES[0];
+  const wardrobePicks = PICKS.map((pick, index) => ({ pick, index })).filter(
+    ({ pick }) =>
+      !activeCategoryDetails.slots ||
+      activeCategoryDetails.slots.includes(pick.slot)
   );
 
   useEffect(() => {
@@ -964,96 +1038,105 @@ export default function Uniform() {
         </div>
       </header>
 
-      <main className="s-editorial-layout">
-        <aside className="s-editorial-intro" aria-labelledby="issue-title">
-          <div className="s-editorial-meta">
-            <p>Issue {MASTHEAD.issue}</p>
-            <p>{PICKS.length} pieces</p>
-          </div>
-          <p className="s-eyebrow">{MASTHEAD.eyebrow}</p>
-          <h1 id="issue-title">{MASTHEAD.theme}</h1>
-          <p className="s-deck">{MASTHEAD.deck}</p>
-          <div className="s-editorial-notes">
-            <div>
-              <span>Why this exists</span>
-              <p>
-                The first genuinely cold week is awkward: a winter coat can
-                feel early, while shirt sleeves feel optimistic. This issue
-                builds one system that can gain or lose a layer without losing
-                its shape.
-              </p>
+      <main>
+        <section className="s-wardrobe-layout">
+          <aside className="s-wardrobe-sidebar" aria-labelledby="issue-title">
+            <div className="s-wardrobe-meta">
+              <p>Issue {MASTHEAD.issue}</p>
+              <p>{PICKS.length} pieces</p>
             </div>
-            <div>
-              <span>What it is for</span>
-              <p>
-                Cold mornings, warmer afternoons, work, dinner, and long walks.
-                The coat sets the outline; every layer underneath can be added,
-                removed, or worn alone.
-              </p>
-            </div>
-            <div>
-              <span>Who it is for</span>
-              <p>
-                Someone who wants directional clothes without a different
-                outfit for every occasion: fewer pieces, stronger proportions,
-                and enough time to find the right versions used.
-              </p>
-            </div>
-          </div>
-          <p className="s-price-note">{USD_PRICE_NOTE}</p>
-        </aside>
+            <p className="s-eyebrow">{MASTHEAD.eyebrow}</p>
+            <h1 id="issue-title">{MASTHEAD.theme}</h1>
+            <p className="s-deck">{MASTHEAD.deck}</p>
 
-        <section className="s-grid" aria-label="The eight pieces in Issue 01">
-          {PICKS.map((pick, index) => (
-            <article className="s-tile" key={pick.id}>
-              <p className="s-slot">{pick.slot}</p>
-              <div className="s-media">
+            <nav className="s-category-nav" aria-label="Filter the uniform">
+              <p>Explore the uniform</p>
+              <div className="s-category-list">
+                {WARDROBE_CATEGORIES.map((category) => {
+                  const count = category.slots
+                    ? PICKS.filter((pick) =>
+                        category.slots.includes(pick.slot)
+                      ).length
+                    : PICKS.length;
+                  return (
+                    <button
+                      type="button"
+                      key={category.id}
+                      aria-pressed={activeCategory === category.id}
+                      onClick={() => setActiveCategory(category.id)}
+                    >
+                      <span>{category.label}</span>
+                      <span>{count}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </nav>
+            <p className="s-price-note">{USD_PRICE_NOTE}</p>
+          </aside>
+
+          <section
+            className="s-wardrobe-canvas"
+            aria-label={`${activeCategoryDetails.label} in Issue 01`}
+          >
+            <div className="s-canvas-meta" aria-live="polite">
+              <span>{activeCategoryDetails.label}</span>
+              <span>{wardrobePicks.length} shown</span>
+            </div>
+            {wardrobePicks.map(({ pick, index }) => (
+              <article
+                className="s-float"
+                key={pick.id}
+                style={WARDROBE_POSITIONS[pick.id]}
+              >
                 <button
-                  className="s-shot"
+                  className="s-float-button"
+                  type="button"
                   onClick={(event) => openProduct(event, index)}
                   aria-haspopup="dialog"
                   aria-label={`Open details for ${pick.hero.brand} ${pick.hero.item}`}
                 >
                   <ProductImage pick={pick} />
-                </button>
-                <button
-                  className={`s-save ${
-                    savedProductIds.includes(pick.id) ? "is-saved" : ""
-                  }`}
-                  type="button"
-                  aria-pressed={savedProductIds.includes(pick.id)}
-                  onClick={() => toggleSaved(pick.id)}
-                >
-                  {savedProductIds.includes(pick.id)
-                    ? "Saved ✓"
-                    : "Save +"}
-                </button>
-              </div>
-              <div className="s-cap">
-                <div className="s-cap-head">
-                  <p className="s-brand">{pick.hero.brand}</p>
-                  <span className="s-source-badge">
-                    {SOURCE_LABELS[pick.hero.source_type]}
+                  <span className="s-float-number" aria-hidden="true">
+                    {String(index + 1).padStart(2, "0")}
                   </span>
-                </div>
-                <p className="s-item">{pick.hero.item}</p>
-                <p className="s-line">
-                  <span>{pick.hero.price}</span>
-                  <span className="s-tag">{pick.hero.status}</span>
-                </p>
-                <a
-                  className="s-shop"
-                  href={pick.hero.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={`${pick.hero.link_label || "View selection"}: ${pick.hero.brand} ${pick.hero.item} (opens in a new tab)`}
-                >
-                  {pick.hero.link_label || "View selection ↗"}
-                </a>
-                <span className="s-used-flag">Compare every source</span>
-              </div>
-            </article>
-          ))}
+                  <span className="s-float-label">
+                    <span>{pick.slot}</span>
+                    <strong>{pick.hero.brand}</strong>
+                    <span>{pick.hero.item}</span>
+                    <b>{pick.hero.price}</b>
+                  </span>
+                </button>
+              </article>
+            ))}
+          </section>
+        </section>
+
+        <section className="s-issue-rundown" aria-label="About this uniform">
+          <div>
+            <span>Why this exists</span>
+            <p>
+              The first genuinely cold week is awkward: a winter coat can feel
+              early, while shirt sleeves feel optimistic. This issue builds one
+              system that can gain or lose a layer without losing its shape.
+            </p>
+          </div>
+          <div>
+            <span>What it is for</span>
+            <p>
+              Cold mornings, warmer afternoons, work, dinner, and long walks.
+              The coat sets the outline; every layer underneath can be added,
+              removed, or worn alone.
+            </p>
+          </div>
+          <div>
+            <span>Who it is for</span>
+            <p>
+              Someone who wants directional clothes without a different outfit
+              for every occasion: fewer pieces, stronger proportions, and
+              enough time to find the right versions used.
+            </p>
+          </div>
         </section>
       </main>
 
@@ -1216,13 +1299,8 @@ const CSS = `
 .s-root *{box-sizing:border-box}.s-root h1,.s-root h2,.s-root p{margin:0}.s-root h1{font-weight:400}.s-root button:focus-visible,.s-root input:focus-visible,.s-root a:focus-visible{outline:1px solid var(--fg);outline-offset:2px}
 .s-head{display:flex;justify-content:space-between;align-items:center;padding:18px 0;font-size:11px;font-weight:500;letter-spacing:.1em;text-transform:uppercase}.s-head-meta{display:flex;align-items:center;gap:22px}.s-head-meta button{padding:0 0 2px;border:0;border-bottom:1px solid var(--fg);background:transparent;color:var(--fg);cursor:pointer;font-family:var(--f);font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase}.s-head-meta button:hover{color:var(--mid);border-color:var(--mid)}
 .s-eyebrow{color:var(--mid);font-size:9px;font-weight:500;letter-spacing:.12em;text-transform:uppercase}.s-price-note{margin-top:24px!important;color:var(--mid);font-size:8.5px!important;font-weight:500;letter-spacing:.08em;line-height:1.5;text-transform:uppercase}
-.s-editorial-layout{display:grid;grid-template-columns:clamp(190px,25vw,360px) minmax(0,1fr);align-items:start;gap:clamp(18px,3vw,60px);padding:48px 0 72px;border-top:1px solid var(--line)}.s-editorial-intro{position:sticky;top:24px;min-width:0}.s-editorial-meta{display:flex;justify-content:space-between;gap:20px;margin-bottom:42px;color:var(--mid);font-size:9px;font-weight:500;letter-spacing:.1em;text-transform:uppercase}.s-editorial-intro h1{max-width:12ch;margin-top:10px;font-size:clamp(34px,3.5vw,52px);font-weight:600;line-height:.98;letter-spacing:-.04em}.s-deck{max-width:48ch;margin-top:20px!important;color:#414141;font-size:12px;line-height:1.7}.s-editorial-notes{margin-top:32px;border-top:1px solid var(--fg)}.s-editorial-notes>div{padding:16px 0;border-bottom:1px solid var(--line)}.s-editorial-notes span{display:block;color:var(--mid);font-size:8.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase}.s-editorial-notes p{margin-top:7px!important;color:#3d3d3d;font-size:11px;line-height:1.65}
-.s-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:42px 14px;min-width:0}.s-tile{display:flex;min-width:0;flex-direction:column}.s-slot{font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--mid);padding-bottom:8px}.s-media{position:relative}
-.s-shot{position:relative;display:block;width:100%;aspect-ratio:4/5;padding:0;border:0;background:var(--plate);cursor:pointer;text-align:left;overflow:hidden}.s-shot img{display:block;width:100%;height:100%;object-fit:contain;object-position:center}
-.s-save{position:absolute;right:8px;bottom:8px;z-index:2;padding:6px 8px;border:1px solid rgba(0,0,0,.15);background:rgba(255,255,255,.92);color:var(--fg);cursor:pointer;font-family:var(--f);font-size:8.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;backdrop-filter:blur(6px)}.s-save:hover,.s-save.is-saved{background:var(--fg);color:#fff;border-color:var(--fg)}
-.s-cap{padding-top:10px}.s-cap-head{display:flex;align-items:center;justify-content:space-between;gap:8px}.s-brand{font-size:12.5px;font-weight:600}.s-source-badge{color:var(--mid);font-size:8px;font-weight:600;letter-spacing:.1em;text-transform:uppercase}.s-item{font-size:12.5px;color:var(--mid);margin-top:1px}.s-line{display:flex;justify-content:space-between;gap:10px;margin-top:6px;font-size:12.5px}.s-tag{font-size:10px;font-weight:500;letter-spacing:.09em;text-transform:uppercase;color:var(--mid)}
-.s-shop{display:inline-block;margin-top:10px;color:var(--fg);font-size:10px;font-weight:500;letter-spacing:.1em;line-height:1.4;text-decoration:none;text-transform:uppercase;border-bottom:1px solid var(--fg)}.s-shop:hover{color:var(--mid);border-color:var(--mid)}.s-shop:focus-visible{outline:1px solid var(--fg);outline-offset:3px}
-.s-used-flag{display:block;margin-top:7px;color:var(--mid);font-size:9px;font-weight:500;letter-spacing:.1em;text-transform:uppercase}
+.s-wardrobe-layout{display:grid;grid-template-columns:clamp(190px,22vw,300px) minmax(0,1fr);align-items:start;gap:clamp(20px,3vw,48px);padding:30px 0 64px;border-top:1px solid var(--line)}.s-wardrobe-sidebar{position:sticky;top:24px;min-width:0}.s-wardrobe-meta{display:flex;justify-content:space-between;gap:20px;margin-bottom:36px;color:var(--mid);font-size:9px;font-weight:500;letter-spacing:.1em;text-transform:uppercase}.s-wardrobe-sidebar h1{max-width:11ch;margin-top:10px;font-size:clamp(34px,3.6vw,54px);font-weight:600;line-height:.96;letter-spacing:-.045em}.s-deck{max-width:42ch;margin-top:20px!important;color:#414141;font-size:12px;line-height:1.7}.s-category-nav{margin-top:34px;padding-top:14px;border-top:1px solid var(--fg)}.s-category-nav>p{margin-bottom:10px!important;color:var(--mid);font-size:8.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase}.s-category-list{display:grid;gap:1px}.s-category-list button{display:flex;width:100%;align-items:center;justify-content:space-between;gap:18px;padding:2px 0;border:0;background:transparent;color:var(--fg);cursor:pointer;font-family:var(--f);font-size:12px;line-height:1.45;text-align:left}.s-category-list button span:last-child{color:var(--mid);font-size:9px}.s-category-list button:hover span:first-child,.s-category-list button[aria-pressed="true"] span:first-child{text-decoration:underline;text-underline-offset:3px}.s-category-list button[aria-pressed="true"]{font-weight:600}
+.s-wardrobe-canvas{position:relative;min-height:clamp(720px,70vw,940px);overflow:hidden;background:var(--plate);isolation:isolate}.s-canvas-meta{position:absolute;z-index:20;top:12px;right:14px;display:flex;gap:16px;color:var(--mid);font-size:8px;font-weight:600;letter-spacing:.1em;text-transform:uppercase}.s-float{position:absolute;z-index:1;left:var(--float-x);top:var(--float-y);width:var(--float-w);transform:rotate(var(--float-r));transition:opacity .2s ease}.s-float-button{position:relative;display:block;width:100%;padding:0;border:0;background:transparent;color:var(--fg);cursor:pointer;font-family:var(--f);text-align:left}.s-float-button>img{display:block;width:100%;aspect-ratio:4/5;object-fit:contain;object-position:center;background:var(--plate);mix-blend-mode:multiply;transition:transform .2s ease}.s-float-button:hover>img,.s-float-button:focus-visible>img{transform:translateY(-5px) scale(1.02)}.s-float-number{position:absolute;top:5px;left:5px;color:#666;font-size:7px;font-weight:600;letter-spacing:.08em}.s-float-label{position:absolute;z-index:3;left:50%;bottom:-6px;width:max-content;max-width:190px;padding:8px 10px;border:1px solid var(--fg);background:#fff;box-shadow:3px 3px 0 rgba(0,0,0,.12);opacity:0;pointer-events:none;transform:translate(-50%,100%);transition:opacity .15s ease}.s-float-button:hover .s-float-label,.s-float-button:focus-visible .s-float-label{opacity:1}.s-float-label span,.s-float-label strong,.s-float-label b{display:block}.s-float-label>span:first-child{color:var(--mid);font-size:7.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase}.s-float-label strong{margin-top:3px;font-size:10px;font-weight:600}.s-float-label>span:nth-of-type(2){overflow:hidden;max-width:170px;color:var(--mid);font-size:9px;line-height:1.3;text-overflow:ellipsis;white-space:nowrap}.s-float-label b{margin-top:5px;font-size:10px;font-weight:600}.s-issue-rundown{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:1px solid var(--fg);border-bottom:1px solid var(--line)}.s-issue-rundown>div{padding:22px 24px 24px 0}.s-issue-rundown>div+div{padding-left:24px;border-left:1px solid var(--line)}.s-issue-rundown span{display:block;color:var(--mid);font-size:8.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase}.s-issue-rundown p{max-width:45ch;margin-top:8px!important;color:#3d3d3d;font-size:11px;line-height:1.65}.s-slot{font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--mid);padding-bottom:8px}.s-tag{font-size:10px;font-weight:500;letter-spacing:.09em;text-transform:uppercase;color:var(--mid)}
 .s-drawer-wrap{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.28);display:flex;justify-content:flex-end}
 .s-drawer{width:min(430px,92vw);height:100%;overflow-y:auto;background:#fff;box-shadow:-12px 0 30px rgba(0,0,0,.12);padding:18px}
 .s-drawer-close{display:block;margin:0 0 18px auto;padding:0;border:0;background:transparent;font-family:var(--f);font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;cursor:pointer}
@@ -1241,9 +1319,10 @@ const CSS = `
 .s-sub{margin-top:80px;padding:44px 0;border-top:1px solid var(--line)}.s-sub p{font-size:13px}.s-field{display:flex;margin-top:18px;border-bottom:1px solid var(--fg);max-width:380px}.s-field input{flex:1;min-width:0;border:0;background:transparent;font-family:var(--f);font-size:13px;color:var(--fg);padding:0 0 8px}.s-field input::placeholder{color:var(--mid)}.s-field button{border:0;background:transparent;cursor:pointer;padding:0 0 8px;font-family:var(--f);font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase}.s-field button:hover{color:var(--mid)}.s-field button:disabled,.s-field input:disabled{cursor:wait;opacity:.55}.s-sub-success{font-weight:500}.s-sub-error{margin-top:10px!important;color:#9c1c13;font-size:11px!important}
 .s-foot{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:18px 0;border-top:1px solid var(--line);font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--mid)}
 @keyframes s-used-pulse{0%,100%{opacity:.25}50%{opacity:1}}
-@media (max-width:900px) and (min-width:721px){.s-editorial-layout{padding-top:36px}.s-editorial-meta{margin-bottom:26px}.s-editorial-intro h1{font-size:34px}.s-deck{margin-top:15px!important;font-size:10.5px;line-height:1.6}.s-editorial-notes{margin-top:22px}.s-editorial-notes>div{padding:11px 0}.s-editorial-notes p{font-size:9.5px;line-height:1.55}.s-price-note{margin-top:16px!important;font-size:7.5px!important}.s-grid{gap:34px 10px}.s-brand,.s-item{font-size:10.5px}.s-source-badge{display:none}.s-line{font-size:11px}.s-tag{font-size:8px}.s-shop{font-size:8.5px}.s-used-flag{font-size:7.5px}}
-@media (max-width:720px){.s-editorial-layout{grid-template-columns:1fr;gap:38px;padding:30px 0 56px}.s-editorial-intro{position:static}.s-editorial-meta{margin-bottom:28px}.s-editorial-intro h1{max-width:14ch}.s-deck{max-width:62ch}.s-editorial-notes{display:grid;grid-template-columns:1fr}.s-editorial-notes>div{padding:14px 0}.s-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:32px 12px}.s-price-note{margin-top:18px!important}}
-@media (max-width:560px){.s-root{padding:0 12px}.s-head-meta{gap:12px}.s-head-meta>span{display:none}.s-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:24px 12px}.s-open{padding:36px 0 28px;flex-direction:column;align-items:flex-start;gap:16px}.s-flow{margin-bottom:32px}.s-save{right:6px;bottom:6px;padding:5px 6px;font-size:7.5px}.s-saved{margin-top:60px}.s-saved-list{grid-template-columns:1fr 1fr}.s-drawer-wrap{align-items:flex-end}.s-drawer{width:100%;height:min(88dvh,760px);padding:14px;border-radius:16px 16px 0 0;box-shadow:0 -12px 30px rgba(0,0,0,.14)}.s-drawer h2{font-size:21px}.s-piece-meta{grid-template-columns:1fr}.s-piece-meta span+span{padding:7px 0 0;border-top:1px solid var(--line);border-left:0}.s-piece-actions{grid-template-columns:1fr}.s-piece-editorial{grid-template-columns:1fr}.s-piece-section-head{align-items:flex-start;flex-direction:column}.s-piece-section-head>span{text-align:left}.s-piece-alternative{grid-template-columns:70px minmax(0,1fr) auto;min-height:94px}.s-piece-alternative>img{width:70px;height:94px}.s-ai{padding:17px 14px}.s-ai-chips{display:grid;grid-template-columns:1fr 1fr}.s-ai-chips button{text-align:left}.s-ai-field input{font-size:11px}.s-ai-list .s-used-card{grid-template-columns:62px minmax(0,1fr)}.s-ai-list .s-used-card img{width:62px;height:78px}}
+@media (max-width:900px) and (min-width:721px){.s-wardrobe-layout{grid-template-columns:210px minmax(0,1fr);gap:20px;padding-top:26px}.s-wardrobe-meta{margin-bottom:26px}.s-wardrobe-sidebar h1{font-size:34px}.s-deck{margin-top:15px!important;font-size:10.5px;line-height:1.6}.s-category-nav{margin-top:24px}.s-price-note{margin-top:16px!important;font-size:7.5px!important}.s-wardrobe-canvas{min-height:730px}.s-float-label{max-width:160px}.s-issue-rundown p{font-size:9.5px;line-height:1.55}}
+@media (max-width:720px){.s-wardrobe-layout{grid-template-columns:1fr;gap:30px;padding:30px 0 52px}.s-wardrobe-sidebar{position:static}.s-wardrobe-meta{margin-bottom:28px}.s-wardrobe-sidebar h1{max-width:14ch}.s-deck{max-width:62ch}.s-category-nav{margin-top:26px}.s-category-list{display:flex;flex-wrap:wrap;gap:6px}.s-category-list button{width:auto;padding:7px 9px;border:1px solid var(--line);font-size:10px}.s-category-list button span:last-child{margin-left:9px}.s-category-list button[aria-pressed="true"]{border-color:var(--fg);background:var(--fg);color:#fff}.s-category-list button[aria-pressed="true"] span:first-child{text-decoration:none}.s-category-list button[aria-pressed="true"] span:last-child{color:#bbb}.s-price-note{margin-top:18px!important}.s-wardrobe-canvas{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:30px 12px;min-height:0;padding:42px 12px 22px}.s-canvas-meta{top:11px;right:12px;left:12px;justify-content:space-between}.s-float{position:static;width:auto;transform:none}.s-float-button>img{width:100%}.s-float-number{top:4px;left:4px}.s-float-label{position:static;width:100%;max-width:none;padding:8px 0 0;border:0;background:transparent;box-shadow:none;opacity:1;transform:none}.s-float-label>span:nth-of-type(2){white-space:normal}.s-issue-rundown{grid-template-columns:1fr}.s-issue-rundown>div,.s-issue-rundown>div+div{padding:18px 0;border-left:0;border-bottom:1px solid var(--line)}.s-issue-rundown>div:last-child{border-bottom:0}}
+@media (max-width:560px){.s-root{padding:0 12px}.s-head-meta{gap:12px}.s-head-meta>span{display:none}.s-wardrobe-canvas{gap:24px 10px;padding-right:10px;padding-left:10px}.s-saved{margin-top:60px}.s-saved-list{grid-template-columns:1fr 1fr}.s-drawer-wrap{align-items:flex-end}.s-drawer{width:100%;height:min(88dvh,760px);padding:14px;border-radius:16px 16px 0 0;box-shadow:0 -12px 30px rgba(0,0,0,.14)}.s-drawer h2{font-size:21px}.s-piece-meta{grid-template-columns:1fr}.s-piece-meta span+span{padding:7px 0 0;border-top:1px solid var(--line);border-left:0}.s-piece-actions{grid-template-columns:1fr}.s-piece-editorial{grid-template-columns:1fr}.s-piece-section-head{align-items:flex-start;flex-direction:column}.s-piece-section-head>span{text-align:left}.s-piece-alternative{grid-template-columns:70px minmax(0,1fr) auto;min-height:94px}.s-piece-alternative>img{width:70px;height:94px}.s-ai{padding:17px 14px}.s-ai-chips{display:grid;grid-template-columns:1fr 1fr}.s-ai-chips button{text-align:left}.s-ai-field input{font-size:11px}.s-ai-list .s-used-card{grid-template-columns:62px minmax(0,1fr)}.s-ai-list .s-used-card img{width:62px;height:78px}}
+@media (hover:none) and (min-width:721px){.s-float-label{opacity:1}}
 @media (prefers-reduced-motion:reduce){.s-root *{animation:none!important;transition:none!important}}
 `;
 
