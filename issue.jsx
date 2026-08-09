@@ -126,6 +126,10 @@ export const PICKS = [
       status: "Final sale",
       href: "https://www.namu-shop.com/products/kaptain-sunshine-traveller-coat-top-navy-aw25",
       image: "/products/traveller-coat-clean.jpg",
+      gallery: [
+        { image: "/products/traveller-coat.jpg", label: "Source view" },
+        { image: "/products/traveller-coat-clean.jpg", label: "Collar + cloth", view: "detail", object_position: "50% 24%" },
+      ],
     },
     alternatives: [],
   }),
@@ -150,6 +154,10 @@ export const PICKS = [
       status: "1 left",
       href: "https://wdepartment.com/product/camiel-fortgens-big-shirt-blockprint/",
       image: "/products/big-shirt-clean.jpg",
+      gallery: [
+        { image: "/products/big-shirt.jpg", label: "Source view" },
+        { image: "/products/big-shirt-clean.jpg", label: "Print + fabric", view: "detail", object_position: "50% 35%" },
+      ],
     },
     alternatives: [],
   }),
@@ -174,6 +182,10 @@ export const PICKS = [
       status: "In stock",
       href: "https://www.beams.co.jp/item/beamsplus/tops/38150255148/",
       image: "/products/shawl-cardigan-clean.jpg",
+      gallery: [
+        { image: "/products/shawl-cardigan.jpg", label: "Source view" },
+        { image: "/products/shawl-cardigan-clean.jpg", label: "Knit + collar", view: "detail", object_position: "50% 34%" },
+      ],
     },
     alternatives: [],
   }),
@@ -198,6 +210,10 @@ export const PICKS = [
       status: "Available",
       href: "https://www.prada.com/us/en/p/cotton-shirt/UCN596_10IV_F0AB7_S_OOO",
       image: "/products/prada-shirt-clean.jpg",
+      gallery: [
+        { image: "/products/prada-shirt.jpg", label: "Source view" },
+        { image: "/products/prada-shirt-clean.jpg", label: "Collar + cotton", view: "detail", object_position: "50% 27%" },
+      ],
     },
     alternatives: [],
   }),
@@ -222,6 +238,10 @@ export const PICKS = [
       status: "In stock",
       href: "https://www.sunspel.com/products/mens-cotton-riviera-long-sleeve-polo-shirt-in-black",
       image: "/products/riviera-polo-clean.jpg",
+      gallery: [
+        { image: "/products/riviera-polo.jpg", label: "Source view" },
+        { image: "/products/riviera-polo-clean.jpg", label: "Collar + mesh", view: "detail", object_position: "50% 30%" },
+      ],
     },
     alternatives: [],
   }),
@@ -247,6 +267,10 @@ export const PICKS = [
       status: "In stock",
       href: "https://www.rickowens.eu/products/ru02f4333wt09",
       image: "/products/rick-owens-geth-jeans-clean.jpg",
+      gallery: [
+        { image: "/products/rick-owens-geth-jeans.jpg", label: "On-body view" },
+        { image: "/products/rick-owens-geth-jeans-clean.jpg", label: "Waist + hardware", view: "detail", object_position: "50% 18%" },
+      ],
     },
     alternatives: [
       {
@@ -286,6 +310,10 @@ export const PICKS = [
       href: "https://anonymousism.com/collections/20aw-collection",
       link_label: "View archive ↗",
       image: "/products/anonymous-socks-clean.jpg",
+      gallery: [
+        { image: "/products/anonymous-socks.jpg", label: "Archive view" },
+        { image: "/products/anonymous-socks-clean.jpg", label: "Yarn + texture", view: "detail", object_position: "50% 55%" },
+      ],
     },
     alternatives: [],
   }),
@@ -311,6 +339,10 @@ export const PICKS = [
       status: "41% off",
       href: "https://www.ssense.com/en-us/men/product/kiko-kostadinov/black-farkas-boots/19042871",
       image: "/products/kiko-kostadinov-farkas-boots-clean.jpg",
+      gallery: [
+        { image: "/products/kiko-kostadinov-farkas-boots.webp", label: "Source view" },
+        { image: "/products/kiko-kostadinov-farkas-boots-clean.jpg", label: "Leather + hardware", view: "detail", object_position: "50% 43%" },
+      ],
     },
     alternatives: [],
   }),

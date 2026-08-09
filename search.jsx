@@ -1,11 +1,10 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   AiFinder,
   ISSUE_CSS,
   PICKS,
-  ProductImage,
   ProductWatch,
   USD_PRICE_NOTE,
   formatListingMoney,
@@ -16,6 +15,107 @@ const SOURCE_LABELS = {
   resale: "Resale",
   archive: "Archive",
 };
+
+function ProductGallery({ pick }) {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const touchStartX = useRef(null);
+  const gallery = [
+    { image: pick.hero.image, label: "Clean product view" },
+    ...(pick.hero.gallery || []),
+  ];
+  const activeImage = gallery[activeIndex] || gallery[0];
+
+  useEffect(() => {
+    setActiveIndex(0);
+  }, [pick.id]);
+
+  const move = (direction) => {
+    setActiveIndex((current) =>
+      (current + direction + gallery.length) % gallery.length
+    );
+  };
+
+  const handleKeyDown = (event) => {
+    if (event.key === "ArrowLeft") {
+      event.preventDefault();
+      move(-1);
+    }
+    if (event.key === "ArrowRight") {
+      event.preventDefault();
+      move(1);
+    }
+  };
+
+  const handleTouchEnd = (event) => {
+    if (touchStartX.current === null) return;
+    const distance = event.changedTouches[0].clientX - touchStartX.current;
+    touchStartX.current = null;
+    if (Math.abs(distance) < 42) return;
+    move(distance < 0 ? 1 : -1);
+  };
+
+  return (
+    <div
+      className={`search-gallery ${
+        activeImage.view === "detail" ? "is-detail" : ""
+      }`}
+    >
+      <div
+        className="search-gallery-stage"
+        tabIndex="0"
+        aria-label="Product gallery. Use the left and right arrow keys to change images."
+        onKeyDown={handleKeyDown}
+        onTouchStart={(event) => {
+          touchStartX.current = event.touches[0].clientX;
+        }}
+        onTouchEnd={handleTouchEnd}
+      >
+        <img
+          key={`${pick.id}-${activeIndex}`}
+          src={activeImage.image}
+          alt={`${pick.hero.brand} ${pick.hero.item} — ${activeImage.label}`}
+          loading={activeIndex === 0 ? "eager" : "lazy"}
+          decoding="async"
+          style={{
+            objectPosition: activeImage.object_position || "50% 50%",
+            transformOrigin: activeImage.object_position || "50% 50%",
+          }}
+          onError={(event) => {
+            if (event.currentTarget.src.endsWith(pick.hero.image)) return;
+            event.currentTarget.onerror = null;
+            event.currentTarget.src = pick.hero.image;
+          }}
+        />
+      </div>
+
+      <div className="search-gallery-controls">
+        <button type="button" onClick={() => move(-1)} aria-label="Previous product image">
+          ←
+        </button>
+        <span aria-live="polite">
+          <b>{activeIndex + 1} / {gallery.length}</b>
+          <small>{activeImage.label}</small>
+        </span>
+        <button type="button" onClick={() => move(1)} aria-label="Next product image">
+          →
+        </button>
+      </div>
+
+      <div className="search-gallery-dots" aria-label="Choose product image">
+        {gallery.map((image, index) => (
+          <button
+            type="button"
+            className={index === activeIndex ? "is-active" : ""}
+            aria-label={`View ${image.label}`}
+            aria-pressed={index === activeIndex}
+            onClick={() => setActiveIndex(index)}
+            key={`${image.label}-${index}`}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export default function ProductSearch({ productKey }) {
   const pick = PICKS.find(
@@ -133,7 +233,7 @@ export default function ProductSearch({ productKey }) {
 
       <main className="search-pdp">
         <section className="search-visual" aria-label={`${hero.brand} ${hero.item} product image`}>
-          <ProductImage pick={pick} />
+          <ProductGallery pick={pick} />
         </section>
 
         <aside className="search-buy" aria-labelledby="search-product-title">
@@ -278,7 +378,9 @@ const SEARCH_CSS = `
 .search-head a{width:max-content;color:var(--fg);text-decoration:none}.search-head a:hover{color:var(--mid)}.search-wordmark{font-size:11px}.search-back{justify-self:end}
 .search-pdp{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(340px,.75fr);min-height:calc(100vh - 58px);margin:0 -24px}
 .search-visual{position:sticky;top:0;display:flex;height:calc(100vh - 58px);min-height:620px;align-items:center;justify-content:center;overflow:hidden;background:var(--plate)}
-.search-visual img{display:block;width:100%;height:100%;padding:clamp(26px,5vw,80px);object-fit:contain;object-position:center}
+.search-gallery{position:relative;width:100%;height:100%;overflow:hidden}.search-gallery-stage{display:flex;width:100%;height:100%;align-items:center;justify-content:center;overflow:hidden;padding:clamp(26px,5vw,80px);outline:0}.search-gallery-stage:focus-visible{box-shadow:inset 0 0 0 2px var(--fg)}.search-gallery-stage img{display:block;width:100%;height:100%;object-fit:contain;object-position:center;transition:opacity .18s ease,transform .25s ease}.search-gallery.is-detail .search-gallery-stage{padding:0}.search-gallery.is-detail .search-gallery-stage img{object-fit:cover;transform:scale(1.55)}
+.search-gallery-controls{position:absolute;left:50%;bottom:24px;display:grid;grid-template-columns:38px minmax(118px,auto) 38px;align-items:stretch;overflow:hidden;border:1px solid rgba(0,0,0,.18);background:rgba(255,255,255,.94);transform:translateX(-50%);backdrop-filter:blur(8px)}.search-gallery-controls button{border:0;background:transparent;color:var(--fg);cursor:pointer;font-family:var(--f);font-size:13px}.search-gallery-controls button:hover{background:var(--fg);color:#fff}.search-gallery-controls button:focus-visible{position:relative;z-index:1;outline:2px solid var(--fg);outline-offset:-2px}.search-gallery-controls>span{display:flex;min-height:42px;align-items:center;justify-content:center;flex-direction:column;padding:5px 13px;border-right:1px solid var(--line);border-left:1px solid var(--line);line-height:1.1}.search-gallery-controls b{font-size:9px;font-weight:600;letter-spacing:.1em}.search-gallery-controls small{margin-top:4px;color:var(--mid);font-size:7px;font-weight:600;letter-spacing:.09em;text-transform:uppercase}
+.search-gallery-dots{position:absolute;left:50%;bottom:12px;display:none;gap:6px;transform:translateX(-50%)}.search-gallery-dots button{width:5px;height:5px;padding:0;border:1px solid var(--fg);border-radius:50%;background:transparent}.search-gallery-dots button.is-active{background:var(--fg)}
 .search-buy{min-width:0;border-left:1px solid var(--line);background:#fff}
 .search-buy-inner{width:100%;max-width:480px;margin:0 auto;padding:clamp(42px,6vw,88px) clamp(28px,4vw,58px) 48px}
 .search-kicker{display:flex;justify-content:space-between;gap:20px;color:var(--mid);font-size:8.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase}
@@ -296,5 +398,5 @@ const SEARCH_CSS = `
 .search-price-note{margin-top:18px!important;color:var(--mid);font-size:7.5px!important;font-weight:500;letter-spacing:.08em;line-height:1.5;text-transform:uppercase}
 .search-missing{max-width:760px;margin:0 auto;padding:15vh 0}.search-missing h1{max-width:16ch;margin-top:10px;font-size:clamp(34px,6vw,64px);font-weight:600;line-height:1;letter-spacing:-.04em}.search-missing a{display:inline-block;margin-top:28px;border-bottom:1px solid var(--fg);color:var(--fg);font-size:10px;font-weight:500;letter-spacing:.1em;text-decoration:none;text-transform:uppercase}
 @media (max-width:920px){.search-pdp{grid-template-columns:minmax(0,1fr) minmax(320px,420px)}.search-visual{min-height:560px}.search-visual img{padding:32px}.search-buy-inner{padding:42px 26px}.search-buy h1{font-size:34px}}
-@media (max-width:720px){.search-root{padding:0 12px}.search-head{grid-template-columns:1fr auto;min-height:52px}.search-head>span{display:none}.search-pdp{grid-template-columns:1fr;margin:0 -12px}.search-visual{position:static;width:100%;height:auto;min-height:0;aspect-ratio:4/5}.search-visual img{padding:18px}.search-buy{border-top:1px solid var(--line);border-left:0}.search-buy-inner{max-width:none;padding:30px 14px 42px}.search-brand{margin-top:26px!important}.search-buy h1{font-size:32px}.search-reason{font-size:11.5px}.search-accordion summary{padding:15px 0}.search-option{grid-template-columns:58px minmax(0,1fr) 12px}.search-option img{width:58px;height:74px}}
+@media (max-width:720px){.search-root{padding:0 12px}.search-head{grid-template-columns:1fr auto;min-height:52px}.search-head>span{display:none}.search-pdp{grid-template-columns:1fr;margin:0 -12px}.search-visual{position:static;width:100%;height:auto;min-height:0;aspect-ratio:4/5}.search-gallery-stage{padding:18px}.search-gallery-controls{bottom:24px;grid-template-columns:36px minmax(100px,auto) 36px}.search-gallery-controls>span{min-height:39px}.search-gallery-dots{display:flex}.search-gallery.is-detail .search-gallery-stage img{transform:scale(1.45)}.search-buy{border-top:1px solid var(--line);border-left:0}.search-buy-inner{max-width:none;padding:30px 14px 42px}.search-brand{margin-top:26px!important}.search-buy h1{font-size:32px}.search-reason{font-size:11.5px}.search-accordion summary{padding:15px 0}.search-option{grid-template-columns:58px minmax(0,1fr) 12px}.search-option img{width:58px;height:74px}}
 `;
