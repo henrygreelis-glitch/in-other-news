@@ -1,45 +1,30 @@
 import type { Metadata } from "next";
-import { headers } from "next/headers";
 import "./globals.css";
 
-const title = "In Other News — Uniform 01";
-const description =
-  "A weekly fashion edit: discover one complete look, compare retail and pre-owned options, and save the pieces worth watching.";
-
-export async function generateMetadata(): Promise<Metadata> {
-  const requestHeaders = await headers();
-  const host = requestHeaders.get("host") ?? "localhost:3000";
-  const protocol = host.startsWith("localhost") ? "http" : "https";
-  const shareImage = `${protocol}://${host}/og.png`;
-
-  return {
-    title,
-    description,
-    icons: {
-      icon: "/favicon.svg",
-      shortcut: "/favicon.svg",
-    },
-    openGraph: {
-      title,
-      description,
-      type: "website",
-      images: [
-        {
-          url: shareImage,
-          width: 1200,
-          height: 630,
-          alt: "In Other News — Uniform 01",
-        },
-      ],
-    },
-    twitter: {
-      card: "summary_large_image",
-      title,
-      description,
-      images: [shareImage],
-    },
-  };
-}
+export const metadata: Metadata = {
+  title: {
+    default: "Henry Greelis",
+    template: "%s | Henry Greelis",
+  },
+  description:
+    "Selected projects by Henry Greelis across positioning, product stories, and editorial ideas.",
+  icons: {
+    icon: "/favicon.svg",
+    shortcut: "/favicon.svg",
+  },
+  openGraph: {
+    title: "Henry Greelis",
+    description:
+      "Positioning, product stories, editorial ideas, and selected work by Henry Greelis.",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "Henry Greelis",
+    description:
+      "Positioning, product stories, editorial ideas, and selected work by Henry Greelis.",
+  },
+};
 
 export default function RootLayout({
   children,
