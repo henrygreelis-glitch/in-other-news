@@ -1,5 +1,5 @@
 html {
-  background: #ece96b;
+  background: #d8dde2;
 }
 
 body {
@@ -18,15 +18,16 @@ img {
 }
 
 .plain-site {
-  --ink: #17170f;
+  --ink: #16191d;
+  --link: #253ca8;
   box-sizing: border-box;
   min-height: 100svh;
-  padding: 18px;
-  background: #ece96b;
+  padding: 28px;
+  background: #d8dde2;
   color: var(--ink);
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: 15px;
-  line-height: 1.45;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 14px;
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -41,7 +42,8 @@ img {
 }
 
 .plain-site a {
-  color: inherit;
+  color: var(--link);
+  text-underline-offset: 3px;
 }
 
 .plain-site a:focus-visible {
@@ -65,48 +67,17 @@ img {
 
 .plain-menu {
   display: grid;
-  grid-template-columns: repeat(2, 112px);
-  gap: 10px;
-  width: max-content;
-  margin-top: 38px;
+  gap: 7px;
+  margin: 34px 0 0;
+  padding-left: 19px;
 }
 
-.plain-tile {
-  display: flex;
-  width: 112px;
-  height: 112px;
-  align-items: center;
-  justify-content: center;
-  padding: 12px;
-  text-align: center;
-  text-decoration-thickness: 1px;
-  text-underline-offset: 3px;
-  transition: transform 120ms ease, filter 120ms ease;
+.plain-menu li {
+  padding-left: 2px;
 }
 
-.plain-tile:hover {
-  filter: brightness(0.96);
-  transform: rotate(-1deg);
-}
-
-.plain-tile--news {
-  background: #efac8e;
-}
-
-.plain-tile--about {
-  background: #f2c96b;
-}
-
-.plain-tile--resume {
-  background: #a9d8ad;
-}
-
-.plain-tile--email {
-  background: #c9b9dc;
-}
-
-.plain-tile--writing {
-  background: #a8d2e5;
+.plain-menu a:hover {
+  color: #101010;
 }
 
 .plain-copyright {
@@ -130,7 +101,7 @@ img {
 
 .plain-page h1 {
   margin-bottom: 24px;
-  font-size: 28px;
+  font-size: 24px;
   font-weight: normal;
   line-height: 1.1;
 }
@@ -139,7 +110,7 @@ img {
   display: grid;
   gap: 18px;
   max-width: 590px;
-  font-size: clamp(18px, 2.2vw, 25px);
+  font-size: clamp(16px, 2vw, 22px);
   line-height: 1.35;
 }
 
@@ -165,7 +136,7 @@ img {
 .plain-post {
   display: block;
   padding: 18px;
-  border: 1px solid rgba(23, 23, 15, 0.45);
+  border: 1px solid rgba(22, 25, 29, 0.45);
   text-decoration: none;
 }
 
@@ -197,18 +168,11 @@ img {
 
 @media (max-width: 520px) {
   .plain-site {
-    padding: 14px;
+    padding: 18px;
   }
 
   .plain-menu {
-    grid-template-columns: repeat(2, 102px);
-    gap: 8px;
-    margin-top: 32px;
-  }
-
-  .plain-tile {
-    width: 102px;
-    height: 102px;
+    margin-top: 28px;
   }
 
   .plain-back {
