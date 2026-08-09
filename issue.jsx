@@ -330,7 +330,7 @@ export function ProductImage({ pick }) {
   );
 }
 
-function formatListingMoney(value, currency) {
+export function formatListingMoney(value, currency) {
   const amount = Number(value);
   if (!Number.isFinite(amount) || !currency) return "Price unavailable";
   const currencyCode = String(currency).toUpperCase();
