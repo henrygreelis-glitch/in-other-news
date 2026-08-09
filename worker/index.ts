@@ -152,6 +152,12 @@ const EBAY_PRODUCTS = {
     query: "Our Legacy Third Cut Black Selvedge Jeans",
     requiredTitleTermGroups: [["our legacy"], ["third cut"]],
   },
+  "rick-owens-geth-jeans": {
+    brand: "Rick Owens",
+    item: "Geth Jeans",
+    query: "Rick Owens Geth Jeans RU02F4333 Black",
+    requiredTitleTermGroups: [["rick owens"], ["geth"], ["jeans", "trousers"]],
+  },
   "anonymous-ism-waffle-sock": {
     brand: "Anonymous Ism",
     item: "Waffle Crew Sock",

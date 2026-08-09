@@ -10,7 +10,10 @@ import {
 } from "./issue";
 
 export default function ProductSearch({ productKey }) {
-  const pick = PICKS.find((candidate) => candidate.id === productKey);
+  const pick = PICKS.find(
+    (candidate) =>
+      candidate.id === productKey || candidate.legacy_ids?.includes(productKey)
+  );
   const [market, setMarket] = useState({
     status: "idle",
     listings: [],
