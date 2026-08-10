@@ -130,26 +130,27 @@ export const PICKS = [
     alternatives: [],
   }),
   definePiece({
-    id: "camiel-fortgens-big-shirt",
-    slot: "Layer",
+    id: "ernest-w-baker-crocodile-bomber",
+    legacy_ids: ["camiel-fortgens-big-shirt"],
+    slot: "Leather jacket",
     ebay_search_href:
-      "https://www.ebay.com/sch/i.html?_nkw=Camiel+Fortgens+Big+Shirt+Blockprint&_sacat=0&LH_ItemCondition=3000",
+      "https://www.ebay.com/sch/i.html?_nkw=Ernest+W+Baker+Crocodile+Leather+Bomber+JA27L&_sacat=0&LH_ItemCondition=3000",
     why_selected:
-      "Cut like a pattern block someone forgot to grade down. Worn open over the plain blue shirt, it becomes the light jacket between shirt and coat.",
+      "The cropped bomber interrupts the long coat and wide trousers with a sharper, shorter shape. Crocodile-embossed black lamb leather adds texture without introducing another color.",
     why_this_source:
-      "The block print and unfinished details change by season. This listing identifies the exact version selected instead of treating every Big Shirt as interchangeable.",
+      "The brand has the exact JA27L bomber reduced from €1,270 to €710 with three sizes listed. This is worth checking new while the sale price competes with what a clean used example may cost.",
     hero: {
-      id: "wdepartment-big-shirt-blockprint",
+      id: "ernest-w-baker-ja27l-crocodile-bomber",
       source_type: "retail",
-      source: "W Department",
-      brand: "Camiel Fortgens",
-      item: "Big Shirt",
-      price: "$576",
+      source: "Ernest W. Baker",
+      brand: "Ernest W. Baker",
+      item: "80's Crocodile Leather Bomber",
+      price: "$819",
       condition: "New",
-      sizes_available: "Check retailer",
-      status: "1 left",
-      href: "https://wdepartment.com/product/camiel-fortgens-big-shirt-blockprint/",
-      image: "/products/big-shirt-clean.jpg",
+      sizes_available: "S/46–L/50",
+      status: "44% off",
+      href: "https://www.ernest-w-baker.com/shop/crocodile-leather-bomber?category=Leather",
+      image: "/products/ernest-w-baker-crocodile-bomber.webp",
     },
     alternatives: [],
   }),
@@ -184,7 +185,7 @@ export const PICKS = [
     ebay_search_href:
       "https://www.ebay.com/sch/i.html?_nkw=Prada+UCN596+10IV+F0AB7+Cotton+Shirt&_sacat=0&LH_ItemCondition=3000",
     why_selected:
-      "The quiet blue base under Camiel Fortgens’ louder block print. Its sharper collar holds the middle of the look without competing with the outer layers.",
+      "The quiet blue base breaks up the black leather, knit, and trousers. Its sharper collar holds the middle of the look without competing with the outer layers.",
     why_this_source:
       "The exact sky blue and sharp collar are doing the work. Retail is the dependable reference for color, fabrication, and a complete size run when used listings are vague.",
     hero: {
@@ -319,11 +320,11 @@ export const PICKS = [
 
 const WARDROBE_CATEGORIES = [
   { id: "all", label: "All pieces", slots: null },
-  { id: "outerwear", label: "Outerwear", slots: ["Outer"] },
+  { id: "outerwear", label: "Outerwear", slots: ["Outer", "Leather jacket"] },
   {
     id: "layers",
     label: "Layers",
-    slots: ["Layer", "Knit", "Shirt", "Polo"],
+    slots: ["Knit", "Shirt", "Polo"],
   },
   { id: "bottoms", label: "Bottoms", slots: ["Black trouser"] },
   { id: "accessories", label: "Accessories", slots: ["Sock"] },
@@ -337,7 +338,7 @@ const WARDROBE_POSITIONS = {
     "--float-w": "22%",
     "--float-r": "-1.5deg",
   },
-  "camiel-fortgens-big-shirt": {
+  "ernest-w-baker-crocodile-bomber": {
     "--float-x": "34%",
     "--float-y": "2%",
     "--float-w": "17%",
@@ -1302,12 +1303,12 @@ export default function Uniform() {
 
 const CSS = `
 @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600&display=swap');
-.s-root{box-sizing:border-box;--fg:#000;--mid:#767676;--line:#e4e4e4;--plate:#f1f1f1;--f:'Archivo',Helvetica,Arial,sans-serif;width:100%;max-width:1600px;margin:0 auto;background:#fff;color:var(--fg);font-family:var(--f);font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased;padding:0 16px}
+.s-root{box-sizing:border-box;--fg:#000;--mid:#767676;--surface:#efefed;--line:#d9d9d6;--plate:var(--surface);--f:'Archivo',Helvetica,Arial,sans-serif;width:100%;min-height:100svh;margin:0;background:var(--surface);color:var(--fg);font-family:var(--f);font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased;padding:0 16px}
 .s-root *{box-sizing:border-box}.s-root h1,.s-root h2,.s-root p{margin:0}.s-root h1{font-weight:400}.s-root button:focus-visible,.s-root input:focus-visible,.s-root a:focus-visible{outline:1px solid var(--fg);outline-offset:2px}
 .s-head{display:flex;justify-content:space-between;align-items:center;padding:18px 0;font-size:11px;font-weight:500;letter-spacing:.1em;text-transform:uppercase}.s-head-brand{display:flex;align-items:center;gap:8px}.s-head-brand a{color:var(--fg);text-decoration:none}.s-head-brand a:hover{text-decoration:underline;text-underline-offset:3px}.s-head-brand>span:last-child{color:var(--mid)}.s-head-meta{display:flex;align-items:center;gap:22px}.s-head-meta button{padding:0 0 2px;border:0;border-bottom:1px solid var(--fg);background:transparent;color:var(--fg);cursor:pointer;font-family:var(--f);font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase}.s-head-meta button:hover{color:var(--mid);border-color:var(--mid)}
 .s-eyebrow{color:var(--mid);font-size:9px;font-weight:500;letter-spacing:.12em;text-transform:uppercase}.s-price-note{margin-top:24px!important;color:var(--mid);font-size:8.5px!important;font-weight:500;letter-spacing:.08em;line-height:1.5;text-transform:uppercase}
 .s-wardrobe-layout{display:grid;grid-template-columns:clamp(190px,22vw,300px) minmax(0,1fr);align-items:start;gap:clamp(20px,3vw,48px);padding:30px 0 64px;border-top:1px solid var(--line)}.s-wardrobe-sidebar{position:sticky;top:24px;min-width:0}.s-wardrobe-meta{display:flex;justify-content:space-between;gap:20px;margin-bottom:36px;color:var(--mid);font-size:9px;font-weight:500;letter-spacing:.1em;text-transform:uppercase}.s-wardrobe-sidebar h1{max-width:11ch;margin-top:10px;font-size:clamp(34px,3.6vw,54px);font-weight:600;line-height:.96;letter-spacing:-.045em}.s-deck{max-width:42ch;margin-top:20px!important;color:#414141;font-size:12px;line-height:1.7}.s-category-nav{margin-top:34px;padding-top:14px;border-top:1px solid var(--fg)}.s-category-nav>p{margin-bottom:10px!important;color:var(--mid);font-size:8.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase}.s-category-list{display:grid;gap:1px}.s-category-list button{display:flex;width:100%;align-items:center;justify-content:space-between;gap:18px;padding:2px 0;border:0;background:transparent;color:var(--fg);cursor:pointer;font-family:var(--f);font-size:12px;line-height:1.45;text-align:left}.s-category-list button span:last-child{color:var(--mid);font-size:9px}.s-category-list button:hover span:first-child,.s-category-list button[aria-pressed="true"] span:first-child{text-decoration:underline;text-underline-offset:3px}.s-category-list button[aria-pressed="true"]{font-weight:600}
-.s-wardrobe-canvas{position:relative;min-height:clamp(720px,70vw,940px);overflow:hidden;background:var(--plate);isolation:isolate}.s-canvas-meta{position:absolute;z-index:20;top:12px;right:14px;display:flex;gap:16px;color:var(--mid);font-size:8px;font-weight:600;letter-spacing:.1em;text-transform:uppercase}.s-float{position:absolute;z-index:1;left:var(--float-x);top:var(--float-y);width:var(--float-w);transform:rotate(var(--float-r));transition:opacity .2s ease}.s-float-button{position:relative;display:block;width:100%;padding:0;border:0;background:transparent;color:var(--fg);cursor:pointer;font-family:var(--f);text-align:left}.s-float-button>img{display:block;width:100%;aspect-ratio:4/5;object-fit:contain;object-position:center;background:var(--plate);mix-blend-mode:multiply;transition:transform .2s ease}.s-float-button:hover>img,.s-float-button:focus-visible>img{transform:translateY(-5px) scale(1.02)}.s-float-number{position:absolute;top:5px;left:5px;color:#666;font-size:7px;font-weight:600;letter-spacing:.08em}.s-float-label{position:absolute;z-index:3;left:50%;bottom:-6px;width:max-content;max-width:190px;padding:8px 10px;border:1px solid var(--fg);background:#fff;box-shadow:3px 3px 0 rgba(0,0,0,.12);opacity:0;pointer-events:none;transform:translate(-50%,100%);transition:opacity .15s ease}.s-float-button:hover .s-float-label,.s-float-button:focus-visible .s-float-label{opacity:1}.s-float-label span,.s-float-label strong,.s-float-label b{display:block}.s-float-label>span:first-child{color:var(--mid);font-size:7.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase}.s-float-label strong{margin-top:3px;font-size:10px;font-weight:600}.s-float-label>span:nth-of-type(2){overflow:hidden;max-width:170px;color:var(--mid);font-size:9px;line-height:1.3;text-overflow:ellipsis;white-space:nowrap}.s-float-label b{margin-top:5px;font-size:10px;font-weight:600}.s-issue-rundown{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:1px solid var(--fg);border-bottom:1px solid var(--line)}.s-issue-rundown>div{padding:22px 24px 24px 0}.s-issue-rundown>div+div{padding-left:24px;border-left:1px solid var(--line)}.s-issue-rundown span{display:block;color:var(--mid);font-size:8.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase}.s-issue-rundown p{max-width:45ch;margin-top:8px!important;color:#3d3d3d;font-size:11px;line-height:1.65}.s-slot{font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--mid);padding-bottom:8px}.s-tag{font-size:10px;font-weight:500;letter-spacing:.09em;text-transform:uppercase;color:var(--mid)}
+.s-wardrobe-canvas{position:relative;min-height:clamp(720px,70vw,940px);overflow:hidden;background:var(--surface);isolation:isolate}.s-canvas-meta{position:absolute;z-index:20;top:12px;right:14px;display:flex;gap:16px;color:var(--mid);font-size:8px;font-weight:600;letter-spacing:.1em;text-transform:uppercase}.s-float{position:absolute;z-index:1;left:var(--float-x);top:var(--float-y);width:var(--float-w);transform:rotate(var(--float-r));transition:opacity .2s ease}.s-float:hover,.s-float:focus-within{z-index:30}.s-float-button{position:relative;display:block;width:100%;padding:0;border:0;background:transparent;color:var(--fg);cursor:pointer;font-family:var(--f);text-align:left}.s-float-button>img{display:block;width:100%;aspect-ratio:4/5;object-fit:contain;object-position:center;background:var(--surface);mix-blend-mode:multiply;transition:transform .2s ease}.s-float-button:hover>img,.s-float-button:focus-visible>img{transform:translateY(-7px) scale(1.035)}.s-float-number{position:absolute;top:5px;left:5px;color:#666;font-size:7px;font-weight:600;letter-spacing:.08em}.s-float-label{position:absolute;z-index:3;left:50%;bottom:-6px;width:max-content;max-width:190px;padding:8px 10px;border:1px solid var(--fg);background:#fff;box-shadow:3px 3px 0 rgba(0,0,0,.12);opacity:0;pointer-events:none;transform:translate(-50%,calc(100% + 6px)) scale(.96);transform-origin:top center;transition:opacity .15s ease,transform .15s ease}.s-float-button:hover .s-float-label,.s-float-button:focus-visible .s-float-label{opacity:1;transform:translate(-50%,100%) scale(1)}.s-float-label span,.s-float-label strong,.s-float-label b{display:block}.s-float-label>span:first-child{color:var(--mid);font-size:7.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase}.s-float-label strong{margin-top:3px;font-size:10px;font-weight:600}.s-float-label>span:nth-of-type(2){overflow:hidden;max-width:170px;color:var(--mid);font-size:9px;line-height:1.3;text-overflow:ellipsis;white-space:nowrap}.s-float-label b{margin-top:5px;font-size:10px;font-weight:600}.s-issue-rundown{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:1px solid var(--fg);border-bottom:1px solid var(--line)}.s-issue-rundown>div{padding:22px 24px 24px 0}.s-issue-rundown>div+div{padding-left:24px;border-left:1px solid var(--line)}.s-issue-rundown span{display:block;color:var(--mid);font-size:8.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase}.s-issue-rundown p{max-width:45ch;margin-top:8px!important;color:#3d3d3d;font-size:11px;line-height:1.65}.s-slot{font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--mid);padding-bottom:8px}.s-tag{font-size:10px;font-weight:500;letter-spacing:.09em;text-transform:uppercase;color:var(--mid)}
 .s-drawer-wrap{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.28);display:flex;justify-content:flex-end}
 .s-drawer{width:min(430px,92vw);height:100%;overflow-y:auto;background:#fff;box-shadow:-12px 0 30px rgba(0,0,0,.12);padding:18px}
 .s-drawer-close{display:block;margin:0 0 18px auto;padding:0;border:0;background:transparent;font-family:var(--f);font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;cursor:pointer}
@@ -1329,7 +1330,7 @@ const CSS = `
 @media (max-width:900px) and (min-width:721px){.s-wardrobe-layout{grid-template-columns:210px minmax(0,1fr);gap:20px;padding-top:26px}.s-wardrobe-meta{margin-bottom:26px}.s-wardrobe-sidebar h1{font-size:34px}.s-deck{margin-top:15px!important;font-size:10.5px;line-height:1.6}.s-category-nav{margin-top:24px}.s-price-note{margin-top:16px!important;font-size:7.5px!important}.s-wardrobe-canvas{min-height:730px}.s-float-label{max-width:160px}.s-issue-rundown p{font-size:9.5px;line-height:1.55}}
 @media (max-width:720px){.s-wardrobe-layout{grid-template-columns:1fr;gap:30px;padding:30px 0 52px}.s-wardrobe-sidebar{position:static}.s-wardrobe-meta{margin-bottom:28px}.s-wardrobe-sidebar h1{max-width:14ch}.s-deck{max-width:62ch}.s-category-nav{margin-top:26px}.s-category-list{display:flex;flex-wrap:wrap;gap:6px}.s-category-list button{width:auto;padding:7px 9px;border:1px solid var(--line);font-size:10px}.s-category-list button span:last-child{margin-left:9px}.s-category-list button[aria-pressed="true"]{border-color:var(--fg);background:var(--fg);color:#fff}.s-category-list button[aria-pressed="true"] span:first-child{text-decoration:none}.s-category-list button[aria-pressed="true"] span:last-child{color:#bbb}.s-price-note{margin-top:18px!important}.s-wardrobe-canvas{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:30px 12px;min-height:0;padding:42px 12px 22px}.s-canvas-meta{top:11px;right:12px;left:12px;justify-content:space-between}.s-float{position:static;width:auto;transform:none}.s-float-button>img{width:100%}.s-float-number{top:4px;left:4px}.s-float-label{position:static;width:100%;max-width:none;padding:8px 0 0;border:0;background:transparent;box-shadow:none;opacity:1;transform:none}.s-float-label>span:nth-of-type(2){white-space:normal}.s-issue-rundown{grid-template-columns:1fr}.s-issue-rundown>div,.s-issue-rundown>div+div{padding:18px 0;border-left:0;border-bottom:1px solid var(--line)}.s-issue-rundown>div:last-child{border-bottom:0}}
 @media (max-width:560px){.s-root{padding:0 12px}.s-head-meta{gap:12px}.s-head-meta>span{display:none}.s-wardrobe-canvas{gap:24px 10px;padding-right:10px;padding-left:10px}.s-saved{margin-top:60px}.s-saved-list{grid-template-columns:1fr 1fr}.s-drawer-wrap{align-items:flex-end}.s-drawer{width:100%;height:min(88dvh,760px);padding:14px;border-radius:16px 16px 0 0;box-shadow:0 -12px 30px rgba(0,0,0,.14)}.s-drawer h2{font-size:21px}.s-piece-meta{grid-template-columns:1fr}.s-piece-meta span+span{padding:7px 0 0;border-top:1px solid var(--line);border-left:0}.s-piece-actions{grid-template-columns:1fr}.s-piece-editorial{grid-template-columns:1fr}.s-piece-section-head{align-items:flex-start;flex-direction:column}.s-piece-section-head>span{text-align:left}.s-piece-alternative{grid-template-columns:70px minmax(0,1fr) auto;min-height:94px}.s-piece-alternative>img{width:70px;height:94px}.s-ai{padding:17px 14px}.s-ai-chips{display:grid;grid-template-columns:1fr 1fr}.s-ai-chips button{text-align:left}.s-ai-field input{font-size:11px}.s-ai-list .s-used-card{grid-template-columns:62px minmax(0,1fr)}.s-ai-list .s-used-card img{width:62px;height:78px}}
-@media (hover:none) and (min-width:721px){.s-float-label{opacity:1}}
+@media (hover:none) and (min-width:721px){.s-float-label{opacity:1;transform:translate(-50%,100%) scale(1)}}
 @media (prefers-reduced-motion:reduce){.s-root *{animation:none!important;transition:none!important}}
 `;
 
