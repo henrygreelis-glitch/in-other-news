@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from "react";
 import {
-  AiFinder,
   ISSUE_CSS,
   PICKS,
   ProductImage,
@@ -15,6 +14,15 @@ const SOURCE_LABELS = {
   retail: "Retail",
   resale: "Resale",
   archive: "Archive",
+};
+
+const RELATIONSHIP_LABELS = {
+  same_product_cheaper: "Same product · lower price",
+  same_product_used: "Same product · pre-owned",
+  same_product_new: "Same product · new",
+  similar_silhouette: "Close alternative",
+  archive_reference: "Archive reference",
+  budget_alternative: "Lower-price alternative",
 };
 
 export default function ProductSearch({ productKey }) {
@@ -106,6 +114,11 @@ export default function ProductSearch({ productKey }) {
     item: listing.title,
     price: formatListingMoney(listing.price, listing.currency),
     condition: listing.condition || "Pre-owned",
+    sizes_available: "Check listing",
+    relationship:
+      market.matchType === "exact"
+        ? "same_product_used"
+        : "similar_silhouette",
     href: listing.url,
     image: listing.imageUrl || hero.image,
   }));
@@ -116,10 +129,10 @@ export default function ProductSearch({ productKey }) {
   const buyingOptions = [...liveOptions, ...curatedOptions];
   const optionStatus =
     market.status === "loading"
-      ? "Searching live"
+      ? "Searching eBay…"
       : buyingOptions.length
-        ? `${buyingOptions.length} available`
-        : "Search directly";
+        ? `${buyingOptions.length} option${buyingOptions.length === 1 ? "" : "s"}`
+        : "No live listings";
 
   return (
     <div className="s-root search-root">
@@ -131,28 +144,42 @@ export default function ProductSearch({ productKey }) {
         <a className="search-back" href="/in-other-news">← Back to issue</a>
       </header>
 
-      <main className="search-pdp">
-        <section className="search-visual" aria-label={`${hero.brand} ${hero.item} product image`}>
-          <ProductImage pick={pick} />
+      <main className="compare-main">
+        <section className="compare-intro">
+          <div>
+            <p className="s-eyebrow">Issue 01 · Buying options</p>
+            <h1>Compare ways to buy.</h1>
+          </div>
+          <p>
+            Start with Henry’s selected listing, then compare live pre-owned
+            results and nearby alternatives before deciding where to buy.
+          </p>
         </section>
 
-        <aside className="search-buy" aria-labelledby="search-product-title">
-          <div className="search-buy-inner">
-            <div className="search-kicker">
-              <span>{pick.slot}</span>
+        <section className="compare-selected" aria-labelledby="search-product-title">
+          <div
+            className="compare-selected-visual"
+            aria-label={`${hero.brand} ${hero.item} product image`}
+          >
+            <ProductImage pick={pick} />
+          </div>
+          <div className="compare-selected-copy">
+            <div className="compare-kicker">
+              <span>Henry’s selected listing</span>
               <span>{SOURCE_LABELS[hero.source_type]}</span>
             </div>
-
-            <p className="search-brand">{hero.brand}</p>
-            <h1 id="search-product-title">{hero.item}</h1>
-            <div className="search-price">
+            <p className="compare-brand">{hero.brand}</p>
+            <h2 id="search-product-title">{hero.item}</h2>
+            <div className="compare-price">
               <strong>{hero.price}</strong>
               <span>{hero.status}</span>
             </div>
-
-            <p className="search-reason">{pick.why_selected}</p>
-
-            <dl className="search-facts">
+            <p className="compare-reason">{pick.why_selected}</p>
+            <dl className="compare-facts">
+              <div>
+                <dt>Source</dt>
+                <dd>{hero.source}</dd>
+              </div>
               <div>
                 <dt>Condition</dt>
                 <dd>{hero.condition}</dd>
@@ -162,111 +189,134 @@ export default function ProductSearch({ productKey }) {
                 <dd>{hero.sizes_available}</dd>
               </div>
             </dl>
-
+            <p className="compare-source-note">
+              <strong>Why this source — </strong>
+              {pick.why_this_source}
+            </p>
             <a
-              className="search-primary"
+              className="compare-primary"
               href={hero.href}
               target="_blank"
               rel="noopener noreferrer"
             >
               {hero.link_label || "View selected listing ↗"}
             </a>
-
-            <div className="search-accordions">
-              <details className="search-accordion is-buying">
-                <summary>
-                  <span>Used + other buying options</span>
-                  <small>{optionStatus}</small>
-                </summary>
-                <div className="search-accordion-body">
-                  {market.status === "loading" && (
-                    <p className="search-state" role="status" aria-live="polite">
-                      Looking for live alternatives…
-                    </p>
-                  )}
-
-                  {market.status === "ready" && market.matchType !== "exact" && (
-                    <p className="search-state">
-                      No exact version listed. Showing close alternatives.
-                    </p>
-                  )}
-
-                  {buyingOptions.length > 0 && (
-                    <div className="search-options-list">
-                      {buyingOptions.map((option) => (
-                        <a
-                          className="search-option"
-                          href={option.href}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          key={option.id}
-                        >
-                          <img
-                            src={option.image || hero.image}
-                            alt=""
-                            loading="lazy"
-                            onError={(event) => {
-                              event.currentTarget.onerror = null;
-                              event.currentTarget.src = hero.image;
-                            }}
-                          />
-                          <span>
-                            <small>{option.source} · {option.condition}</small>
-                            <strong>{option.item}</strong>
-                            <b>{option.price}</b>
-                          </span>
-                          <i aria-hidden="true">↗</i>
-                        </a>
-                      ))}
-                    </div>
-                  )}
-
-                  {market.status === "error" && (
-                    <p className="search-state">{market.message}</p>
-                  )}
-
-                  <div className="search-market-links">
-                    <a href={ebaySearchUrl} target="_blank" rel="noopener noreferrer">eBay ↗</a>
-                    <a href={retailSearchUrl} target="_blank" rel="noopener noreferrer">Retail + sale ↗</a>
-                    <a href={grailedSearchUrl} target="_blank" rel="noopener noreferrer">Grailed ↗</a>
-                  </div>
-                </div>
-              </details>
-
-              <details className="search-accordion">
-                <summary>
-                  <span>Why this source</span>
-                  <small>Henry’s note</small>
-                </summary>
-                <div className="search-accordion-body search-note">
-                  <p>{pick.why_this_source}</p>
-                </div>
-              </details>
-
-              <details className="search-accordion">
-                <summary>
-                  <span>Find another version</span>
-                  <small>AI search</small>
-                </summary>
-                <div className="search-accordion-body search-tool-body">
-                  <AiFinder key={`ai-${pick.id}`} pick={pick} defaultOpen standalone />
-                </div>
-              </details>
-
-              <details className="search-accordion">
-                <summary>
-                  <span>Price alert</span>
-                  <small>Save this search</small>
-                </summary>
-                <div className="search-accordion-body search-tool-body">
-                  <ProductWatch key={`watch-${pick.id}`} pick={pick} />
-                </div>
-              </details>
-            </div>
-
-            <p className="search-price-note">{USD_PRICE_NOTE}</p>
           </div>
-        </aside>
+        </section>
+
+        <section className="compare-options" aria-labelledby="compare-options-title">
+          <div className="compare-section-head">
+            <div>
+              <p className="s-eyebrow">Live + curated</p>
+              <h2 id="compare-options-title">Used and other options</h2>
+            </div>
+            <span>{optionStatus}</span>
+          </div>
+
+          {market.status === "loading" && (
+            <p className="compare-state" role="status" aria-live="polite">
+              Searching eBay for live pre-owned listings…
+            </p>
+          )}
+
+          {market.status === "ready" && market.matchType !== "exact" && (
+            <p className="compare-state" role="status" aria-live="polite">
+              No exact version listed. Showing nearby options so you can compare
+              condition, size, and price.
+            </p>
+          )}
+
+          {market.status === "error" && (
+            <p className="compare-state" role="status">
+              {market.message} The wider searches below still work.
+            </p>
+          )}
+
+          {buyingOptions.length > 0 ? (
+            <div className="compare-grid">
+              {buyingOptions.map((option) => (
+                <a
+                  className="compare-card"
+                  href={option.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  key={option.id}
+                >
+                  <div className="compare-card-image">
+                    <img
+                      src={option.image || hero.image}
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                      onError={(event) => {
+                        event.currentTarget.onerror = null;
+                        event.currentTarget.src = hero.image;
+                      }}
+                    />
+                  </div>
+                  <div className="compare-card-copy">
+                    <div className="compare-card-kicker">
+                      <span>
+                        {RELATIONSHIP_LABELS[option.relationship] || "Buying option"}
+                      </span>
+                      <span>↗</span>
+                    </div>
+                    <p>{option.source}</p>
+                    <h3>{option.item}</h3>
+                    <dl>
+                      <div>
+                        <dt>Price</dt>
+                        <dd>{option.price}</dd>
+                      </div>
+                      <div>
+                        <dt>Condition</dt>
+                        <dd>{option.condition}</dd>
+                      </div>
+                      <div>
+                        <dt>Sizes</dt>
+                        <dd>{option.sizes_available || "Check listing"}</dd>
+                      </div>
+                    </dl>
+                  </div>
+                </a>
+              ))}
+            </div>
+          ) : market.status !== "loading" ? (
+            <p className="compare-empty">
+              Nothing useful is listed through the live feed right now. Search
+              the wider marketplaces below for new arrivals.
+            </p>
+          ) : null}
+
+          <div className="compare-wider">
+            <div>
+              <p className="s-eyebrow">Search wider</p>
+              <h3>More room to browse</h3>
+            </div>
+            <div className="compare-market-links">
+              <a href={ebaySearchUrl} target="_blank" rel="noopener noreferrer">
+                Search eBay ↗
+              </a>
+              <a href={grailedSearchUrl} target="_blank" rel="noopener noreferrer">
+                Search Grailed ↗
+              </a>
+              <a href={retailSearchUrl} target="_blank" rel="noopener noreferrer">
+                Find retail + sale ↗
+              </a>
+            </div>
+          </div>
+        </section>
+
+        <section className="compare-alert" aria-label="Price alert">
+          <div>
+            <p className="s-eyebrow">Not ready to buy?</p>
+            <h2>Watch this piece.</h2>
+            <p>Save the search and come back when the right size or price appears.</p>
+          </div>
+          <ProductWatch key={`watch-${pick.id}`} pick={pick} />
+        </section>
+
+        <p className="compare-price-note">{USD_PRICE_NOTE}</p>
       </main>
     </div>
   );
@@ -297,4 +347,11 @@ const SEARCH_CSS = `
 .search-missing{max-width:760px;margin:0 auto;padding:15vh 0}.search-missing h1{max-width:16ch;margin-top:10px;font-size:clamp(34px,6vw,64px);font-weight:600;line-height:1;letter-spacing:-.04em}.search-missing a{display:inline-block;margin-top:28px;border-bottom:1px solid var(--fg);color:var(--fg);font-size:10px;font-weight:500;letter-spacing:.1em;text-decoration:none;text-transform:uppercase}
 @media (max-width:920px){.search-pdp{grid-template-columns:minmax(0,1fr) minmax(320px,420px)}.search-visual{min-height:560px}.search-visual img{padding:32px}.search-buy-inner{padding:42px 26px}.search-buy h1{font-size:34px}}
 @media (max-width:720px){.search-root{padding:0 12px}.search-head{grid-template-columns:1fr auto;min-height:52px}.search-head>span{display:none}.search-pdp{grid-template-columns:1fr;margin:0 -12px}.search-visual{position:static;width:100%;height:auto;min-height:0;aspect-ratio:4/5}.search-visual img{padding:18px}.search-buy{border-top:1px solid var(--line);border-left:0}.search-buy-inner{max-width:none;padding:30px 14px 42px}.search-brand{margin-top:26px!important}.search-buy h1{font-size:32px}.search-reason{font-size:11.5px}.search-accordion summary{padding:15px 0}.search-option{grid-template-columns:58px minmax(0,1fr) 12px}.search-option img{width:58px;height:74px}}
+.compare-main{width:100%;max-width:1320px;margin:0 auto;padding:clamp(44px,6vw,88px) 0 50px}.compare-intro{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(280px,.8fr);align-items:end;gap:clamp(32px,7vw,120px);padding-bottom:clamp(36px,5vw,64px)}.compare-intro h1{max-width:12ch;margin:10px 0 0;font-size:clamp(48px,7vw,94px);font-weight:600;line-height:.9;letter-spacing:-.055em}.compare-intro>p{max-width:45ch;color:#444;font-size:12px;line-height:1.7}
+.compare-selected{display:grid;grid-template-columns:minmax(320px,.9fr) minmax(0,1.1fr);border:1px solid var(--line);background:#fff}.compare-selected-visual{display:flex;min-height:520px;align-items:center;justify-content:center;background:var(--surface)}.compare-selected-visual img{display:block;width:100%;height:100%;max-height:620px;padding:clamp(28px,5vw,70px);object-fit:contain}.compare-selected-copy{display:flex;min-width:0;flex-direction:column;padding:clamp(34px,5vw,68px)}.compare-kicker{display:flex;justify-content:space-between;gap:20px;color:var(--mid);font-size:8.5px;font-weight:600;letter-spacing:.11em;text-transform:uppercase}.compare-brand{margin-top:34px!important;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase}.compare-selected h2{max-width:15ch;margin:4px 0 0;font-size:clamp(32px,4vw,58px);font-weight:600;line-height:.96;letter-spacing:-.045em}.compare-price{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-top:22px;padding:13px 0;border-top:1px solid var(--fg);border-bottom:1px solid var(--line)}.compare-price strong{font-size:13px}.compare-price span{color:var(--mid);font-size:8.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase}.compare-reason{max-width:56ch;margin-top:20px!important;color:#333;font-size:11.5px;line-height:1.65}.compare-facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));margin:20px 0 0;padding:0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}.compare-facts div{min-width:0;padding:10px 8px 11px 0}.compare-facts div+div{padding-left:10px;border-left:1px solid var(--line)}.compare-facts dt,.compare-card dt{color:var(--mid);font-size:7.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase}.compare-facts dd,.compare-card dd{overflow:hidden;margin:2px 0 0;font-size:9.5px;text-overflow:ellipsis;white-space:nowrap}.compare-source-note{margin-top:18px!important;color:#555;font-size:10.5px;line-height:1.6}.compare-source-note strong{color:#222}.compare-primary{display:flex;min-height:48px;align-items:center;justify-content:center;margin-top:auto;padding:13px 16px;background:var(--fg);color:#fff;font-size:9px;font-weight:600;letter-spacing:.1em;text-align:center;text-decoration:none;text-transform:uppercase}.compare-primary:hover{background:#333}
+.compare-options{margin-top:clamp(64px,8vw,110px);padding-top:26px;border-top:1px solid var(--fg)}.compare-section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:30px}.compare-section-head h2{margin:7px 0 0;font-size:clamp(30px,4vw,54px);font-weight:600;line-height:1;letter-spacing:-.04em}.compare-section-head>span{color:var(--mid);font-size:8.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase}.compare-state,.compare-empty{margin-top:20px!important;padding:12px 14px;background:#f5f2e9;color:#555;font-size:10.5px!important;line-height:1.5}.compare-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:24px}.compare-card{display:flex;min-width:0;flex-direction:column;border:1px solid var(--line);background:#fff;color:var(--fg);text-decoration:none;transition:transform .15s ease,border-color .15s ease}.compare-card:hover{border-color:#888;transform:translateY(-2px)}.compare-card-image{display:flex;aspect-ratio:4/3;align-items:center;justify-content:center;overflow:hidden;background:var(--surface)}.compare-card-image img{display:block;width:100%;height:100%;padding:18px;object-fit:contain}.compare-card-copy{display:flex;min-height:206px;flex-direction:column;padding:14px}.compare-card-kicker{display:flex;justify-content:space-between;gap:12px;color:var(--mid);font-size:7.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase}.compare-card-copy>p{margin-top:20px!important;font-size:9px;font-weight:600;letter-spacing:.08em;text-transform:uppercase}.compare-card h3{display:-webkit-box;overflow:hidden;margin:4px 0 0;font-size:17px;font-weight:500;line-height:1.08;letter-spacing:-.025em;-webkit-box-orient:vertical;-webkit-line-clamp:2}.compare-card dl{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));margin:auto 0 0;padding-top:12px;border-top:1px solid var(--line)}.compare-card dl div{min-width:0;padding-right:6px}.compare-card dl div+div{padding-left:8px;border-left:1px solid var(--line)}
+.compare-wider{display:flex;align-items:flex-end;justify-content:space-between;gap:30px;margin-top:38px;padding:22px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}.compare-wider h3{margin:5px 0 0;font-size:20px;font-weight:500;letter-spacing:-.025em}.compare-market-links{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:9px}.compare-market-links a{padding:9px 11px;border:1px solid var(--fg);color:var(--fg);font-size:8.5px;font-weight:600;letter-spacing:.08em;text-decoration:none;text-transform:uppercase}.compare-market-links a:hover{background:var(--fg);color:#fff}
+.compare-alert{display:grid;grid-template-columns:minmax(0,.8fr) minmax(320px,1.2fr);gap:clamp(32px,7vw,110px);margin-top:clamp(64px,8vw,110px);padding:clamp(28px,4vw,50px);border:1px solid #dedbd2;background:#f5f2e9}.compare-alert h2{margin:7px 0 0;font-size:clamp(28px,3vw,44px);font-weight:600;line-height:1;letter-spacing:-.04em}.compare-alert>div>p:last-child{max-width:42ch;margin-top:12px!important;color:#555;font-size:11px;line-height:1.6}.compare-alert .s-watch{margin:0;padding:0;border:0}.compare-alert .s-watch>h3,.compare-alert .s-watch>.s-eyebrow,.compare-alert .s-watch>.s-watch-intro{display:none}.compare-price-note{margin-top:20px!important;color:var(--mid);font-size:7.5px!important;font-weight:500;letter-spacing:.08em;line-height:1.5;text-transform:uppercase}
+@media (max-width:980px){.compare-selected{grid-template-columns:minmax(280px,.8fr) minmax(0,1.2fr)}.compare-selected-visual{min-height:460px}.compare-selected-copy{padding:34px}.compare-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:720px){.compare-main{padding:34px 0 38px}.compare-intro{grid-template-columns:1fr;gap:24px;padding-bottom:34px}.compare-intro h1{font-size:52px}.compare-intro>p{font-size:11.5px}.compare-selected{grid-template-columns:1fr;margin:0 -12px;border-right:0;border-left:0}.compare-selected-visual{min-height:0;aspect-ratio:4/4.3}.compare-selected-visual img{padding:26px}.compare-selected-copy{padding:28px 16px 32px}.compare-brand{margin-top:26px!important}.compare-selected h2{font-size:36px}.compare-primary{margin-top:24px}.compare-options{margin-top:64px}.compare-section-head{align-items:flex-start;flex-direction:column;gap:14px}.compare-section-head h2{font-size:36px}.compare-grid{grid-template-columns:1fr}.compare-card{display:grid;grid-template-columns:42% 58%}.compare-card-image{height:100%;min-height:220px;aspect-ratio:auto}.compare-card-copy{min-height:220px;padding:12px}.compare-card-copy>p{margin-top:14px!important}.compare-card h3{font-size:15px}.compare-card dl{grid-template-columns:1fr}.compare-card dl div+div{margin-top:5px;padding:5px 0 0;border-top:1px solid var(--line);border-left:0}.compare-card dd{white-space:normal}.compare-wider{align-items:flex-start;flex-direction:column}.compare-market-links{justify-content:flex-start}.compare-alert{grid-template-columns:1fr;gap:26px;margin-right:-12px;margin-left:-12px;padding:28px 16px;border-right:0;border-left:0}}
 `;

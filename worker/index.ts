@@ -128,11 +128,31 @@ const EBAY_PRODUCTS = {
     query: "Camiel Fortgens Big Shirt Blockprint",
     requiredTitleTermGroups: [["camiel fortgens"], ["big shirt"]],
   },
+  "ernest-w-baker-crocodile-bomber": {
+    brand: "Ernest W. Baker",
+    item: "80's Crocodile Leather Bomber",
+    query: "Ernest W Baker Crocodile Leather Bomber JA27L",
+    requiredTitleTermGroups: [
+      ["ernest w baker", "ernest w. baker"],
+      ["crocodile", "croc"],
+      ["bomber"],
+    ],
+  },
   "beams-plus-shawl-cardigan": {
     brand: "BEAMS PLUS",
     item: "Shawl Collar Cardigan",
     query: "BEAMS PLUS Shawl Collar Cardigan",
     requiredTitleTermGroups: [["beams plus", "beams+"], ["shawl"], ["cardigan"]],
+  },
+  "brooks-brothers-cashmere-v-neck": {
+    brand: "Brooks Brothers",
+    item: "3-Ply Cashmere V-Neck Sweater",
+    query: "Brooks Brothers 3 Ply Cashmere V Neck Sweater Black MS01260",
+    requiredTitleTermGroups: [
+      ["brooks brothers"],
+      ["cashmere"],
+      ["v neck", "v-neck"],
+    ],
   },
   "prada-sky-cotton-shirt": {
     brand: "Prada",
@@ -164,6 +184,16 @@ const EBAY_PRODUCTS = {
     query: "Anonymous Ism Waffle Crew Socks",
     requiredTitleTermGroups: [
       ["anonymous ism", "anonymousism"],
+      ["waffle"],
+      ["sock", "socks"],
+    ],
+  },
+  "fgs-originals-waffle-crew-socks-m-gray": {
+    brand: "FGS Originals",
+    item: "Waffle Crew Socks / M.Gray",
+    query: "FGS Originals Front General Store Waffle Crew Socks Gray",
+    requiredTitleTermGroups: [
+      ["fgs", "front general store"],
       ["waffle"],
       ["sock", "socks"],
     ],
