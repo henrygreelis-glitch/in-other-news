@@ -610,7 +610,9 @@ async function handleEbaySearch(request: Request, env: Env): Promise<Response> {
           ? usableListings.filter((item) => {
               const title = normalizeListingTitle(item.title ?? "");
               return (
-                title.includes("ernest w baker") &&
+                ["ernest w baker", "ernest w. baker", "ernest w.baker"].some(
+                  (brand) => title.includes(brand)
+                ) &&
                 /\b(leather|blouson|bomber)\b/.test(title)
               );
             })
