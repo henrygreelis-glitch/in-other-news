@@ -309,7 +309,7 @@ export const PICKS = [
       item: "Black Farkas Boots",
       price: "$534",
       condition: "New",
-      sizes_available: "IT 40, 42–44",
+      sizes_available: "Select sizes",
       status: "41% off",
       href: "https://www.ssense.com/en-us/men/product/kiko-kostadinov/black-farkas-boots/19042871",
       image: "/products/kiko-kostadinov-farkas-boots-cutout.webp",
