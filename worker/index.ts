@@ -142,7 +142,7 @@ const EBAY_PRODUCTS = {
   "kaptain-sunshine-traveller-coat": {
     brand: "Kaptain Sunshine",
     item: "Traveller Coat",
-    query: "Kaptain Sunshine Traveller Coat Navy",
+    query: "Kaptain Sunshine coat navy",
     requiredTitleTermGroups: [
       ["kaptain sunshine"],
       ["traveller", "traveler"],
@@ -178,7 +178,7 @@ const EBAY_PRODUCTS = {
   "brooks-brothers-cashmere-v-neck": {
     brand: "Brooks Brothers",
     item: "3-Ply Cashmere V-Neck Sweater",
-    query: "Brooks Brothers 3 Ply Cashmere V Neck Sweater Black MS01260",
+    query: "Brooks Brothers cashmere v neck sweater black",
     requiredTitleTermGroups: [
       ["brooks brothers"],
       ["3 ply", "3-ply"],
@@ -191,14 +191,14 @@ const EBAY_PRODUCTS = {
   "prada-sky-cotton-shirt": {
     brand: "Prada",
     item: "Sky Cotton Shirt",
-    query: "Prada UCN596 10IV F0AB7 Cotton Shirt",
+    query: "Prada cotton shirt blue",
     requiredTitleTermGroups: [["prada"], ["ucn596", "f0ab7"]],
     categoryTitleTerms: ["shirt", "button up", "button down"],
   },
   "sunspel-riviera-long-sleeve": {
     brand: "Sunspel",
     item: "Long Sleeve Riviera",
-    query: "Sunspel Long Sleeve Riviera Polo Black",
+    query: "Sunspel long sleeve polo black",
     requiredTitleTermGroups: [["sunspel"], ["riviera"], ["long sleeve"]],
     categoryTitleTerms: ["polo", "shirt", "top"],
   },
@@ -230,7 +230,7 @@ const EBAY_PRODUCTS = {
   "fgs-originals-waffle-crew-socks-m-gray": {
     brand: "FGS Originals",
     item: "Waffle Crew Socks / M.Gray",
-    query: "FGS Originals Front General Store Waffle Crew Socks Gray",
+    query: "Front General Store socks",
     requiredTitleTermGroups: [
       ["fgs", "front general store"],
       ["waffle"],
@@ -241,7 +241,7 @@ const EBAY_PRODUCTS = {
   "kiko-kostadinov-farkas-boots": {
     brand: "Kiko Kostadinov",
     item: "Black Farkas Boots",
-    query: "Kiko Kostadinov Farkas Boots 261985M228002 Black",
+    query: "Kiko Kostadinov black boots shoes",
     requiredTitleTermGroups: [
       ["kiko kostadinov"],
       ["farkas"],
@@ -252,6 +252,9 @@ const EBAY_PRODUCTS = {
 } as const;
 
 type EbayProduct = (typeof EBAY_PRODUCTS)[keyof typeof EBAY_PRODUCTS];
+
+const EBAY_SEARCH_CANDIDATE_LIMIT = 100;
+const EBAY_LIVE_LISTING_LIMIT = 24;
 
 let ebayTokenCache:
   | {
@@ -744,7 +747,7 @@ async function handleEbaySearch(request: Request, env: Env): Promise<Response> {
       `${apiBase}/buy/browse/v1/item_summary/search`
     );
     browseUrl.searchParams.set("q", product.query);
-    browseUrl.searchParams.set("limit", "24");
+    browseUrl.searchParams.set("limit", String(EBAY_SEARCH_CANDIDATE_LIMIT));
     browseUrl.searchParams.set("filter", "conditions:{USED}");
 
     const headers: Record<string, string> = {
@@ -789,7 +792,7 @@ async function handleEbaySearch(request: Request, env: Env): Promise<Response> {
           Number(b.quality.exact) - Number(a.quality.exact) ||
           b.quality.score - a.quality.score
       )
-      .slice(0, 6);
+      .slice(0, EBAY_LIVE_LISTING_LIMIT);
 
     const listings = await Promise.all(
       rankedListings.map(({ item, quality }) =>
@@ -823,7 +826,8 @@ async function handleEbaySearch(request: Request, env: Env): Promise<Response> {
       },
       {
         headers: {
-          "Cache-Control": "public, max-age=60, s-maxage=300",
+          "Cache-Control":
+            "public, max-age=60, s-maxage=3600, stale-while-revalidate=300",
         },
       }
     );

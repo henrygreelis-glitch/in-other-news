@@ -25,6 +25,8 @@ const RELATIONSHIP_LABELS = {
   budget_alternative: "Lower-price alternative",
 };
 
+const LISTING_BATCH_SIZE = 8;
+
 export default function ProductSearch({ productKey }) {
   const pick = PICKS.find(
     (candidate) =>
@@ -39,7 +41,7 @@ export default function ProductSearch({ productKey }) {
   });
   const [activeOption, setActiveOption] = useState(null);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
-  const [visibleCount, setVisibleCount] = useState(4);
+  const [visibleCount, setVisibleCount] = useState(LISTING_BATCH_SIZE);
   const quickViewRef = useRef(null);
   const optionOpenerRef = useRef(null);
 
@@ -57,7 +59,7 @@ export default function ProductSearch({ productKey }) {
   useEffect(() => {
     if (!pick?.id) return undefined;
 
-    setVisibleCount(4);
+    setVisibleCount(LISTING_BATCH_SIZE);
 
     const controller = new AbortController();
     setMarket({
@@ -68,7 +70,7 @@ export default function ProductSearch({ productKey }) {
       searchUrl: pick.ebay_search_href,
     });
 
-    fetch(`/api/ebay/search?product=${pick.id}&catalog=issue-01-v11`, {
+    fetch(`/api/ebay/search?product=${pick.id}&catalog=issue-01-v12`, {
       signal: controller.signal,
     })
       .then(async (response) => {
@@ -371,7 +373,9 @@ export default function ProductSearch({ productKey }) {
               {hasMoreOptions ? (
                 <button
                   type="button"
-                  onClick={() => setVisibleCount((count) => count + 4)}
+                  onClick={() =>
+                    setVisibleCount((count) => count + LISTING_BATCH_SIZE)
+                  }
                 >
                   Load more listings +
                 </button>
