@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   ISSUE_CSS,
   PICKS,
@@ -37,6 +37,19 @@ export default function ProductSearch({ productKey }) {
     message: "",
     searchUrl: "",
   });
+  const [activeOption, setActiveOption] = useState(null);
+  const quickViewRef = useRef(null);
+  const optionOpenerRef = useRef(null);
+
+  function openOption(option, event) {
+    optionOpenerRef.current = event.currentTarget;
+    setActiveOption(option);
+  }
+
+  function closeOption() {
+    setActiveOption(null);
+    requestAnimationFrame(() => optionOpenerRef.current?.focus());
+  }
 
   useEffect(() => {
     if (!pick?.id) return undefined;
@@ -81,6 +94,26 @@ export default function ProductSearch({ productKey }) {
     return () => controller.abort();
   }, [pick?.id, pick?.ebay_search_href]);
 
+  useEffect(() => {
+    if (!activeOption) return undefined;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    requestAnimationFrame(() => {
+      quickViewRef.current?.querySelector("button")?.focus();
+    });
+
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") closeOption();
+    };
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [activeOption]);
+
   if (!pick) {
     return (
       <div className="s-root search-root">
@@ -115,6 +148,10 @@ export default function ProductSearch({ productKey }) {
     price: formatListingMoney(listing.price, listing.currency),
     condition: listing.condition || "Pre-owned",
     sizes_available: "Check listing",
+    shipping:
+      listing.shippingPrice && listing.shippingCurrency
+        ? formatListingMoney(listing.shippingPrice, listing.shippingCurrency)
+        : "Check listing",
     relationship:
       market.matchType === "exact"
         ? "same_product_used"
@@ -235,13 +272,16 @@ export default function ProductSearch({ productKey }) {
           {buyingOptions.length > 0 ? (
             <div className="compare-grid">
               {buyingOptions.map((option) => (
-                <a
+                <article
                   className="compare-card"
-                  href={option.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
                   key={option.id}
                 >
+                  <button
+                    className="compare-card-hit"
+                    type="button"
+                    aria-label={`View ${option.item} listing details`}
+                    onClick={(event) => openOption(option, event)}
+                  />
                   <div className="compare-card-image">
                     <img
                       src={option.image || hero.image}
@@ -259,7 +299,7 @@ export default function ProductSearch({ productKey }) {
                       <span>
                         {RELATIONSHIP_LABELS[option.relationship] || "Buying option"}
                       </span>
-                      <span>↗</span>
+                      <span>View</span>
                     </div>
                     <p>{option.source}</p>
                     <h3>{option.item}</h3>
@@ -278,7 +318,7 @@ export default function ProductSearch({ productKey }) {
                       </div>
                     </dl>
                   </div>
-                </a>
+                </article>
               ))}
             </div>
           ) : market.status !== "loading" ? (
@@ -318,6 +358,83 @@ export default function ProductSearch({ productKey }) {
 
         <p className="compare-price-note">{USD_PRICE_NOTE}</p>
       </main>
+
+      {activeOption && (
+        <div className="compare-quick-wrap" onMouseDown={closeOption}>
+          <aside
+            ref={quickViewRef}
+            className="compare-quick"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="compare-quick-title"
+            onMouseDown={(event) => event.stopPropagation()}
+          >
+            <button
+              className="compare-quick-close"
+              type="button"
+              onClick={closeOption}
+            >
+              Close ×
+            </button>
+            <div className="compare-quick-image">
+              <img
+                src={activeOption.image || hero.image}
+                alt=""
+                onError={(event) => {
+                  event.currentTarget.onerror = null;
+                  event.currentTarget.src = hero.image;
+                }}
+              />
+            </div>
+            <div className="compare-quick-copy">
+              <div className="compare-quick-kicker">
+                <span>
+                  {RELATIONSHIP_LABELS[activeOption.relationship] || "Buying option"}
+                </span>
+                <span>{activeOption.source}</span>
+              </div>
+              <h2 id="compare-quick-title">{activeOption.item}</h2>
+              <dl className="compare-quick-facts">
+                <div>
+                  <dt>Price</dt>
+                  <dd>{activeOption.price}</dd>
+                </div>
+                <div>
+                  <dt>Condition</dt>
+                  <dd>{activeOption.condition}</dd>
+                </div>
+                <div>
+                  <dt>Sizes</dt>
+                  <dd>{activeOption.sizes_available || "Check listing"}</dd>
+                </div>
+                <div>
+                  <dt>Shipping</dt>
+                  <dd>{activeOption.shipping || "Check listing"}</dd>
+                </div>
+              </dl>
+              <p className="compare-quick-note">
+                Review the item here first. Price, availability, and seller details
+                are confirmed on {activeOption.source} only when you are ready.
+              </p>
+              <a
+                className="compare-quick-primary"
+                href={activeOption.href}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                View on {activeOption.source} ↗
+              </a>
+              <button
+                className="compare-quick-back"
+                type="button"
+                onClick={closeOption}
+              >
+                Keep comparing
+              </button>
+            </div>
+          </aside>
+        </div>
+      )}
     </div>
   );
 }
@@ -354,4 +471,7 @@ const SEARCH_CSS = `
 .compare-alert{display:grid;grid-template-columns:minmax(0,.8fr) minmax(320px,1.2fr);gap:clamp(32px,6vw,90px);margin-top:clamp(44px,5vw,72px);padding:clamp(28px,4vw,50px);border:1px solid #dedbd2;background:#f5f2e9}.compare-alert h2{margin:7px 0 0;font-size:clamp(28px,3vw,44px);font-weight:600;line-height:1;letter-spacing:-.04em}.compare-alert>div>p:last-child{max-width:42ch;margin-top:12px!important;color:#555;font-size:11px;line-height:1.6}.compare-alert .s-watch{margin:0;padding:0;border:0}.compare-alert .s-watch>h3,.compare-alert .s-watch>.s-eyebrow,.compare-alert .s-watch>.s-watch-intro{display:none}.compare-price-note{margin-top:20px!important;color:var(--mid);font-size:7.5px!important;font-weight:500;letter-spacing:.08em;line-height:1.5;text-transform:uppercase}
 @media (max-width:980px){.compare-selected{grid-template-columns:minmax(280px,.8fr) minmax(0,1.2fr)}.compare-selected-visual{min-height:400px}.compare-selected-copy{padding:30px}.compare-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:720px){.compare-main{padding:28px 0 34px}.compare-intro{grid-template-columns:1fr;gap:20px;padding-bottom:26px}.compare-intro h1{font-size:46px}.compare-intro>p{font-size:11.5px}.compare-selected{grid-template-columns:1fr;margin:0 -12px;border-right:0;border-left:0}.compare-selected-visual{min-height:0;aspect-ratio:4/4}.compare-selected-visual img{padding:24px}.compare-selected-copy{padding:24px 16px 28px}.compare-brand{margin-top:24px!important}.compare-selected h2{font-size:36px}.compare-primary{margin-top:20px}.compare-options{margin-top:42px}.compare-section-head{align-items:flex-start;flex-direction:column;gap:12px}.compare-section-head h2{font-size:34px}.compare-grid{grid-template-columns:1fr}.compare-card{display:grid;grid-template-columns:42% 58%}.compare-card-image{height:100%;min-height:210px;aspect-ratio:auto}.compare-card-copy{min-height:210px;padding:12px}.compare-card-copy>p{margin-top:14px!important}.compare-card h3{font-size:15px}.compare-card dl{grid-template-columns:1fr}.compare-card dl div+div{margin-top:5px;padding:5px 0 0;border-top:1px solid var(--line);border-left:0}.compare-card dd{white-space:normal}.compare-wider{align-items:flex-start;flex-direction:column}.compare-market-links{justify-content:flex-start}.compare-alert{grid-template-columns:1fr;gap:26px;margin-right:-12px;margin-left:-12px;padding:28px 16px;border-right:0;border-left:0}}
+.compare-card{position:relative;cursor:pointer}.compare-card-hit{position:absolute;inset:0;z-index:2;width:100%;height:100%;padding:0;border:0;background:transparent;cursor:pointer}.compare-card-hit:focus-visible{outline:2px solid var(--fg);outline-offset:-3px}.compare-card:hover .compare-card-kicker span:last-child{color:var(--fg)}
+.compare-quick-wrap{position:fixed;inset:0;z-index:120;display:flex;justify-content:flex-end;background:rgba(0,0,0,.32)}.compare-quick{width:min(460px,94vw);height:100%;overflow-y:auto;background:#fff;box-shadow:-14px 0 34px rgba(0,0,0,.14);padding:16px}.compare-quick-close{display:block;margin:0 0 14px auto;padding:4px 0;border:0;background:transparent;color:var(--fg);cursor:pointer;font-family:var(--f);font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase}.compare-quick-close:focus-visible,.compare-quick-back:focus-visible,.compare-quick-primary:focus-visible{outline:2px solid var(--fg);outline-offset:3px}.compare-quick-image{aspect-ratio:1/1;overflow:hidden;background:var(--surface)}.compare-quick-image img{display:block;width:100%;height:100%;object-fit:cover;object-position:center}.compare-quick-copy{padding:22px 2px 30px}.compare-quick-kicker{display:flex;justify-content:space-between;gap:16px;color:var(--mid);font-size:8px;font-weight:600;letter-spacing:.1em;text-transform:uppercase}.compare-quick h2{margin:13px 0 0;font-size:clamp(26px,3vw,38px);font-weight:600;line-height:1;letter-spacing:-.04em}.compare-quick-facts{display:grid;grid-template-columns:1fr 1fr;margin:22px 0 0;border-top:1px solid var(--fg);border-bottom:1px solid var(--line)}.compare-quick-facts div{min-width:0;padding:10px 8px 11px 0}.compare-quick-facts div:nth-child(even){padding-left:10px;border-left:1px solid var(--line)}.compare-quick-facts div:nth-child(n+3){border-top:1px solid var(--line)}.compare-quick-facts dt{color:var(--mid);font-size:7.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase}.compare-quick-facts dd{margin:3px 0 0;font-size:10px;line-height:1.35}.compare-quick-note{margin-top:18px!important;color:#555;font-size:10.5px!important;line-height:1.6}.compare-quick-primary{display:flex;min-height:48px;align-items:center;justify-content:center;margin-top:22px;padding:12px 16px;background:var(--fg);color:#fff;font-size:9px;font-weight:600;letter-spacing:.1em;text-align:center;text-decoration:none;text-transform:uppercase}.compare-quick-primary:hover{background:#333}.compare-quick-back{display:block;margin:14px auto 0;padding:4px 0;border:0;border-bottom:1px solid var(--fg);background:transparent;color:var(--fg);cursor:pointer;font-family:var(--f);font-size:8.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase}
+@media (max-width:560px){.compare-quick-wrap{align-items:flex-end}.compare-quick{width:100%;height:min(90dvh,760px);padding:14px;border-radius:16px 16px 0 0;box-shadow:0 -14px 34px rgba(0,0,0,.16)}.compare-quick-image{height:min(38vh,300px);aspect-ratio:auto}.compare-quick-copy{padding-top:17px}.compare-quick h2{font-size:25px}.compare-quick-note{font-size:10px!important}}
 `;
