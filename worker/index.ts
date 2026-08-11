@@ -606,7 +606,15 @@ async function handleEbaySearch(request: Request, env: Env): Promise<Response> {
         ? usableListings.filter(
             (item) => !/\b(jacket|coat|shirt)\b/i.test(item.title ?? "")
           )
-        : usableListings;
+        : productKey === "ernest-w-baker-crocodile-bomber"
+          ? usableListings.filter((item) => {
+              const title = normalizeListingTitle(item.title ?? "");
+              return (
+                title.includes("ernest w baker") &&
+                /\b(leather|blouson|bomber)\b/.test(title)
+              );
+            })
+          : usableListings;
     const exactListings = browseableListings.filter((item) => {
       const title = normalizeListingTitle(item.title ?? "");
       return product.requiredTitleTermGroups.every((termGroup) =>
