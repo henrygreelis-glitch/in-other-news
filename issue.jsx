@@ -17,22 +17,22 @@ const FALLBACK_IMAGE =
 const MASTHEAD = {
   title: "IN OTHER NEWS",
   issue: "01",
-  date: "09.08.26",
+  date: "08.18.26",
   eyebrow: "Early fall preview",
   theme: "The uniform for the first cold week",
   deck: "An early look at the first cold week: one coat, seven supporting pieces, and enough time to find the right versions pre-owned instead of buying the whole uniform new.",
 };
 
 export const USD_PRICE_NOTE =
-  "All prices in USD. Foreign prices use ECB reference rates from Aug. 7, 2026 and are rounded.";
+  "All prices in USD. EUR and GBP prices use ECB reference rates from Aug. 11, 2026 and are rounded.";
 
 const ECB_EUR_REFERENCE_RATES = {
   EUR: 1,
-  USD: 1.1535,
+  USD: 1.154,
   JPY: 182.64,
   CZK: 24.261,
   DKK: 7.4756,
-  GBP: 0.85765,
+  GBP: 0.85483,
   HUF: 364.5,
   PLN: 4.2983,
   RON: 5.2525,
@@ -122,7 +122,7 @@ export const PICKS = [
       item: "Traveller Coat",
       price: "$1,076",
       condition: "New",
-      sizes_available: "Check retailer",
+      sizes_available: "2/S–5/XL",
       status: "Final sale",
       href: "https://www.namu-shop.com/products/kaptain-sunshine-traveller-coat-top-navy-aw25",
       image: "/products/traveller-coat-cutout.webp",
@@ -138,7 +138,7 @@ export const PICKS = [
     why_selected:
       "The cropped bomber interrupts the long coat and wide trousers with a sharper, shorter shape. Crocodile-embossed black lamb leather adds texture without introducing another color.",
     why_this_source:
-      "The brand has the exact JA27L bomber reduced from €1,270 to €710 with three sizes listed. This is worth checking new while the sale price competes with what a clean used example may cost.",
+      "The brand has the exact JA27L bomber reduced 44% to roughly $819 with three sizes listed. This is worth checking new while the sale price competes with what a clean used example may cost.",
     hero: {
       id: "ernest-w-baker-ja27l-crocodile-bomber",
       source_type: "retail",
@@ -161,7 +161,7 @@ export const PICKS = [
     ebay_search_href:
       "https://www.ebay.com/sch/i.html?_nkw=Brooks+Brothers+3-Ply+Cashmere+V-Neck+Sweater+Black+MS01260&_sacat=0&LH_ItemCondition=3000",
     why_selected:
-      "The deep V leaves the blue shirt visible while the black cashmere connects the top half to the denim and boots. Its clean shape adds warmth without another bulky collar.",
+      "The deep V leaves the blue shirt visible while the black cashmere connects the top half to the wide trouser and boots. Its clean shape adds warmth without another bulky collar.",
     why_this_source:
       "The dense 3-ply cashmere is the reason to choose this version: it behaves like a proper layer instead of a fragile luxury basic. Buying it new also avoids stretched necklines and hidden knit damage.",
     hero: {
@@ -173,7 +173,7 @@ export const PICKS = [
       price: "$498",
       condition: "New",
       sizes_available: "XS–XXL",
-      status: "In stock",
+      status: "Available",
       href: "https://www.brooksbrothers.com/3-ply-cashmere-v-neck-sweater/MS01260.html?dwvar_MS01260_Color=BLCK&quantity=1",
       image: "/products/brooks-brothers-cashmere-v-neck-cutout.webp",
     },
@@ -196,7 +196,7 @@ export const PICKS = [
       item: "Sky Cotton Shirt",
       price: "$1,350",
       condition: "New",
-      sizes_available: "Check retailer",
+      sizes_available: "XXS–4XL",
       status: "Available",
       href: "https://www.prada.com/us/en/p/cotton-shirt/UCN596_10IV_F0AB7_S_OOO",
       image: "/products/prada-shirt-cutout.webp",
@@ -209,7 +209,7 @@ export const PICKS = [
     ebay_search_href:
       "https://www.ebay.com/sch/i.html?_nkw=Sunspel+Long+Sleeve+Riviera+Polo+Black&_sacat=0&LH_ItemCondition=3000",
     why_selected:
-      "Long-sleeve mesh cotton adds a clean black layer without the bulk of another knit. The collar stays visible under the cardigan and both blue shirts.",
+      "Long-sleeve mesh cotton adds a clean black layer without the bulk of another knit. Its collar sits cleanly under the V-neck and it can replace the blue shirt when the uniform needs one less layer.",
     why_this_source:
       "This is a repeatable core piece rather than a patina piece. Buying new makes sense when exact size, collar shape, and washable mesh matter more than age.",
     hero: {
@@ -218,9 +218,9 @@ export const PICKS = [
       source: "Sunspel",
       brand: "Sunspel",
       item: "Long Sleeve Riviera",
-      price: "$215",
+      price: "$216",
       condition: "New",
-      sizes_available: "Check retailer",
+      sizes_available: "XS–XXL",
       status: "In stock",
       href: "https://www.sunspel.com/products/mens-cotton-riviera-long-sleeve-polo-shirt-in-black",
       image: "/products/riviera-polo-cutout.webp",
@@ -243,7 +243,7 @@ export const PICKS = [
       source: "Rick Owens",
       brand: "Rick Owens",
       item: "Geth Jeans",
-      price: "$859",
+      price: "$860",
       condition: "New",
       sizes_available: "29–34",
       status: "In stock",
@@ -300,7 +300,7 @@ export const PICKS = [
     why_selected:
       "The rounded work-boot toe and Vibram sole give the wide Geth hem enough weight underneath it. Polished black leather keeps the boot connected to the trouser while the drawstring collar adds one technical detail.",
     why_this_source:
-      "SSENSE has this exact soot-black pair at 41% off with four sizes still available. That makes the new listing unusually competitive before considering used pairs, where this current-season model is still scarce.",
+      "SSENSE has this exact soot-black pair at 41% off in select sizes. That makes the new listing unusually competitive before considering used pairs, where this current-season model is still scarce.",
     hero: {
       id: "ssense-kiko-farkas-19042871",
       source_type: "retail",
