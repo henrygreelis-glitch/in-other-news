@@ -571,7 +571,7 @@ async function handleEbaySearch(request: Request, env: Env): Promise<Response> {
       `${apiBase}/buy/browse/v1/item_summary/search`
     );
     browseUrl.searchParams.set("q", product.query);
-    browseUrl.searchParams.set("limit", "12");
+    browseUrl.searchParams.set("limit", "24");
     browseUrl.searchParams.set("filter", "conditions:{USED}");
 
     const headers: Record<string, string> = {
@@ -609,7 +609,7 @@ async function handleEbaySearch(request: Request, env: Env): Promise<Response> {
     });
     const matchedListings =
       exactListings.length > 0 ? exactListings : usableListings;
-    const listings = matchedListings.slice(0, 3).map((item) => {
+    const listings = matchedListings.slice(0, 12).map((item) => {
       const shippingCost = item.shippingOptions?.[0]?.shippingCost;
       return {
         id: item.itemId,

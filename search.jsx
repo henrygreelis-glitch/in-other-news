@@ -38,6 +38,7 @@ export default function ProductSearch({ productKey }) {
     searchUrl: "",
   });
   const [activeOption, setActiveOption] = useState(null);
+  const [visibleCount, setVisibleCount] = useState(4);
   const quickViewRef = useRef(null);
   const optionOpenerRef = useRef(null);
 
@@ -54,6 +55,8 @@ export default function ProductSearch({ productKey }) {
   useEffect(() => {
     if (!pick?.id) return undefined;
 
+    setVisibleCount(4);
+
     const controller = new AbortController();
     setMarket({
       status: "loading",
@@ -63,7 +66,7 @@ export default function ProductSearch({ productKey }) {
       searchUrl: pick.ebay_search_href,
     });
 
-    fetch(`/api/ebay/search?product=${pick.id}&catalog=issue-01-v3`, {
+    fetch(`/api/ebay/search?product=${pick.id}&catalog=issue-01-v4`, {
       signal: controller.signal,
     })
       .then(async (response) => {
@@ -86,7 +89,7 @@ export default function ProductSearch({ productKey }) {
           status: "error",
           listings: [],
           matchType: "none",
-          message: "Live matches are unavailable. Search eBay directly.",
+          message: "Live matches are unavailable right now.",
           searchUrl: pick.ebay_search_href,
         });
       });
@@ -133,14 +136,6 @@ export default function ProductSearch({ productKey }) {
   }
 
   const hero = pick.hero;
-  const exactProductQuery = `${hero.brand} ${hero.item}`;
-  const retailSearchUrl = `https://www.google.com/search?tbm=shop&q=${encodeURIComponent(
-    `${exactProductQuery} sale`
-  )}`;
-  const grailedSearchUrl = `https://www.grailed.com/shop?query=${encodeURIComponent(
-    exactProductQuery
-  )}`;
-  const ebaySearchUrl = market.searchUrl || pick.ebay_search_href;
   const liveOptions = market.listings.map((listing) => ({
     id: `ebay-${listing.id}`,
     source: "eBay",
@@ -164,6 +159,19 @@ export default function ProductSearch({ productKey }) {
     source: alternative.source || SOURCE_LABELS[alternative.source_type],
   }));
   const buyingOptions = [...liveOptions, ...curatedOptions];
+  const visibleOptions = buyingOptions.slice(0, visibleCount);
+  const hasMoreOptions = visibleCount < buyingOptions.length;
+  const activeOptionIndex = activeOption
+    ? buyingOptions.findIndex((option) => option.id === activeOption.id)
+    : -1;
+
+  function browseOption(direction) {
+    if (activeOptionIndex < 0 || buyingOptions.length < 2) return;
+    const nextIndex =
+      (activeOptionIndex + direction + buyingOptions.length) % buyingOptions.length;
+    setActiveOption(buyingOptions[nextIndex]);
+  }
+
   const optionStatus =
     market.status === "loading"
       ? "Searching eBay…"
@@ -188,8 +196,8 @@ export default function ProductSearch({ productKey }) {
             <h1>Compare ways to buy.</h1>
           </div>
           <p>
-            Start with Henry’s selected listing, then compare live pre-owned
-            results and nearby alternatives before deciding where to buy.
+            Start with Henry’s selected listing, then browse live pre-owned
+            results and nearby alternatives without leaving this page.
           </p>
         </section>
 
@@ -244,8 +252,8 @@ export default function ProductSearch({ productKey }) {
         <section className="compare-options" aria-labelledby="compare-options-title">
           <div className="compare-section-head">
             <div>
-              <p className="s-eyebrow">Live + curated</p>
-              <h2 id="compare-options-title">Used and other options</h2>
+              <p className="s-eyebrow">On-site marketplace</p>
+              <h2 id="compare-options-title">Browse buying options</h2>
             </div>
             <span>{optionStatus}</span>
           </div>
@@ -265,13 +273,13 @@ export default function ProductSearch({ productKey }) {
 
           {market.status === "error" && (
             <p className="compare-state" role="status">
-              {market.message} The wider searches below still work.
+              {market.message} Curated options are still available below.
             </p>
           )}
 
           {buyingOptions.length > 0 ? (
             <div className="compare-grid">
-              {buyingOptions.map((option) => (
+              {visibleOptions.map((option) => (
                 <article
                   className="compare-card"
                   key={option.id}
@@ -328,23 +336,24 @@ export default function ProductSearch({ productKey }) {
             </p>
           ) : null}
 
-          <div className="compare-wider">
-            <div>
-              <p className="s-eyebrow">Search wider</p>
-              <h3>More room to browse</h3>
+          {buyingOptions.length > 0 && (
+            <div className="compare-browse-footer">
+              <p>
+                Showing <strong>{visibleOptions.length}</strong> of{" "}
+                <strong>{buyingOptions.length}</strong> options
+              </p>
+              {hasMoreOptions ? (
+                <button
+                  type="button"
+                  onClick={() => setVisibleCount((count) => count + 4)}
+                >
+                  Load more listings +
+                </button>
+              ) : (
+                <span>All current options shown</span>
+              )}
             </div>
-            <div className="compare-market-links">
-              <a href={ebaySearchUrl} target="_blank" rel="noopener noreferrer">
-                Search eBay ↗
-              </a>
-              <a href={grailedSearchUrl} target="_blank" rel="noopener noreferrer">
-                Search Grailed ↗
-              </a>
-              <a href={retailSearchUrl} target="_blank" rel="noopener noreferrer">
-                Find retail + sale ↗
-              </a>
-            </div>
-          </div>
+          )}
         </section>
 
         <section className="compare-alert" aria-label="Price alert">
@@ -387,6 +396,25 @@ export default function ProductSearch({ productKey }) {
               />
             </div>
             <div className="compare-quick-copy">
+              <div className="compare-quick-nav">
+                <button
+                  type="button"
+                  onClick={() => browseOption(-1)}
+                  disabled={buyingOptions.length < 2}
+                >
+                  ← Previous
+                </button>
+                <span>
+                  {activeOptionIndex + 1} of {buyingOptions.length}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => browseOption(1)}
+                  disabled={buyingOptions.length < 2}
+                >
+                  Next →
+                </button>
+              </div>
               <div className="compare-quick-kicker">
                 <span>
                   {RELATIONSHIP_LABELS[activeOption.relationship] || "Buying option"}
@@ -472,6 +500,9 @@ const SEARCH_CSS = `
 @media (max-width:980px){.compare-selected{grid-template-columns:minmax(280px,.8fr) minmax(0,1.2fr)}.compare-selected-visual{min-height:400px}.compare-selected-copy{padding:30px}.compare-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:720px){.compare-main{padding:28px 0 34px}.compare-intro{grid-template-columns:1fr;gap:20px;padding-bottom:26px}.compare-intro h1{font-size:46px}.compare-intro>p{font-size:11.5px}.compare-selected{grid-template-columns:1fr;margin:0 -12px;border-right:0;border-left:0}.compare-selected-visual{min-height:0;aspect-ratio:4/4}.compare-selected-visual img{padding:24px}.compare-selected-copy{padding:24px 16px 28px}.compare-brand{margin-top:24px!important}.compare-selected h2{font-size:36px}.compare-primary{margin-top:20px}.compare-options{margin-top:42px}.compare-section-head{align-items:flex-start;flex-direction:column;gap:12px}.compare-section-head h2{font-size:34px}.compare-grid{grid-template-columns:1fr}.compare-card{display:grid;grid-template-columns:42% 58%}.compare-card-image{height:100%;min-height:210px;aspect-ratio:auto}.compare-card-copy{min-height:210px;padding:12px}.compare-card-copy>p{margin-top:14px!important}.compare-card h3{font-size:15px}.compare-card dl{grid-template-columns:1fr}.compare-card dl div+div{margin-top:5px;padding:5px 0 0;border-top:1px solid var(--line);border-left:0}.compare-card dd{white-space:normal}.compare-wider{align-items:flex-start;flex-direction:column}.compare-market-links{justify-content:flex-start}.compare-alert{grid-template-columns:1fr;gap:26px;margin-right:-12px;margin-left:-12px;padding:28px 16px;border-right:0;border-left:0}}
 .compare-card{position:relative;cursor:pointer}.compare-card-hit{position:absolute;inset:0;z-index:2;width:100%;height:100%;padding:0;border:0;background:transparent;cursor:pointer}.compare-card-hit:focus-visible{outline:2px solid var(--fg);outline-offset:-3px}.compare-card:hover .compare-card-kicker span:last-child{color:var(--fg)}
+.compare-browse-footer{display:flex;align-items:center;justify-content:space-between;gap:24px;margin-top:24px;padding:18px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}.compare-browse-footer p,.compare-browse-footer span{color:var(--mid);font-size:8.5px!important;font-weight:600;letter-spacing:.09em;text-transform:uppercase}.compare-browse-footer strong{color:var(--fg)}.compare-browse-footer button{padding:10px 13px;border:1px solid var(--fg);background:#fff;color:var(--fg);cursor:pointer;font-family:var(--f);font-size:8.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase}.compare-browse-footer button:hover,.compare-browse-footer button:focus-visible{background:var(--fg);color:#fff}
 .compare-quick-wrap{position:fixed;inset:0;z-index:120;display:flex;justify-content:flex-end;background:rgba(0,0,0,.32)}.compare-quick{width:min(460px,94vw);height:100%;overflow-y:auto;background:#fff;box-shadow:-14px 0 34px rgba(0,0,0,.14);padding:16px}.compare-quick-close{display:block;margin:0 0 14px auto;padding:4px 0;border:0;background:transparent;color:var(--fg);cursor:pointer;font-family:var(--f);font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase}.compare-quick-close:focus-visible,.compare-quick-back:focus-visible,.compare-quick-primary:focus-visible{outline:2px solid var(--fg);outline-offset:3px}.compare-quick-image{aspect-ratio:1/1;overflow:hidden;background:var(--surface)}.compare-quick-image img{display:block;width:100%;height:100%;object-fit:cover;object-position:center}.compare-quick-copy{padding:22px 2px 30px}.compare-quick-kicker{display:flex;justify-content:space-between;gap:16px;color:var(--mid);font-size:8px;font-weight:600;letter-spacing:.1em;text-transform:uppercase}.compare-quick h2{margin:13px 0 0;font-size:clamp(26px,3vw,38px);font-weight:600;line-height:1;letter-spacing:-.04em}.compare-quick-facts{display:grid;grid-template-columns:1fr 1fr;margin:22px 0 0;border-top:1px solid var(--fg);border-bottom:1px solid var(--line)}.compare-quick-facts div{min-width:0;padding:10px 8px 11px 0}.compare-quick-facts div:nth-child(even){padding-left:10px;border-left:1px solid var(--line)}.compare-quick-facts div:nth-child(n+3){border-top:1px solid var(--line)}.compare-quick-facts dt{color:var(--mid);font-size:7.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase}.compare-quick-facts dd{margin:3px 0 0;font-size:10px;line-height:1.35}.compare-quick-note{margin-top:18px!important;color:#555;font-size:10.5px!important;line-height:1.6}.compare-quick-primary{display:flex;min-height:48px;align-items:center;justify-content:center;margin-top:22px;padding:12px 16px;background:var(--fg);color:#fff;font-size:9px;font-weight:600;letter-spacing:.1em;text-align:center;text-decoration:none;text-transform:uppercase}.compare-quick-primary:hover{background:#333}.compare-quick-back{display:block;margin:14px auto 0;padding:4px 0;border:0;border-bottom:1px solid var(--fg);background:transparent;color:var(--fg);cursor:pointer;font-family:var(--f);font-size:8.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase}
+.compare-quick-nav{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;margin-bottom:18px;padding-bottom:12px;border-bottom:1px solid var(--line)}.compare-quick-nav button{width:max-content;padding:0;border:0;background:transparent;color:var(--fg);cursor:pointer;font-family:var(--f);font-size:8px;font-weight:600;letter-spacing:.08em;text-transform:uppercase}.compare-quick-nav button:last-child{justify-self:end}.compare-quick-nav button:disabled{cursor:default;opacity:.35}.compare-quick-nav span{color:var(--mid);font-size:8px;font-weight:600;letter-spacing:.08em;text-transform:uppercase}
 @media (max-width:560px){.compare-quick-wrap{align-items:flex-end}.compare-quick{width:100%;height:min(90dvh,760px);padding:14px;border-radius:16px 16px 0 0;box-shadow:0 -14px 34px rgba(0,0,0,.16)}.compare-quick-image{height:min(38vh,300px);aspect-ratio:auto}.compare-quick-copy{padding-top:17px}.compare-quick h2{font-size:25px}.compare-quick-note{font-size:10px!important}}
+@media (max-width:560px){.compare-browse-footer{align-items:flex-start;flex-direction:column;gap:12px}.compare-browse-footer button{width:100%}.compare-quick-nav{margin-bottom:14px}}
 `;
