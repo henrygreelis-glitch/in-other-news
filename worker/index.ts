@@ -63,9 +63,36 @@ interface EbayItemSummary {
   itemWebUrl?: string;
   itemAffiliateWebUrl?: string;
   buyingOptions?: string[];
+  seller?: {
+    username?: string;
+    feedbackPercentage?: string;
+    feedbackScore?: number;
+  };
   shippingOptions?: Array<{
     shippingCost?: EbayMoney;
   }>;
+}
+
+interface EbayItemDetail extends EbayItemSummary {
+  additionalImages?: Array<{
+    imageUrl?: string;
+  }>;
+  localizedAspects?: Array<{
+    name?: string;
+    value?: string;
+  }>;
+  itemLocation?: {
+    city?: string;
+    stateOrProvince?: string;
+    country?: string;
+  };
+  estimatedAvailabilities?: Array<{
+    estimatedAvailabilityStatus?: string;
+    estimatedAvailableQuantity?: number;
+  }>;
+  returnTerms?: {
+    returnsAccepted?: boolean;
+  };
 }
 
 interface EbaySearchResponse {
@@ -121,12 +148,14 @@ const EBAY_PRODUCTS = {
       ["traveller", "traveler"],
       ["coat"],
     ],
+    categoryTitleTerms: ["coat", "overcoat", "parka"],
   },
   "camiel-fortgens-big-shirt": {
     brand: "Camiel Fortgens",
     item: "Big Shirt",
     query: "Camiel Fortgens Big Shirt Blockprint",
     requiredTitleTermGroups: [["camiel fortgens"], ["big shirt"]],
+    categoryTitleTerms: ["shirt", "overshirt"],
   },
   "ernest-w-baker-crocodile-bomber": {
     brand: "Ernest W. Baker",
@@ -137,12 +166,14 @@ const EBAY_PRODUCTS = {
       ["crocodile", "croc"],
       ["bomber"],
     ],
+    categoryTitleTerms: ["jacket", "bomber", "blouson", "leather"],
   },
   "beams-plus-shawl-cardigan": {
     brand: "BEAMS PLUS",
     item: "Shawl Collar Cardigan",
     query: "BEAMS PLUS Shawl Collar Cardigan",
     requiredTitleTermGroups: [["beams plus", "beams+"], ["shawl"], ["cardigan"]],
+    categoryTitleTerms: ["cardigan", "sweater", "knit"],
   },
   "brooks-brothers-cashmere-v-neck": {
     brand: "Brooks Brothers",
@@ -150,33 +181,40 @@ const EBAY_PRODUCTS = {
     query: "Brooks Brothers 3 Ply Cashmere V Neck Sweater Black MS01260",
     requiredTitleTermGroups: [
       ["brooks brothers"],
+      ["3 ply", "3-ply"],
       ["cashmere"],
       ["v neck", "v-neck"],
+      ["black", "ms01260"],
     ],
+    categoryTitleTerms: ["sweater", "jumper", "cashmere", "knit"],
   },
   "prada-sky-cotton-shirt": {
     brand: "Prada",
     item: "Sky Cotton Shirt",
     query: "Prada UCN596 10IV F0AB7 Cotton Shirt",
     requiredTitleTermGroups: [["prada"], ["ucn596", "f0ab7"]],
+    categoryTitleTerms: ["shirt", "button up", "button down"],
   },
   "sunspel-riviera-long-sleeve": {
     brand: "Sunspel",
     item: "Long Sleeve Riviera",
     query: "Sunspel Long Sleeve Riviera Polo Black",
     requiredTitleTermGroups: [["sunspel"], ["riviera"], ["long sleeve"]],
+    categoryTitleTerms: ["polo", "shirt", "top"],
   },
   "our-legacy-third-cut": {
     brand: "Our Legacy",
     item: "Third Cut",
     query: "Our Legacy Third Cut Black Selvedge Jeans",
     requiredTitleTermGroups: [["our legacy"], ["third cut"]],
+    categoryTitleTerms: ["jean", "denim", "trouser", "pant"],
   },
   "rick-owens-geth-jeans": {
     brand: "Rick Owens",
     item: "Geth Jeans",
     query: "Rick Owens denim",
     requiredTitleTermGroups: [["rick owens"], ["geth"], ["jeans", "trousers"]],
+    categoryTitleTerms: ["jean", "denim", "trouser", "pant"],
   },
   "anonymous-ism-waffle-sock": {
     brand: "Anonymous Ism",
@@ -187,6 +225,7 @@ const EBAY_PRODUCTS = {
       ["waffle"],
       ["sock", "socks"],
     ],
+    categoryTitleTerms: ["sock"],
   },
   "fgs-originals-waffle-crew-socks-m-gray": {
     brand: "FGS Originals",
@@ -197,6 +236,7 @@ const EBAY_PRODUCTS = {
       ["waffle"],
       ["sock", "socks"],
     ],
+    categoryTitleTerms: ["sock"],
   },
   "kiko-kostadinov-farkas-boots": {
     brand: "Kiko Kostadinov",
@@ -207,8 +247,11 @@ const EBAY_PRODUCTS = {
       ["farkas"],
       ["boot", "boots"],
     ],
+    categoryTitleTerms: ["boot", "shoe"],
   },
 } as const;
+
+type EbayProduct = (typeof EBAY_PRODUCTS)[keyof typeof EBAY_PRODUCTS];
 
 let ebayTokenCache:
   | {
@@ -238,9 +281,139 @@ function normalizeListingTitle(title: string): string {
   return title
     .toLowerCase()
     .replace(/\+/g, " plus ")
-    .replace(/[-_/]+/g, " ")
+    .replace(/&/g, " and ")
+    .replace(/[’']/g, "")
+    .replace(/[^a-z0-9]+/g, " ")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+function titleHasAny(title: string, terms: readonly string[]): boolean {
+  return terms.some((term) => title.includes(normalizeListingTitle(term)));
+}
+
+function scoreEbayListing(
+  item: EbayItemSummary,
+  product: EbayProduct
+): { score: number; exact: boolean } | null {
+  const title = normalizeListingTitle(item.title ?? "");
+  if (!title || /\b(poster|magazine|catalog|sticker|keychain|hanger)\b/.test(title)) {
+    return null;
+  }
+
+  const brandMatches = titleHasAny(
+    title,
+    product.requiredTitleTermGroups[0]
+  );
+  const categoryMatches = titleHasAny(title, product.categoryTitleTerms);
+  if (!brandMatches || !categoryMatches) return null;
+
+  const matchedGroups = product.requiredTitleTermGroups.filter((termGroup) =>
+    titleHasAny(title, termGroup)
+  ).length;
+  const exact = matchedGroups === product.requiredTitleTermGroups.length;
+  const feedback = Number(item.seller?.feedbackPercentage ?? 0);
+  const score =
+    40 +
+    15 +
+    Math.round((matchedGroups / product.requiredTitleTermGroups.length) * 30) +
+    (item.image?.imageUrl ? 8 : 0) +
+    (item.price?.value ? 4 : 0) +
+    (feedback >= 95 ? 3 : 0);
+
+  return score >= 70 ? { score, exact } : null;
+}
+
+function upgradeEbayImageUrl(imageUrl: string | undefined): string | null {
+  if (!imageUrl) return null;
+  return imageUrl.replace(/s-l\d+(?=\.(?:jpg|jpeg|png|webp))/i, "s-l1600");
+}
+
+function ebayItemSize(item: EbayItemDetail): string | null {
+  const values = (item.localizedAspects ?? [])
+    .filter((aspect) =>
+      /^(size|shoe size|waist size|inseam|size type)$/i.test(aspect.name ?? "")
+    )
+    .map((aspect) => compactText(aspect.value, 40))
+    .filter(
+      (value) =>
+        Boolean(value) && !/^(?:n\/?a|not applicable|does not apply)$/i.test(value)
+    );
+  return [...new Set(values)].slice(0, 3).join(" · ") || null;
+}
+
+function ebaySeller(item: EbayItemDetail): string | null {
+  const username = compactText(item.seller?.username, 48);
+  const feedback = compactText(item.seller?.feedbackPercentage, 8);
+  if (!username) return null;
+  return feedback ? `${username} · ${feedback}% positive` : username;
+}
+
+function ebayLocation(item: EbayItemDetail): string | null {
+  return [
+    item.itemLocation?.city,
+    item.itemLocation?.stateOrProvince,
+    item.itemLocation?.country,
+  ]
+    .map((part) => compactText(part, 40))
+    .filter(Boolean)
+    .join(", ") || null;
+}
+
+async function enrichEbayListing(
+  item: EbayItemSummary,
+  apiBase: string,
+  headers: Record<string, string>,
+  matchType: "exact" | "similar"
+) {
+  let detail: EbayItemDetail = item;
+  try {
+    const response = await fetch(
+      `${apiBase}/buy/browse/v1/item/${encodeURIComponent(item.itemId ?? "")}`,
+      { headers }
+    );
+    if (response.ok) detail = (await response.json()) as EbayItemDetail;
+  } catch {
+    // Search-summary data remains a safe fallback when one detail call fails.
+  }
+
+  const shippingCost = detail.shippingOptions?.[0]?.shippingCost;
+  const imageUrls = [detail.image, ...(detail.additionalImages ?? [])]
+    .map((image) => upgradeEbayImageUrl(image?.imageUrl))
+    .filter((image): image is string => Boolean(image));
+  const uniqueImages = [...new Set(imageUrls)].slice(0, 8);
+
+  return {
+    id: detail.itemId ?? item.itemId,
+    title: detail.title ?? item.title,
+    imageUrl: uniqueImages[0] ?? upgradeEbayImageUrl(item.image?.imageUrl),
+    imageUrls: uniqueImages,
+    price: detail.price?.value ?? item.price?.value,
+    currency: detail.price?.currency ?? item.price?.currency,
+    condition: detail.condition ?? item.condition ?? "Pre-owned",
+    shippingPrice: shippingCost?.value ?? null,
+    shippingCurrency: shippingCost?.currency ?? null,
+    buyingOptions: detail.buyingOptions ?? item.buyingOptions ?? [],
+    matchType,
+    size: ebayItemSize(detail),
+    seller: ebaySeller(detail),
+    location: ebayLocation(detail),
+    returns: detail.returnTerms?.returnsAccepted === true
+      ? "Returns accepted"
+      : detail.returnTerms?.returnsAccepted === false
+        ? "Final sale"
+        : null,
+    availability:
+      detail.estimatedAvailabilities?.[0]?.estimatedAvailabilityStatus ===
+      "OUT_OF_STOCK"
+        ? "Unavailable"
+        : "Available",
+    url:
+      detail.itemAffiliateWebUrl ||
+      detail.itemWebUrl ||
+      item.itemAffiliateWebUrl ||
+      item.itemWebUrl,
+  };
 }
 
 function compactText(value: unknown, maxLength: number): string {
@@ -593,57 +766,44 @@ async function handleEbaySearch(request: Request, env: Env): Promise<Response> {
     }
 
     const browseData = (await browseResponse.json()) as EbaySearchResponse;
-    const usableListings = (browseData.itemSummaries ?? []).filter(
-      (item) =>
-        item.itemId &&
-        item.title &&
-        item.price?.value &&
-        item.price.currency &&
-        (item.itemAffiliateWebUrl || item.itemWebUrl)
+    const rankedListings = (browseData.itemSummaries ?? [])
+      .filter(
+        (item) =>
+          item.itemId &&
+          item.title &&
+          item.price?.value &&
+          item.price.currency &&
+          (item.itemAffiliateWebUrl || item.itemWebUrl)
+      )
+      .map((item) => ({ item, quality: scoreEbayListing(item, product) }))
+      .filter(
+        (
+          candidate
+        ): candidate is {
+          item: EbayItemSummary;
+          quality: { score: number; exact: boolean };
+        } => Boolean(candidate.quality)
+      )
+      .sort(
+        (a, b) =>
+          Number(b.quality.exact) - Number(a.quality.exact) ||
+          b.quality.score - a.quality.score
+      )
+      .slice(0, 6);
+
+    const listings = await Promise.all(
+      rankedListings.map(({ item, quality }) =>
+        enrichEbayListing(
+          item,
+          apiBase,
+          headers,
+          quality.exact ? "exact" : "similar"
+        )
+      )
     );
-    const browseableListings =
-      productKey === "rick-owens-geth-jeans"
-        ? usableListings.filter(
-            (item) => !/\b(jacket|coat|shirt)\b/i.test(item.title ?? "")
-          )
-        : productKey === "ernest-w-baker-crocodile-bomber"
-          ? usableListings.filter((item) => {
-              const title = normalizeListingTitle(item.title ?? "");
-              return (
-                ["ernest w baker", "ernest w. baker", "ernest w.baker"].some(
-                  (brand) => title.includes(brand)
-                ) &&
-                /\b(leather|blouson|bomber)\b/.test(title)
-              );
-            })
-          : usableListings;
-    const exactListings = browseableListings.filter((item) => {
-      const title = normalizeListingTitle(item.title ?? "");
-      return product.requiredTitleTermGroups.every((termGroup) =>
-        termGroup.some((term) => title.includes(normalizeListingTitle(term)))
-      );
-    });
-    const exactListingIds = new Set(exactListings.map((item) => item.itemId));
-    const similarListings = browseableListings.filter(
-      (item) => !exactListingIds.has(item.itemId)
+    const hasExactListing = listings.some(
+      (listing) => listing.matchType === "exact"
     );
-    const matchedListings = [...exactListings, ...similarListings];
-    const listings = matchedListings.slice(0, 12).map((item) => {
-      const shippingCost = item.shippingOptions?.[0]?.shippingCost;
-      return {
-        id: item.itemId,
-        title: item.title,
-        imageUrl: item.image?.imageUrl ?? null,
-        price: item.price?.value,
-        currency: item.price?.currency,
-        condition: item.condition ?? "Pre-owned",
-        shippingPrice: shippingCost?.value ?? null,
-        shippingCurrency: shippingCost?.currency ?? null,
-        buyingOptions: item.buyingOptions ?? [],
-        matchType: exactListingIds.has(item.itemId) ? "exact" : "similar",
-        url: item.itemAffiliateWebUrl || item.itemWebUrl,
-      };
-    });
 
     return Response.json(
       {
@@ -652,12 +812,12 @@ async function handleEbaySearch(request: Request, env: Env): Promise<Response> {
         matchType:
           listings.length === 0
             ? "none"
-            : exactListings.length > 0
+            : hasExactListing
               ? "exact"
               : "similar",
         message:
           listings.length === 0
-            ? "No used listings are available right now."
+            ? "No strong used matches are available right now."
             : null,
         searchUrl,
       },
