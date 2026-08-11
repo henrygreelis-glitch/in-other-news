@@ -175,8 +175,8 @@ const EBAY_PRODUCTS = {
   "rick-owens-geth-jeans": {
     brand: "Rick Owens",
     item: "Geth Jeans",
-    query: "Rick Owens Geth Jeans RU02F4333 Black",
-    requiredTitleTermGroups: [["rick owens"], ["geth"], ["jeans", "trousers"]],
+    query: "Rick Owens denim",
+    requiredTitleTermGroups: [["rick owens"], ["denim", "jeans"]],
   },
   "anonymous-ism-waffle-sock": {
     brand: "Anonymous Ism",

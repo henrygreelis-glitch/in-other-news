@@ -232,7 +232,7 @@ export const PICKS = [
     legacy_ids: ["our-legacy-third-cut"],
     slot: "Black trouser",
     ebay_search_href:
-      "https://www.ebay.com/sch/i.html?_nkw=Rick+Owens+Geth+Jeans+RU02F4333+Black&_sacat=0&LH_ItemCondition=3000",
+      "https://www.ebay.com/sch/i.html?_nkw=Rick+Owens+denim&_sacat=0&LH_ItemCondition=3000",
     why_selected:
       "The low rise and long, wide leg give the uniform one exaggerated proportion below the coat. Black keeps that volume from competing with the blue and grey layers above it.",
     why_this_source:
