@@ -176,7 +176,7 @@ const EBAY_PRODUCTS = {
     brand: "Rick Owens",
     item: "Geth Jeans",
     query: "Rick Owens denim",
-    requiredTitleTermGroups: [["rick owens"], ["denim", "jeans"]],
+    requiredTitleTermGroups: [["rick owens"], ["geth"], ["jeans", "trousers"]],
   },
   "anonymous-ism-waffle-sock": {
     brand: "Anonymous Ism",
@@ -601,14 +601,20 @@ async function handleEbaySearch(request: Request, env: Env): Promise<Response> {
         item.price.currency &&
         (item.itemAffiliateWebUrl || item.itemWebUrl)
     );
-    const exactListings = usableListings.filter((item) => {
+    const browseableListings =
+      productKey === "rick-owens-geth-jeans"
+        ? usableListings.filter(
+            (item) => !/\b(jacket|coat|shirt)\b/i.test(item.title ?? "")
+          )
+        : usableListings;
+    const exactListings = browseableListings.filter((item) => {
       const title = normalizeListingTitle(item.title ?? "");
       return product.requiredTitleTermGroups.every((termGroup) =>
         termGroup.some((term) => title.includes(normalizeListingTitle(term)))
       );
     });
     const exactListingIds = new Set(exactListings.map((item) => item.itemId));
-    const similarListings = usableListings.filter(
+    const similarListings = browseableListings.filter(
       (item) => !exactListingIds.has(item.itemId)
     );
     const matchedListings = [...exactListings, ...similarListings];
