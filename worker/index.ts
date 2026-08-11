@@ -131,7 +131,7 @@ const EBAY_PRODUCTS = {
   "ernest-w-baker-crocodile-bomber": {
     brand: "Ernest W. Baker",
     item: "80's Crocodile Leather Bomber",
-    query: "Ernest W Baker Crocodile Leather Bomber JA27L",
+    query: "Ernest W. Baker leather jacket",
     requiredTitleTermGroups: [
       ["ernest w baker", "ernest w. baker"],
       ["crocodile", "croc"],

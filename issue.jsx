@@ -134,7 +134,7 @@ export const PICKS = [
     legacy_ids: ["camiel-fortgens-big-shirt"],
     slot: "Leather jacket",
     ebay_search_href:
-      "https://www.ebay.com/sch/i.html?_nkw=Ernest+W+Baker+Crocodile+Leather+Bomber+JA27L&_sacat=0&LH_ItemCondition=3000",
+      "https://www.ebay.com/sch/i.html?_nkw=Ernest+W.+Baker+leather+jacket&_sacat=0&LH_ItemCondition=3000",
     why_selected:
       "The cropped bomber interrupts the long coat and wide trousers with a sharper, shorter shape. Crocodile-embossed black lamb leather adds texture without introducing another color.",
     why_this_source:

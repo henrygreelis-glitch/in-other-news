@@ -66,7 +66,7 @@ export default function ProductSearch({ productKey }) {
       searchUrl: pick.ebay_search_href,
     });
 
-    fetch(`/api/ebay/search?product=${pick.id}&catalog=issue-01-v6`, {
+    fetch(`/api/ebay/search?product=${pick.id}&catalog=issue-01-v7`, {
       signal: controller.signal,
     })
       .then(async (response) => {
