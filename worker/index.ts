@@ -607,8 +607,11 @@ async function handleEbaySearch(request: Request, env: Env): Promise<Response> {
         termGroup.some((term) => title.includes(normalizeListingTitle(term)))
       );
     });
-    const matchedListings =
-      exactListings.length > 0 ? exactListings : usableListings;
+    const exactListingIds = new Set(exactListings.map((item) => item.itemId));
+    const similarListings = usableListings.filter(
+      (item) => !exactListingIds.has(item.itemId)
+    );
+    const matchedListings = [...exactListings, ...similarListings];
     const listings = matchedListings.slice(0, 12).map((item) => {
       const shippingCost = item.shippingOptions?.[0]?.shippingCost;
       return {
@@ -621,6 +624,7 @@ async function handleEbaySearch(request: Request, env: Env): Promise<Response> {
         shippingPrice: shippingCost?.value ?? null,
         shippingCurrency: shippingCost?.currency ?? null,
         buyingOptions: item.buyingOptions ?? [],
+        matchType: exactListingIds.has(item.itemId) ? "exact" : "similar",
         url: item.itemAffiliateWebUrl || item.itemWebUrl,
       };
     });

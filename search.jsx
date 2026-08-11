@@ -66,7 +66,7 @@ export default function ProductSearch({ productKey }) {
       searchUrl: pick.ebay_search_href,
     });
 
-    fetch(`/api/ebay/search?product=${pick.id}&catalog=issue-01-v4`, {
+    fetch(`/api/ebay/search?product=${pick.id}&catalog=issue-01-v5`, {
       signal: controller.signal,
     })
       .then(async (response) => {
@@ -148,7 +148,7 @@ export default function ProductSearch({ productKey }) {
         ? formatListingMoney(listing.shippingPrice, listing.shippingCurrency)
         : "Check listing",
     relationship:
-      market.matchType === "exact"
+      listing.matchType === "exact"
         ? "same_product_used"
         : "similar_silhouette",
     href: listing.url,
