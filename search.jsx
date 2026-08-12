@@ -73,7 +73,7 @@ export default function ProductSearch({ productKey }) {
       searchUrl: pick.ebay_search_href,
     });
 
-    fetch(`/api/ebay/search?product=${pick.id}&catalog=issue-01-v14`, {
+    fetch(`/api/ebay/search?product=${pick.id}&catalog=issue-01-v15`, {
       signal: controller.signal,
     })
       .then(async (response) => {
@@ -218,8 +218,8 @@ export default function ProductSearch({ productKey }) {
             <h1>Compare ways to buy.</h1>
           </div>
           <p>
-            Start with Henry’s selected listing, then browse live pre-owned
-            results and nearby alternatives without leaving this page.
+            Start with Henry’s selected listing, then browse live buying options
+            and nearby alternatives without leaving this page.
           </p>
         </section>
 
@@ -308,7 +308,7 @@ export default function ProductSearch({ productKey }) {
 
           {market.status === "loading" && (
             <p className="compare-state" role="status" aria-live="polite">
-              Searching eBay for live pre-owned listings…
+              Searching eBay for live listings…
             </p>
           )}
 
@@ -321,7 +321,7 @@ export default function ProductSearch({ productKey }) {
 
           {market.status === "ready" && market.matchType === "none" && (
             <p className="compare-state" role="status" aria-live="polite">
-              {market.message || "No strong used matches are available right now."}
+              {market.message || "No strong matches are available right now."}
               {pick.alternatives.length > 0
                 ? " Henry’s approved alternatives are still shown below."
                 : " Save the search and check again later."}

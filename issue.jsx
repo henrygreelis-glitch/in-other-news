@@ -427,15 +427,17 @@ function liveMarketAlternatives(market) {
 
   return market.listings.map((listing) => ({
     id: `ebay-${listing.id}`,
-    source_type: "resale",
+    source_type: /^new\b/i.test(listing.condition || "") ? "retail" : "resale",
     source: "eBay",
     item: listing.title,
     price: formatListingMoney(listing.price, listing.currency),
     condition: listing.condition || "Pre-owned",
-    sizes_available: "Check listing",
+    sizes_available: listing.size || "Check listing",
     relationship:
-      market.matchType === "exact"
-        ? "same_product_used"
+      listing.matchType === "exact"
+        ? /^new\b/i.test(listing.condition || "")
+          ? "same_product_new"
+          : "same_product_used"
         : "similar_silhouette",
     href: listing.url,
     image: listing.imageUrl || FALLBACK_IMAGE,

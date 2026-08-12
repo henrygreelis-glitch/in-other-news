@@ -161,6 +161,7 @@ const EBAY_PRODUCTS = {
     brand: "Ernest W. Baker",
     item: "80's Crocodile Leather Bomber",
     query: "Ernest W. Baker leather jacket",
+    includeNewAlternatives: true,
     requiredTitleTermGroups: [
       ["ernest w baker", "ernest w. baker"],
       ["crocodile", "croc"],
@@ -274,11 +275,13 @@ const aiRateLimits = new Map<
   }
 >();
 
-function ebaySearchUrl(query: string): string {
+function ebaySearchUrl(query: string, includeNewAlternatives = false): string {
   const url = new URL("https://www.ebay.com/sch/i.html");
   url.searchParams.set("_nkw", query);
   url.searchParams.set("_sacat", "0");
-  url.searchParams.set("LH_ItemCondition", "3000");
+  if (!includeNewAlternatives) {
+    url.searchParams.set("LH_ItemCondition", "3000");
+  }
   return url.toString();
 }
 
@@ -423,6 +426,97 @@ async function enrichEbayListing(
       item.itemAffiliateWebUrl ||
       item.itemWebUrl,
   };
+}
+
+type EnrichedEbayListing = Awaited<ReturnType<typeof enrichEbayListing>>;
+
+function ebayHashThumbnailUrl(imageUrl: string | null): string | null {
+  if (!imageUrl) return null;
+
+  try {
+    const url = new URL(imageUrl);
+    if (
+      url.protocol !== "https:" ||
+      (url.hostname !== "ebayimg.com" && !url.hostname.endsWith(".ebayimg.com"))
+    ) {
+      return null;
+    }
+    url.pathname = url.pathname.replace(
+      /s-l\d+(?=\.(?:jpg|jpeg|png|webp)$)/i,
+      "s-l64"
+    );
+    return url.toString();
+  } catch {
+    return null;
+  }
+}
+
+async function ebayImageContentHash(imageUrl: string | null): Promise<string | null> {
+  const thumbnailUrl = ebayHashThumbnailUrl(imageUrl);
+  if (!thumbnailUrl) return null;
+
+  try {
+    const response = await fetch(thumbnailUrl);
+    if (!response.ok) return null;
+    const digest = await crypto.subtle.digest("SHA-256", await response.arrayBuffer());
+    return Array.from(new Uint8Array(digest), (byte) =>
+      byte.toString(16).padStart(2, "0")
+    ).join("");
+  } catch {
+    return null;
+  }
+}
+
+function ebayListingTotal(listing: EnrichedEbayListing): number {
+  const price = Number(listing.price);
+  const shipping =
+    listing.shippingCurrency === listing.currency
+      ? Number(listing.shippingPrice ?? 0)
+      : 0;
+  return (Number.isFinite(price) ? price : Number.POSITIVE_INFINITY) +
+    (Number.isFinite(shipping) ? shipping : 0);
+}
+
+function preferDuplicateListing(
+  candidate: EnrichedEbayListing,
+  current: EnrichedEbayListing
+): boolean {
+  if (candidate.matchType !== current.matchType) {
+    return candidate.matchType === "exact";
+  }
+  if (candidate.availability !== current.availability) {
+    return candidate.availability === "Available";
+  }
+  if (candidate.currency !== current.currency) return false;
+  return ebayListingTotal(candidate) < ebayListingTotal(current);
+}
+
+async function dedupeEbayListingsByImage(
+  listings: EnrichedEbayListing[]
+): Promise<EnrichedEbayListing[]> {
+  const hashes = await Promise.all(
+    listings.map((listing) => ebayImageContentHash(listing.imageUrl))
+  );
+  const kept = listings.map(() => true);
+  const firstByHash = new Map<string, number>();
+
+  hashes.forEach((hash, index) => {
+    if (!hash) return;
+    const existingIndex = firstByHash.get(hash);
+    if (existingIndex === undefined) {
+      firstByHash.set(hash, index);
+      return;
+    }
+
+    if (preferDuplicateListing(listings[index], listings[existingIndex])) {
+      kept[existingIndex] = false;
+      firstByHash.set(hash, index);
+    } else {
+      kept[index] = false;
+    }
+  });
+
+  return listings.filter((_, index) => kept[index]);
 }
 
 function compactText(value: unknown, maxLength: number): string {
@@ -720,7 +814,9 @@ async function handleEbaySearch(request: Request, env: Env): Promise<Response> {
     );
   }
 
-  const searchUrl = ebaySearchUrl(product.query);
+  const includeNewAlternatives =
+    "includeNewAlternatives" in product && product.includeNewAlternatives === true;
+  const searchUrl = ebaySearchUrl(product.query, includeNewAlternatives);
   if (!env.EBAY_CLIENT_ID || !env.EBAY_CLIENT_SECRET) {
     return Response.json(
       {
@@ -754,7 +850,7 @@ async function handleEbaySearch(request: Request, env: Env): Promise<Response> {
     );
     browseUrl.searchParams.set("q", product.query);
     browseUrl.searchParams.set("limit", String(EBAY_SEARCH_CANDIDATE_LIMIT));
-    if (!("includeNewAlternatives" in product && product.includeNewAlternatives)) {
+    if (!includeNewAlternatives) {
       browseUrl.searchParams.set("filter", "conditions:{USED}");
     }
 
@@ -802,7 +898,7 @@ async function handleEbaySearch(request: Request, env: Env): Promise<Response> {
       )
       .slice(0, EBAY_LIVE_LISTING_LIMIT);
 
-    const listings = await Promise.all(
+    const enrichedListings = await Promise.all(
       rankedListings.map(({ item, quality }) =>
         enrichEbayListing(
           item,
@@ -812,6 +908,7 @@ async function handleEbaySearch(request: Request, env: Env): Promise<Response> {
         )
       )
     );
+    const listings = await dedupeEbayListingsByImage(enrichedListings);
     const hasExactListing = listings.some(
       (listing) => listing.matchType === "exact"
     );
