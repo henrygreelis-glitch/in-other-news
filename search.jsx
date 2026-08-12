@@ -25,8 +25,6 @@ const RELATIONSHIP_LABELS = {
   budget_alternative: "Lower-price alternative",
 };
 
-const LISTING_BATCH_SIZE = 8;
-
 function grailedSearchUrl(brand, item) {
   return `https://www.grailed.com/shop?query=${encodeURIComponent(`${brand} ${item}`)}`;
 }
@@ -49,7 +47,6 @@ export default function ProductSearch({ productKey }) {
   });
   const [activeOption, setActiveOption] = useState(null);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
-  const [visibleCount, setVisibleCount] = useState(LISTING_BATCH_SIZE);
   const quickViewRef = useRef(null);
   const optionOpenerRef = useRef(null);
 
@@ -66,8 +63,6 @@ export default function ProductSearch({ productKey }) {
 
   useEffect(() => {
     if (!pick?.id) return undefined;
-
-    setVisibleCount(LISTING_BATCH_SIZE);
 
     const controller = new AbortController();
     setMarket({
@@ -178,8 +173,6 @@ export default function ProductSearch({ productKey }) {
     source: alternative.source || SOURCE_LABELS[alternative.source_type],
   }));
   const buyingOptions = [...liveOptions, ...curatedOptions];
-  const visibleOptions = buyingOptions.slice(0, visibleCount);
-  const hasMoreOptions = visibleCount < buyingOptions.length;
   const activeOptionIndex = activeOption
     ? buyingOptions.findIndex((option) => option.id === activeOption.id)
     : -1;
@@ -341,7 +334,7 @@ export default function ProductSearch({ productKey }) {
 
           {buyingOptions.length > 0 ? (
             <div className="compare-grid">
-              {visibleOptions.map((option) => (
+              {buyingOptions.map((option) => (
                 <article
                   className="compare-card"
                   key={option.id}
@@ -401,21 +394,9 @@ export default function ProductSearch({ productKey }) {
           {buyingOptions.length > 0 && (
             <div className="compare-browse-footer">
               <p>
-                Showing <strong>{visibleOptions.length}</strong> of{" "}
-                <strong>{buyingOptions.length}</strong> options
+                Showing all <strong>{buyingOptions.length}</strong> options
               </p>
-              {hasMoreOptions ? (
-                <button
-                  type="button"
-                  onClick={() =>
-                    setVisibleCount((count) => count + LISTING_BATCH_SIZE)
-                  }
-                >
-                  Load more listings +
-                </button>
-              ) : (
-                <span>All current options shown</span>
-              )}
+              <span>All current options shown</span>
             </div>
           )}
         </section>
