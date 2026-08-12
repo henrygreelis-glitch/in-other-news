@@ -161,7 +161,6 @@ const EBAY_PRODUCTS = {
     brand: "Ernest W. Baker",
     item: "80's Crocodile Leather Bomber",
     query: "Ernest W. Baker leather jacket",
-    includeNewAlternatives: true,
     requiredTitleTermGroups: [
       ["ernest w baker", "ernest w. baker"],
       ["crocodile", "croc"],
@@ -233,7 +232,6 @@ const EBAY_PRODUCTS = {
     item: "Waffle Crew Socks / M.Gray",
     query: "gray waffle crew socks mens",
     allowGenericSimilar: true,
-    includeNewAlternatives: true,
     requiredTitleTermGroups: [
       ["fgs", "front general store"],
       ["waffle"],
@@ -258,6 +256,7 @@ type EbayProduct = (typeof EBAY_PRODUCTS)[keyof typeof EBAY_PRODUCTS];
 
 const EBAY_SEARCH_CANDIDATE_LIMIT = 100;
 const EBAY_LIVE_LISTING_LIMIT = 24;
+const EBAY_RESALE_CONDITION_FILTER = "conditions:{NEW|USED}";
 
 let ebayTokenCache:
   | {
@@ -275,13 +274,10 @@ const aiRateLimits = new Map<
   }
 >();
 
-function ebaySearchUrl(query: string, includeNewAlternatives = false): string {
+function ebaySearchUrl(query: string): string {
   const url = new URL("https://www.ebay.com/sch/i.html");
   url.searchParams.set("_nkw", query);
   url.searchParams.set("_sacat", "0");
-  if (!includeNewAlternatives) {
-    url.searchParams.set("LH_ItemCondition", "3000");
-  }
   return url.toString();
 }
 
@@ -693,7 +689,7 @@ async function createAiRefinement(
         max_output_tokens: 500,
         safety_identifier: identifier,
         instructions:
-          "You refine fashion shopping searches for In Other News. Preserve the current product category unless the shopper explicitly changes it. Favor useful leeway over exact-only matching. Translate the request into concise retail and pre-owned search queries. Do not invent products, prices, availability, or links. Return only the requested JSON.",
+          "You refine fashion shopping searches for In Other News. Preserve the current product category unless the shopper explicitly changes it. Favor useful leeway over exact-only matching. Translate the request into concise retail and resale-market search queries. Do not invent products, prices, availability, or links. Return only the requested JSON.",
         input: `Current product: ${product.brand} ${product.item}. Existing search: ${product.query}. Shopper request: ${shopperRequest}`,
         text: {
           verbosity: "low",
@@ -814,9 +810,7 @@ async function handleEbaySearch(request: Request, env: Env): Promise<Response> {
     );
   }
 
-  const includeNewAlternatives =
-    "includeNewAlternatives" in product && product.includeNewAlternatives === true;
-  const searchUrl = ebaySearchUrl(product.query, includeNewAlternatives);
+  const searchUrl = ebaySearchUrl(product.query);
   if (!env.EBAY_CLIENT_ID || !env.EBAY_CLIENT_SECRET) {
     return Response.json(
       {
@@ -850,9 +844,7 @@ async function handleEbaySearch(request: Request, env: Env): Promise<Response> {
     );
     browseUrl.searchParams.set("q", product.query);
     browseUrl.searchParams.set("limit", String(EBAY_SEARCH_CANDIDATE_LIMIT));
-    if (!includeNewAlternatives) {
-      browseUrl.searchParams.set("filter", "conditions:{USED}");
-    }
+    browseUrl.searchParams.set("filter", EBAY_RESALE_CONDITION_FILTER);
 
     const headers: Record<string, string> = {
       Accept: "application/json",
@@ -925,7 +917,7 @@ async function handleEbaySearch(request: Request, env: Env): Promise<Response> {
               : "similar",
         message:
           listings.length === 0
-            ? "No strong used matches are available right now."
+            ? "No strong resale-market matches are available right now."
             : null,
         searchUrl,
       },
@@ -984,7 +976,7 @@ async function searchEbayForQuery(
     return {
       configured: false,
       listings: [],
-      message: "Live pre-owned results are ready to connect.",
+      message: "Live resale-market results are ready to connect.",
       searchUrl,
     };
   }
@@ -1006,8 +998,8 @@ async function searchEbayForQuery(
     browseUrl.searchParams.set(
       "filter",
       maxPrice
-        ? `conditions:{USED},price:[..${maxPrice}],priceCurrency:USD`
-        : "conditions:{USED}"
+        ? `${EBAY_RESALE_CONDITION_FILTER},price:[..${maxPrice}],priceCurrency:USD`
+        : EBAY_RESALE_CONDITION_FILTER
     );
 
     const headers: Record<string, string> = {
@@ -1059,14 +1051,14 @@ async function searchEbayForQuery(
       listings,
       message: listings.length
         ? null
-        : "No matching pre-owned listings are available right now.",
+        : "No matching resale-market listings are available right now.",
       searchUrl,
     };
   } catch {
     return {
       configured: true,
       listings: [],
-      message: "Live pre-owned results are temporarily unavailable.",
+      message: "Live resale-market results are temporarily unavailable.",
       searchUrl,
     };
   }
@@ -1202,7 +1194,7 @@ function productWatchEmailHtml(
       <p style="margin:0 0 48px;font-size:11px;letter-spacing:.12em;text-transform:uppercase">In Other News · Uniform 01</p>
       <p style="margin:0 0 10px;color:#777;font-size:10px;letter-spacing:.12em;text-transform:uppercase">Product watch saved</p>
       <h1 style="margin:0;font-size:30px;line-height:1.08;font-weight:500">${brand}<br>${item}</h1>
-      <p style="margin:24px 0 0;font-size:14px;line-height:1.65">Your watch is ready. We’ll use it for new pre-owned matches and meaningful retail price drops as alert delivery comes online.</p>
+      <p style="margin:24px 0 0;font-size:14px;line-height:1.65">Your watch is ready. We’ll use it for new resale-market matches and meaningful retail price drops as alert delivery comes online.</p>
       <p style="margin:32px 0 0"><a href="${siteUrl}" style="display:inline-block;background:#111;color:#fff;padding:13px 18px;font-size:11px;letter-spacing:.1em;text-decoration:none;text-transform:uppercase">Return to Uniform 01 →</a></p>
       <p style="margin:56px 0 0;color:#777;font-size:10px;line-height:1.6">You requested this product watch from In Other News.</p>
     </div>

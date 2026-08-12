@@ -427,7 +427,7 @@ function liveMarketAlternatives(market) {
 
   return market.listings.map((listing) => ({
     id: `ebay-${listing.id}`,
-    source_type: /^new\b/i.test(listing.condition || "") ? "retail" : "resale",
+    source_type: "resale",
     source: "eBay",
     item: listing.title,
     price: formatListingMoney(listing.price, listing.currency),
@@ -624,11 +624,11 @@ export function ProductWatch({ pick }) {
     <section className="s-watch" aria-labelledby="product-watch-title">
       <div className="s-used-kicker">
         <span>Alert beta</span>
-        <span>Email + pre-owned</span>
+        <span>Email + resale</span>
       </div>
       <h3 id="product-watch-title">Watch this piece</h3>
       <p className="s-watch-intro">
-        Save your email for retail drops and new pre-owned matches. We’ll
+        Save your email for retail drops and new resale-market matches. We’ll
         confirm this watch by email as soon as sending is connected.
       </p>
       {status === "success" ? (
@@ -813,7 +813,7 @@ export function AiFinder({ pick, defaultOpen = false, standalone = false }) {
 
           {result.listings?.length > 0 ? (
             <div className="s-ai-list">
-              <p>Live pre-owned results</p>
+              <p>Live resale-market results</p>
               {result.listings.map((listing) => (
                 <a
                   className="s-used-card"
@@ -844,7 +844,7 @@ export function AiFinder({ pick, defaultOpen = false, standalone = false }) {
             </div>
           ) : (
             <p className="s-ai-empty">
-              {result.message || "No live pre-owned results found yet."}
+              {result.message || "No live resale-market results found yet."}
             </p>
           )}
 
@@ -861,7 +861,7 @@ export function AiFinder({ pick, defaultOpen = false, standalone = false }) {
               target="_blank"
               rel="noopener noreferrer"
             >
-              Search more pre-owned ↗
+              Search more resale ↗
             </a>
             <a
               href={result.resaleSearchUrl}

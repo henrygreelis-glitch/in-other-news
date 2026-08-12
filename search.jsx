@@ -73,7 +73,7 @@ export default function ProductSearch({ productKey }) {
       searchUrl: pick.ebay_search_href,
     });
 
-    fetch(`/api/ebay/search?product=${pick.id}&catalog=issue-01-v15`, {
+    fetch(`/api/ebay/search?product=${pick.id}&catalog=issue-01-v16`, {
       signal: controller.signal,
     })
       .then(async (response) => {
@@ -218,8 +218,8 @@ export default function ProductSearch({ productKey }) {
             <h1>Compare ways to buy.</h1>
           </div>
           <p>
-            Start with Henry’s selected listing, then browse live buying options
-            and nearby alternatives without leaving this page.
+            Start with Henry’s selected listing, then browse live resale-market
+            options in every condition without leaving this page.
           </p>
         </section>
 
@@ -300,7 +300,7 @@ export default function ProductSearch({ productKey }) {
         <section className="compare-options" aria-labelledby="compare-options-title">
           <div className="compare-section-head">
             <div>
-              <p className="s-eyebrow">On-site marketplace</p>
+              <p className="s-eyebrow">Resale marketplace</p>
               <h2 id="compare-options-title">Browse buying options</h2>
             </div>
             <span>{optionStatus}</span>
