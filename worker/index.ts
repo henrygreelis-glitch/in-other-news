@@ -230,7 +230,9 @@ const EBAY_PRODUCTS = {
   "fgs-originals-waffle-crew-socks-m-gray": {
     brand: "FGS Originals",
     item: "Waffle Crew Socks / M.Gray",
-    query: "Front General Store socks",
+    query: "gray waffle crew socks mens",
+    allowGenericSimilar: true,
+    includeNewAlternatives: true,
     requiredTitleTermGroups: [
       ["fgs", "front general store"],
       ["waffle"],
@@ -309,15 +311,19 @@ function scoreEbayListing(
     product.requiredTitleTermGroups[0]
   );
   const categoryMatches = titleHasAny(title, product.categoryTitleTerms);
-  if (!brandMatches || !categoryMatches) return null;
-
   const matchedGroups = product.requiredTitleTermGroups.filter((termGroup) =>
     titleHasAny(title, termGroup)
   ).length;
-  const exact = matchedGroups === product.requiredTitleTermGroups.length;
+  const allowGenericSimilar =
+    "allowGenericSimilar" in product && product.allowGenericSimilar === true;
+  if (!categoryMatches) return null;
+  if (!brandMatches && (!allowGenericSimilar || matchedGroups < 2)) return null;
+
+  const exact =
+    brandMatches && matchedGroups === product.requiredTitleTermGroups.length;
   const feedback = Number(item.seller?.feedbackPercentage ?? 0);
   const score =
-    40 +
+    (brandMatches ? 40 : 20) +
     15 +
     Math.round((matchedGroups / product.requiredTitleTermGroups.length) * 30) +
     (item.image?.imageUrl ? 8 : 0) +
@@ -748,7 +754,9 @@ async function handleEbaySearch(request: Request, env: Env): Promise<Response> {
     );
     browseUrl.searchParams.set("q", product.query);
     browseUrl.searchParams.set("limit", String(EBAY_SEARCH_CANDIDATE_LIMIT));
-    browseUrl.searchParams.set("filter", "conditions:{USED}");
+    if (!("includeNewAlternatives" in product && product.includeNewAlternatives)) {
+      browseUrl.searchParams.set("filter", "conditions:{USED}");
+    }
 
     const headers: Record<string, string> = {
       Accept: "application/json",
