@@ -5,7 +5,10 @@
 /dist
 /.wrangler
 /outputs
+/output
+/tmp
 /work
+build_product_marketing_resume.py
 .DS_Store
 *.pem
 *.log
