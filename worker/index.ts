@@ -1181,33 +1181,55 @@ function isResendConfigured(env: Env): boolean {
   return Boolean(env.RESEND_API_KEY && env.RESEND_FROM_EMAIL);
 }
 
-async function syncNewsletterContact(env: Env, email: string): Promise<boolean> {
+function newsletterEmailHtml(siteUrl: string): string {
+  return `<!doctype html>
+<html lang="en">
+  <body style="margin:0;background:#f3f3f0;color:#111;font-family:Arial,sans-serif">
+    <div style="max-width:560px;margin:0 auto;padding:40px 24px">
+      <p style="margin:0 0 48px;font-size:11px;letter-spacing:.12em;text-transform:uppercase">In Other News · Uniform 01</p>
+      <p style="margin:0 0 10px;color:#777;font-size:10px;letter-spacing:.12em;text-transform:uppercase">Subscribed</p>
+      <h1 style="margin:0;font-size:30px;line-height:1.08;font-weight:500">You're on the list</h1>
+      <p style="margin:24px 0 0;font-size:14px;line-height:1.65">Uniform 02 lands Sunday. Each issue is one system of clothes, with every piece matched to live resale and retail listings.</p>
+      <p style="margin:32px 0 0"><a href="${siteUrl}/in-other-news" style="display:inline-block;background:#111;color:#fff;padding:13px 18px;font-size:11px;letter-spacing:.1em;text-decoration:none;text-transform:uppercase">Read Uniform 01 →</a></p>
+      <p style="margin:56px 0 0;color:#777;font-size:10px;line-height:1.6">You subscribed to In Other News at ${siteUrl}.</p>
+    </div>
+  </body>
+</html>`;
+}
+
+// Sends the subscriber confirmation through Resend's /emails endpoint. Contact
+// management lives behind a full-access key; send-only keys are rejected there,
+// so the D1 row is the subscriber list and this is only the confirmation.
+async function sendNewsletterConfirmation(
+  env: Env,
+  email: string,
+  siteUrl: string
+): Promise<boolean> {
   if (!isResendConfigured(env)) return false;
 
-  const headers = {
-    Authorization: `Bearer ${env.RESEND_API_KEY}`,
-    "Content-Type": "application/json",
-    "User-Agent": "in-other-news/1.0",
-  };
-  let response = await fetch("https://api.resend.com/contacts", {
+  const response = await fetch("https://api.resend.com/emails", {
     method: "POST",
-    headers,
-    body: JSON.stringify({ email, unsubscribed: false }),
+    headers: {
+      Authorization: `Bearer ${env.RESEND_API_KEY}`,
+      "Content-Type": "application/json",
+      "Idempotency-Key": `uniform-01-subscribe-${email}`.slice(0, 256),
+      "User-Agent": "in-other-news/1.0",
+    },
+    body: JSON.stringify({
+      from: env.RESEND_FROM_EMAIL,
+      to: [email],
+      subject: "You're subscribed to In Other News",
+      html: newsletterEmailHtml(siteUrl),
+      text: `You're subscribed to In Other News. Uniform 02 lands Sunday. Read Uniform 01: ${siteUrl}/in-other-news`,
+      tags: [
+        { name: "message_type", value: "newsletter_confirmation" },
+        { name: "issue", value: "uniform_01" },
+      ],
+    }),
   });
 
-  if (response.status === 409) {
-    response = await fetch(
-      `https://api.resend.com/contacts/${encodeURIComponent(email)}`,
-      {
-        method: "PATCH",
-        headers,
-        body: JSON.stringify({ unsubscribed: false }),
-      }
-    );
-  }
-
   if (!response.ok) {
-    throw new Error(`Resend contact request failed (${response.status})`);
+    throw new Error(`Resend email request failed (${response.status})`);
   }
 
   return true;
@@ -1307,9 +1329,13 @@ async function handleNewsletterSubscribe(
       .bind(email, "uniform-01")
       .run();
 
-    let contactSynced = false;
+    let confirmationSent = false;
     try {
-      contactSynced = await syncNewsletterContact(env, email);
+      confirmationSent = await sendNewsletterConfirmation(
+        env,
+        email,
+        new URL(request.url).origin
+      );
     } catch {
       // The local subscriber record remains authoritative if Resend is offline.
     }
@@ -1317,10 +1343,10 @@ async function handleNewsletterSubscribe(
     return Response.json(
       {
         ok: true,
-        message: contactSynced
+        message: confirmationSent
           ? "Subscribed. Uniform 02 lands Sunday."
           : "Subscribed. Email delivery activates after domain setup.",
-        emailConnected: contactSynced,
+        emailConnected: confirmationSent,
       },
       { headers: { "Cache-Control": "no-store" } }
     );
