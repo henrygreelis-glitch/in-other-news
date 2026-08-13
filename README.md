@@ -1,5 +1,7 @@
 # In Other News
 
+![In Other News — Issue 01, The uniform for the first cold week](public/og-issue-01.png)
+
 Personal site and portfolio for Henry Greelis — positioning, product stories, and editorial ideas — built around *In Other News*, a menswear editorial that turns each issue's featured garments into live, shoppable listings.
 
 Running on Next.js 16 App Router (React 19 Server Components) deployed to Cloudflare Workers.
