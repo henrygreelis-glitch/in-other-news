@@ -23,6 +23,17 @@ export default defineConfig(async () => {
         config: {
           main: "./worker/index.ts",
           compatibility_flags: ["nodejs_compat"],
+          d1_databases: [
+            {
+              binding: "DB",
+              database_name: "in-other-news",
+              // Replace with the real id from `wrangler d1 create in-other-news`
+              // before deploying. Local dev uses a Miniflare-managed SQLite file
+              // and ignores this value.
+              database_id: process.env.D1_DATABASE_ID ?? "local-in-other-news",
+              migrations_dir: "./drizzle",
+            },
+          ],
         },
       }),
     ],
