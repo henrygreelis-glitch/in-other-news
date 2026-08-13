@@ -1212,7 +1212,10 @@ async function sendNewsletterConfirmation(
     headers: {
       Authorization: `Bearer ${env.RESEND_API_KEY}`,
       "Content-Type": "application/json",
-      "Idempotency-Key": `uniform-01-subscribe-${email}`.slice(0, 256),
+      // Scoped to the hour so one failed send cannot poison retries for a day.
+      "Idempotency-Key": `uniform-01-subscribe-${email}-${new Date()
+        .toISOString()
+        .slice(0, 13)}`.slice(0, 256),
       "User-Agent": "in-other-news/1.0",
     },
     body: JSON.stringify({
@@ -1286,7 +1289,9 @@ async function sendProductWatchConfirmation(
   });
 
   if (!response.ok) {
-    throw new Error(`Resend email request failed (${response.status})`);
+    throw new Error(
+      `Resend email request failed (${response.status}): ${await response.text()}`
+    );
   }
 
   return true;
@@ -1336,8 +1341,10 @@ async function handleNewsletterSubscribe(
         email,
         new URL(request.url).origin
       );
-    } catch {
-      // The local subscriber record remains authoritative if Resend is offline.
+    } catch (error) {
+      // The subscriber record remains authoritative if Resend is offline, but
+      // the reason still needs to reach the logs.
+      console.error("newsletter confirmation failed", String(error));
     }
 
     return Response.json(
