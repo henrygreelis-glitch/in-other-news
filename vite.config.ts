@@ -52,6 +52,10 @@ export default defineConfig(async ({ command }) => {
           compatibility_flags: ["nodejs_compat"],
           ...d1Bindings,
           ...routes,
+          // worker/index.ts uses env.IMAGES for on-demand transforms and
+          // env.ASSETS to read the original file before transforming it.
+          images: { binding: "IMAGES" },
+          assets: { binding: "ASSETS" },
         },
       }),
     ],
