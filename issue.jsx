@@ -109,7 +109,7 @@ export const PICKS = [
     id: "kaptain-sunshine-traveller-coat",
     slot: "Outer",
     ebay_search_href:
-      "https://www.ebay.com/sch/i.html?_nkw=Kaptain+Sunshine+Traveller+Coat+Navy&_sacat=0&LH_ItemCondition=3000",
+      "https://www.ebay.com/sch/i.html?_nkw=Kaptain+Sunshine+Traveller+Coat+Navy&_sacat=1059",
     why_selected:
       "Balmacaan collar, raglan shoulder, cut long enough to cover a jacket. The one coat that works over everything else here.",
     why_this_source:
@@ -134,7 +134,7 @@ export const PICKS = [
     legacy_ids: ["camiel-fortgens-big-shirt"],
     slot: "Leather jacket",
     ebay_search_href:
-      "https://www.ebay.com/sch/i.html?_nkw=Ernest+W.+Baker+leather+jacket&_sacat=0&LH_ItemCondition=3000",
+      "https://www.ebay.com/sch/i.html?_nkw=Ernest+W.+Baker+leather+jacket&_sacat=1059",
     why_selected:
       "The cropped bomber interrupts the long coat and wide trousers with a sharper, shorter shape. Crocodile-embossed black lamb leather adds texture without introducing another color.",
     why_this_source:
@@ -159,7 +159,7 @@ export const PICKS = [
     legacy_ids: ["beams-plus-shawl-cardigan"],
     slot: "Knit",
     ebay_search_href:
-      "https://www.ebay.com/sch/i.html?_nkw=Brooks+Brothers+3-Ply+Cashmere+V-Neck+Sweater+Black+MS01260&_sacat=0&LH_ItemCondition=3000",
+      "https://www.ebay.com/sch/i.html?_nkw=Brooks+Brothers+3-Ply+Cashmere+V-Neck+Sweater+Black+MS01260&_sacat=1059",
     why_selected:
       "The deep V leaves the blue shirt visible while the black cashmere connects the top half to the wide trouser and boots. Its clean shape adds warmth without another bulky collar.",
     why_this_source:
@@ -183,7 +183,7 @@ export const PICKS = [
     id: "prada-sky-cotton-shirt",
     slot: "Shirt",
     ebay_search_href:
-      "https://www.ebay.com/sch/i.html?_nkw=Prada+UCN596+10IV+F0AB7+Cotton+Shirt&_sacat=0&LH_ItemCondition=3000",
+      "https://www.ebay.com/sch/i.html?_nkw=Prada+UCN596+10IV+F0AB7+Cotton+Shirt&_sacat=1059",
     why_selected:
       "The quiet blue base breaks up the black leather, knit, and trousers. Its sharper collar holds the middle of the look without competing with the outer layers.",
     why_this_source:
@@ -207,7 +207,7 @@ export const PICKS = [
     id: "sunspel-riviera-long-sleeve",
     slot: "Polo",
     ebay_search_href:
-      "https://www.ebay.com/sch/i.html?_nkw=Sunspel+Long+Sleeve+Riviera+Polo+Black&_sacat=0&LH_ItemCondition=3000",
+      "https://www.ebay.com/sch/i.html?_nkw=Sunspel+Long+Sleeve+Riviera+Polo+Black&_sacat=1059",
     why_selected:
       "Long-sleeve mesh cotton adds a clean black layer without the bulk of another knit. Its collar sits cleanly under the V-neck and it can replace the blue shirt when the uniform needs one less layer.",
     why_this_source:
@@ -232,7 +232,7 @@ export const PICKS = [
     legacy_ids: ["our-legacy-third-cut"],
     slot: "Black trouser",
     ebay_search_href:
-      "https://www.ebay.com/sch/i.html?_nkw=Rick+Owens+denim&_sacat=0&LH_ItemCondition=3000",
+      "https://www.ebay.com/sch/i.html?_nkw=Rick+Owens+denim&_sacat=1059",
     why_selected:
       "The low rise and long, wide leg give the uniform one exaggerated proportion below the coat. Black keeps that volume from competing with the blue and grey layers above it.",
     why_this_source:
@@ -271,7 +271,7 @@ export const PICKS = [
     legacy_ids: ["anonymous-ism-waffle-sock"],
     slot: "Sock",
     ebay_search_href:
-      "https://www.ebay.com/sch/i.html?_nkw=FGS+Originals+Waffle+Crew+Socks+M+Gray&_sacat=0&LH_ItemCondition=3000",
+      "https://www.ebay.com/sch/i.html?_nkw=FGS+Originals+Waffle+Crew+Socks+M+Gray&_sacat=11511",
     why_selected:
       "The mid-grey waffle knit adds texture at the ankle without introducing another color. It keeps the navy, black, and blue layers connected.",
     why_this_source:
@@ -296,7 +296,7 @@ export const PICKS = [
     legacy_ids: ["hender-scheme-mip-22"],
     slot: "Boot",
     ebay_search_href:
-      "https://www.ebay.com/sch/i.html?_nkw=Kiko+Kostadinov+Farkas+Boots+261985M228002+Black&_sacat=0&LH_ItemCondition=3000",
+      "https://www.ebay.com/sch/i.html?_nkw=Kiko+Kostadinov+Farkas+Boots+261985M228002+Black&_sacat=93427",
     why_selected:
       "The rounded work-boot toe and Vibram sole give the wide Geth hem enough weight underneath it. Polished black leather keeps the boot connected to the trouser while the drawstring collar adds one technical detail.",
     why_this_source:

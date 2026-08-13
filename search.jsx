@@ -73,7 +73,7 @@ export default function ProductSearch({ productKey }) {
       searchUrl: pick.ebay_search_href,
     });
 
-    fetch(`/api/ebay/search?product=${pick.id}&catalog=issue-01-v16`, {
+    fetch(`/api/ebay/search?product=${pick.id}&catalog=issue-01-v17`, {
       signal: controller.signal,
     })
       .then(async (response) => {
@@ -218,7 +218,7 @@ export default function ProductSearch({ productKey }) {
             <h1>Compare ways to buy.</h1>
           </div>
           <p>
-            Start with Henry’s selected listing, then browse live resale-market
+            Start with Henry’s selected listing, then browse men’s resale-market
             options in every condition without leaving this page.
           </p>
         </section>

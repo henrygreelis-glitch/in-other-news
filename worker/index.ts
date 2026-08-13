@@ -143,6 +143,7 @@ const EBAY_PRODUCTS = {
     brand: "Kaptain Sunshine",
     item: "Traveller Coat",
     query: "Kaptain Sunshine coat navy",
+    categoryId: "1059",
     requiredTitleTermGroups: [
       ["kaptain sunshine"],
       ["traveller", "traveler"],
@@ -154,6 +155,7 @@ const EBAY_PRODUCTS = {
     brand: "Camiel Fortgens",
     item: "Big Shirt",
     query: "Camiel Fortgens Big Shirt Blockprint",
+    categoryId: "1059",
     requiredTitleTermGroups: [["camiel fortgens"], ["big shirt"]],
     categoryTitleTerms: ["shirt", "overshirt"],
   },
@@ -161,6 +163,7 @@ const EBAY_PRODUCTS = {
     brand: "Ernest W. Baker",
     item: "80's Crocodile Leather Bomber",
     query: "Ernest W. Baker leather jacket",
+    categoryId: "1059",
     requiredTitleTermGroups: [
       ["ernest w baker", "ernest w. baker"],
       ["crocodile", "croc"],
@@ -172,6 +175,7 @@ const EBAY_PRODUCTS = {
     brand: "BEAMS PLUS",
     item: "Shawl Collar Cardigan",
     query: "BEAMS PLUS Shawl Collar Cardigan",
+    categoryId: "1059",
     requiredTitleTermGroups: [["beams plus", "beams+"], ["shawl"], ["cardigan"]],
     categoryTitleTerms: ["cardigan", "sweater", "knit"],
   },
@@ -179,6 +183,7 @@ const EBAY_PRODUCTS = {
     brand: "Brooks Brothers",
     item: "3-Ply Cashmere V-Neck Sweater",
     query: "Brooks Brothers cashmere v neck sweater black",
+    categoryId: "1059",
     requiredTitleTermGroups: [
       ["brooks brothers"],
       ["3 ply", "3-ply"],
@@ -192,6 +197,7 @@ const EBAY_PRODUCTS = {
     brand: "Prada",
     item: "Sky Cotton Shirt",
     query: "Prada cotton shirt blue",
+    categoryId: "1059",
     requiredTitleTermGroups: [["prada"], ["ucn596", "f0ab7"]],
     categoryTitleTerms: ["shirt", "button up", "button down"],
   },
@@ -199,6 +205,7 @@ const EBAY_PRODUCTS = {
     brand: "Sunspel",
     item: "Long Sleeve Riviera",
     query: "Sunspel long sleeve polo black",
+    categoryId: "1059",
     requiredTitleTermGroups: [["sunspel"], ["riviera"], ["long sleeve"]],
     categoryTitleTerms: ["polo", "shirt", "top"],
   },
@@ -206,6 +213,7 @@ const EBAY_PRODUCTS = {
     brand: "Our Legacy",
     item: "Third Cut",
     query: "Our Legacy Third Cut Black Selvedge Jeans",
+    categoryId: "1059",
     requiredTitleTermGroups: [["our legacy"], ["third cut"]],
     categoryTitleTerms: ["jean", "denim", "trouser", "pant"],
   },
@@ -213,6 +221,7 @@ const EBAY_PRODUCTS = {
     brand: "Rick Owens",
     item: "Geth Jeans",
     query: "Rick Owens denim",
+    categoryId: "1059",
     requiredTitleTermGroups: [["rick owens"], ["geth"], ["jeans", "trousers"]],
     categoryTitleTerms: ["jean", "denim", "trouser", "pant"],
   },
@@ -220,6 +229,7 @@ const EBAY_PRODUCTS = {
     brand: "Anonymous Ism",
     item: "Waffle Crew Sock",
     query: "Anonymous Ism Waffle Crew Socks",
+    categoryId: "11511",
     requiredTitleTermGroups: [
       ["anonymous ism", "anonymousism"],
       ["waffle"],
@@ -231,6 +241,7 @@ const EBAY_PRODUCTS = {
     brand: "FGS Originals",
     item: "Waffle Crew Socks / M.Gray",
     query: "gray waffle crew socks mens",
+    categoryId: "11511",
     allowGenericSimilar: true,
     requiredTitleTermGroups: [
       ["fgs", "front general store"],
@@ -243,6 +254,7 @@ const EBAY_PRODUCTS = {
     brand: "Kiko Kostadinov",
     item: "Black Farkas Boots",
     query: "Kiko Kostadinov black boots shoes",
+    categoryId: "93427",
     requiredTitleTermGroups: [
       ["kiko kostadinov"],
       ["farkas"],
@@ -274,10 +286,10 @@ const aiRateLimits = new Map<
   }
 >();
 
-function ebaySearchUrl(query: string): string {
+function ebaySearchUrl(query: string, categoryId: string): string {
   const url = new URL("https://www.ebay.com/sch/i.html");
   url.searchParams.set("_nkw", query);
-  url.searchParams.set("_sacat", "0");
+  url.searchParams.set("_sacat", categoryId);
   return url.toString();
 }
 
@@ -296,12 +308,22 @@ function titleHasAny(title: string, terms: readonly string[]): boolean {
   return terms.some((term) => title.includes(normalizeListingTitle(term)));
 }
 
+function titleIsExplicitlyNonMens(title: string): boolean {
+  return /\b(?:women|womens|ladies|lady|girls|girl)\b/.test(
+    normalizeListingTitle(title)
+  );
+}
+
 function scoreEbayListing(
   item: EbayItemSummary,
   product: EbayProduct
 ): { score: number; exact: boolean } | null {
   const title = normalizeListingTitle(item.title ?? "");
-  if (!title || /\b(poster|magazine|catalog|sticker|keychain|hanger)\b/.test(title)) {
+  if (
+    !title ||
+    titleIsExplicitlyNonMens(title) ||
+    /\b(poster|magazine|catalog|sticker|keychain|hanger)\b/.test(title)
+  ) {
     return null;
   }
 
@@ -689,7 +711,7 @@ async function createAiRefinement(
         max_output_tokens: 500,
         safety_identifier: identifier,
         instructions:
-          "You refine fashion shopping searches for In Other News. Preserve the current product category unless the shopper explicitly changes it. Favor useful leeway over exact-only matching. Translate the request into concise retail and resale-market search queries. Do not invent products, prices, availability, or links. Return only the requested JSON.",
+          "You refine menswear shopping searches for In Other News. Keep every result in the men’s product category unless the shopper explicitly asks for unisex. Favor useful leeway over exact-only matching. Translate the request into concise retail and resale-market search queries. Do not invent products, prices, availability, or links. Return only the requested JSON.",
         input: `Current product: ${product.brand} ${product.item}. Existing search: ${product.query}. Shopper request: ${shopperRequest}`,
         text: {
           verbosity: "low",
@@ -810,7 +832,7 @@ async function handleEbaySearch(request: Request, env: Env): Promise<Response> {
     );
   }
 
-  const searchUrl = ebaySearchUrl(product.query);
+  const searchUrl = ebaySearchUrl(product.query, product.categoryId);
   if (!env.EBAY_CLIENT_ID || !env.EBAY_CLIENT_SECRET) {
     return Response.json(
       {
@@ -843,6 +865,7 @@ async function handleEbaySearch(request: Request, env: Env): Promise<Response> {
       `${apiBase}/buy/browse/v1/item_summary/search`
     );
     browseUrl.searchParams.set("q", product.query);
+    browseUrl.searchParams.set("category_ids", product.categoryId);
     browseUrl.searchParams.set("limit", String(EBAY_SEARCH_CANDIDATE_LIMIT));
     browseUrl.searchParams.set("filter", EBAY_RESALE_CONDITION_FILTER);
 
@@ -950,7 +973,8 @@ async function handleEbaySearch(request: Request, env: Env): Promise<Response> {
 async function searchEbayForQuery(
   env: Env,
   query: string,
-  maxPrice?: number
+  maxPrice: number | undefined,
+  categoryId: string
 ): Promise<{
   configured: boolean;
   listings: Array<{
@@ -968,7 +992,7 @@ async function searchEbayForQuery(
   message: string | null;
   searchUrl: string;
 }> {
-  const publicSearchUrl = new URL(ebaySearchUrl(query));
+  const publicSearchUrl = new URL(ebaySearchUrl(query, categoryId));
   if (maxPrice) publicSearchUrl.searchParams.set("_udhi", String(maxPrice));
   const searchUrl = publicSearchUrl.toString();
 
@@ -994,6 +1018,7 @@ async function searchEbayForQuery(
     const marketplaceId = env.EBAY_MARKETPLACE_ID || "EBAY_US";
     const browseUrl = new URL(`${apiBase}/buy/browse/v1/item_summary/search`);
     browseUrl.searchParams.set("q", query);
+    browseUrl.searchParams.set("category_ids", categoryId);
     browseUrl.searchParams.set("limit", "12");
     browseUrl.searchParams.set(
       "filter",
@@ -1025,6 +1050,7 @@ async function searchEbayForQuery(
         (item) =>
           item.itemId &&
           item.title &&
+          !titleIsExplicitlyNonMens(item.title) &&
           item.price?.value &&
           item.price.currency &&
           (item.itemAffiliateWebUrl || item.itemWebUrl)
@@ -1114,7 +1140,12 @@ async function handleAiRefine(request: Request, env: Env): Promise<Response> {
     shopperRequest
   );
   const maxPrice = extractBudget(shopperRequest);
-  const ebay = await searchEbayForQuery(env, refinement.ebayQuery, maxPrice);
+  const ebay = await searchEbayForQuery(
+    env,
+    refinement.ebayQuery,
+    maxPrice,
+    product.categoryId
+  );
 
   return Response.json(
     {
