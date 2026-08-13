@@ -11,22 +11,32 @@ export default defineConfig(async ({ command }) => {
 
   const { cloudflare } = await import("@cloudflare/vite-plugin");
 
-  // The deploy target provisions D1 and binds it as `DB` (see .openai/hosting.json),
-  // so the binding is declared for local dev only. Miniflare backs it with a
-  // SQLite file under .wrangler and ignores the database_id.
-  const devD1Bindings =
+  // Dev runs against a Miniflare-backed SQLite file under .wrangler and ignores
+  // the id; builds deploy against the real database.
+  const d1Bindings = {
+    d1_databases: [
+      {
+        binding: "DB",
+        database_name: "in-other-news",
+        database_id:
+          command === "serve"
+            ? "local-in-other-news"
+            : "6b25a3a5-a9ca-44f7-9047-6b7d317000b6",
+        migrations_dir: "./drizzle",
+      },
+    ],
+  };
+
+  // Cloudflare creates and manages the DNS records for these custom domains.
+  const routes =
     command === "serve"
-      ? {
-          d1_databases: [
-            {
-              binding: "DB",
-              database_name: "in-other-news",
-              database_id: "local-in-other-news",
-              migrations_dir: "./drizzle",
-            },
+      ? {}
+      : {
+          routes: [
+            { pattern: "inothernews.co", custom_domain: true },
+            { pattern: "www.inothernews.co", custom_domain: true },
           ],
-        }
-      : {};
+        };
 
   return {
     server: isCodexSeatbeltSandbox
@@ -40,7 +50,8 @@ export default defineConfig(async ({ command }) => {
         config: {
           main: "./worker/index.ts",
           compatibility_flags: ["nodejs_compat"],
-          ...devD1Bindings,
+          ...d1Bindings,
+          ...routes,
         },
       }),
     ],
