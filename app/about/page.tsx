@@ -10,7 +10,7 @@ export default function AboutPage() {
     <main className="plain-site plain-page">
       <div className="plain-page-inner">
         <a className="plain-back" href="/">
-          ← Home
+          ← In Other News
         </a>
 
         <h1>About me</h1>
@@ -24,12 +24,16 @@ export default function AboutPage() {
             fashion, technology, and culture meet.
           </p>
           <p>
-            I’m currently building In Other News, a weekly fashion editorial
-            that compares retail and pre-owned buying options.
+            In Other News is where I work that out in public. Each issue builds
+            one complete outfit, then matches every piece against live retail
+            and resale listings, so the writing and the buying sit in the same
+            place instead of the reader having to go hunting.
           </p>
         </div>
 
         <div className="plain-links">
+          <a href="/">In Other News</a>
+          <a href="/writing">Writing</a>
           <a href="mailto:henrygreelis@gmail.com">Email me</a>
           <a
             href="/henry-greelis-resume.pdf"
@@ -38,7 +42,6 @@ export default function AboutPage() {
           >
             Resume ↗
           </a>
-          <a href="/in-other-news">In Other News</a>
         </div>
       </div>
     </main>

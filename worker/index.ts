@@ -1190,7 +1190,7 @@ function newsletterEmailHtml(siteUrl: string): string {
       <p style="margin:0 0 10px;color:#777;font-size:10px;letter-spacing:.12em;text-transform:uppercase">Subscribed</p>
       <h1 style="margin:0;font-size:30px;line-height:1.08;font-weight:500">You're on the list</h1>
       <p style="margin:24px 0 0;font-size:14px;line-height:1.65">Uniform 02 lands Sunday. Each issue is one system of clothes, with every piece matched to live resale and retail listings.</p>
-      <p style="margin:32px 0 0"><a href="${siteUrl}/in-other-news" style="display:inline-block;background:#111;color:#fff;padding:13px 18px;font-size:11px;letter-spacing:.1em;text-decoration:none;text-transform:uppercase">Read Uniform 01 →</a></p>
+      <p style="margin:32px 0 0"><a href="${siteUrl}" style="display:inline-block;background:#111;color:#fff;padding:13px 18px;font-size:11px;letter-spacing:.1em;text-decoration:none;text-transform:uppercase">Read Uniform 01 →</a></p>
       <p style="margin:56px 0 0;color:#777;font-size:10px;line-height:1.6">You subscribed to In Other News at ${siteUrl}.</p>
     </div>
   </body>
@@ -1223,7 +1223,7 @@ async function sendNewsletterConfirmation(
       to: [email],
       subject: "You're subscribed to In Other News",
       html: newsletterEmailHtml(siteUrl),
-      text: `You're subscribed to In Other News. Uniform 02 lands Sunday. Read Uniform 01: ${siteUrl}/in-other-news`,
+      text: `You're subscribed to In Other News. Uniform 02 lands Sunday. Read Uniform 01: ${siteUrl}`,
       tags: [
         { name: "message_type", value: "newsletter_confirmation" },
         { name: "issue", value: "uniform_01" },

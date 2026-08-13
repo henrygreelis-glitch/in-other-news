@@ -10,7 +10,7 @@ export default function WritingPage() {
     <main className="plain-site plain-page">
       <div className="plain-page-inner">
         <a className="plain-back" href="/">
-          ← Home
+          ← In Other News
         </a>
 
         <h1>Writing</h1>
@@ -20,7 +20,7 @@ export default function WritingPage() {
         </p>
 
         <div className="plain-post-list">
-          <a className="plain-post" href="/in-other-news">
+          <a className="plain-post" href="/">
             <time dateTime="2026-08">August 2026</time>
             <h2>What I’m building: In Other News</h2>
             <p>

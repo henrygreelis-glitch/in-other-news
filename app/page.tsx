@@ -1,59 +1,31 @@
-const links = [
-  {
-    label: "In Other News",
-    href: "/in-other-news",
+import type { Metadata } from "next";
+import Uniform from "../issue";
+
+export const metadata: Metadata = {
+  title: "In Other News — Uniform 01",
+  description:
+    "A weekly fashion edit: discover one complete look, compare retail and pre-owned options, and save the pieces worth watching.",
+  openGraph: {
+    title: "In Other News — Issue 01",
+    description: "The uniform for the first cold week.",
+    type: "website",
+    images: [
+      {
+        url: "/og-issue-01.png",
+        width: 1729,
+        height: 910,
+        alt: "In Other News Issue 01 — The uniform for the first cold week",
+      },
+    ],
   },
-  {
-    label: "About me",
-    href: "/about",
+  twitter: {
+    card: "summary_large_image",
+    title: "In Other News — Issue 01",
+    description: "The uniform for the first cold week.",
+    images: ["/og-issue-01.png"],
   },
-  {
-    label: "Resume",
-    href: "/henry-greelis-resume.pdf",
-    external: true,
-  },
-  {
-    label: "Email me",
-    href: "mailto:henrygreelis@gmail.com",
-  },
-  {
-    label: "Writing",
-    href: "/writing",
-  },
-];
+};
 
 export default function Home() {
-  return (
-    <main className="plain-site plain-home">
-      <div>
-        <p className="plain-welcome">
-          Welcome, I’m <strong>Henry Greelis.</strong>
-        </p>
-        <p className="plain-intro">
-          I’m interested in understanding customers and shaping how products
-          are positioned.
-        </p>
-
-        <nav aria-label="Henry Greelis">
-          <ul className="plain-menu">
-            {links.map((link) => (
-              <li key={link.href}>
-                <a
-                  href={link.href}
-                  {...(link.external
-                    ? { target: "_blank", rel: "noopener noreferrer" }
-                    : {})}
-                >
-                  {link.label}
-                  {link.external ? <span aria-hidden="true"> ↗</span> : null}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </nav>
-      </div>
-
-      <p className="plain-copyright">© 2026 Henry Greelis</p>
-    </main>
-  );
+  return <Uniform />;
 }

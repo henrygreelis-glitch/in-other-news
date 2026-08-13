@@ -128,14 +128,14 @@ export default function ProductSearch({ productKey }) {
       <div className="s-root search-root">
         <style>{ISSUE_CSS + SEARCH_CSS}</style>
         <header className="search-head">
-          <a className="search-wordmark" href="/in-other-news">In Other News</a>
+          <a className="search-wordmark" href="/">In Other News</a>
           <span>Issue 01</span>
-          <a className="search-back" href="/in-other-news">← Back to issue</a>
+          <a className="search-back" href="/">← Back to issue</a>
         </header>
         <main className="search-missing">
           <p className="s-eyebrow">Product not found</p>
           <h1>That piece is not in this week’s issue.</h1>
-          <a href="/in-other-news">← Back to Issue 01</a>
+          <a href="/">← Back to Issue 01</a>
         </main>
       </div>
     );
@@ -205,9 +205,9 @@ export default function ProductSearch({ productKey }) {
       <style>{ISSUE_CSS + SEARCH_CSS}</style>
 
       <header className="search-head">
-        <a className="search-wordmark" href="/in-other-news">In Other News</a>
+        <a className="search-wordmark" href="/">In Other News</a>
         <span>Issue 01 · Product</span>
-        <a className="search-back" href="/in-other-news">← Back to issue</a>
+        <a className="search-back" href="/">← Back to issue</a>
       </header>
 
       <main className="compare-main">
