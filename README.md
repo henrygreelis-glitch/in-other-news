@@ -10,7 +10,7 @@ Running on Next.js 16 App Router (React 19 Server Components) deployed to Cloudf
 
 - **RSC on Cloudflare Workers.** The app runs the Next.js App Router at the edge via [`vinext`](https://www.npmjs.com/package/vinext) and `@vitejs/plugin-rsc` rather than Vercel's runtime — server components, streaming, and image optimization all inside a Worker.
 - **Editorial → commerce pipeline.** Garments featured in an issue are matched against live eBay Browse API listings, deduplicated by photo, and ranked so a reader can buy the piece (or a close alternative) from the article itself.
-- **AI query refinement.** Free-text searches are rewritten into structured marketplace queries before hitting eBay, which is what makes "shawl cardigan, not too boxy" return usable results.
+- **Graceful search degradation.** Free-text requests like "shawl cardigan, not too boxy" run through a guided matcher that builds a structured eBay query from the garment's own context. With `OPENAI_API_KEY` set, an LLM pass refines the query first; without it the guided path still returns real listings rather than an error.
 - **Image optimization at the edge.** Product photography is transformed and re-encoded through Cloudflare Images on request, with WebP cutouts served for composite layouts.
 
 ## Stack
@@ -23,7 +23,7 @@ Running on Next.js 16 App Router (React 19 Server Components) deployed to Cloudf
 | Database | Cloudflare D1 + Drizzle ORM |
 | Email | Resend |
 | Commerce data | eBay Browse API |
-| AI | OpenAI Responses API |
+| AI | OpenAI Responses API (optional — guided fallback when unset) |
 | Language | TypeScript |
 
 ## Routes
@@ -48,16 +48,24 @@ cp .env.example .env.local   # then fill in your own keys
 npm run dev
 ```
 
-Every key in `.env.example` is optional — the app degrades gracefully. Without `OPENAI_API_KEY` search falls back to the raw query; without eBay credentials listing sections render empty.
+Every key in `.env.example` is optional — the app degrades gracefully. Without `OPENAI_API_KEY` search falls back to the guided matcher; without eBay credentials listing sections render empty.
 
 ### Other scripts
 
 ```bash
 npm run build        # production build
 npm run start        # serve the production build
+npm run deploy       # build, then deploy the Worker to Cloudflare
 npm run db:generate  # generate Drizzle migrations from db/schema.ts
 npm run email:test   # send a test email through Resend
 ```
+
+## Deploying
+
+`npm run deploy` builds and ships the Worker to `inothernews.co`. Secrets are held
+by Cloudflare rather than the build, so set each one once with
+`wrangler secret put <NAME> --name in-other-news`. Schema changes apply with
+`wrangler d1 execute in-other-news --remote --file=./drizzle/<migration>.sql`.
 
 ## Layout
 
