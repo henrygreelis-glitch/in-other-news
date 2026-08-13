@@ -5,7 +5,6 @@ import {
   ISSUE_CSS,
   PICKS,
   ProductImage,
-  ProductWatch,
   USD_PRICE_NOTE,
   formatListingMoney,
 } from "./issue";
@@ -401,15 +400,6 @@ export default function ProductSearch({ productKey }) {
               <span>All current options shown</span>
             </div>
           )}
-        </section>
-
-        <section className="compare-alert" aria-label="Price alert">
-          <div>
-            <p className="s-eyebrow">Not ready to buy?</p>
-            <h2>Watch this piece.</h2>
-            <p>Save the search and come back when the right size or price appears.</p>
-          </div>
-          <ProductWatch key={`watch-${pick.id}`} pick={pick} />
         </section>
 
         <p className="compare-price-note">{USD_PRICE_NOTE}</p>
