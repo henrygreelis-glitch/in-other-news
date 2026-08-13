@@ -1343,9 +1343,7 @@ async function handleNewsletterSubscribe(
     return Response.json(
       {
         ok: true,
-        message: confirmationSent
-          ? "Subscribed. Uniform 02 lands Sunday."
-          : "Subscribed. Email delivery activates after domain setup.",
+        message: "Subscribed. Uniform 02 lands Sunday.",
         emailConnected: confirmationSent,
       },
       { headers: { "Cache-Control": "no-store" } }
