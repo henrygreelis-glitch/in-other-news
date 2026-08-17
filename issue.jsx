@@ -950,8 +950,6 @@ export default function Uniform() {
       <style>{CSS}</style>
       <header className="s-head">
         <div className="s-head-brand">
-          <a href="/about">Henry Greelis</a>
-          <span aria-hidden="true">/</span>
           <span>{MASTHEAD.title}</span>
         </div>
         <div className="s-head-meta">
@@ -1213,9 +1211,7 @@ export default function Uniform() {
         <span>
           {MASTHEAD.title} &nbsp;{MASTHEAD.issue}
         </span>
-        <span>
-          Edited by <a href="/about">Henry Greelis</a>
-        </span>
+        <span>Edited by Henry Greelis</span>
       </footer>
     </div>
   );

@@ -4,26 +4,26 @@ import "./globals.css";
 export const metadata: Metadata = {
   metadataBase: new URL("https://inothernews.co"),
   title: {
-    default: "Henry Greelis",
-    template: "%s | Henry Greelis",
+    default: "In Other News",
+    template: "%s | In Other News",
   },
   description:
-    "Selected projects by Henry Greelis across positioning, product stories, and editorial ideas.",
+    "A weekly menswear edit: one complete uniform, with every piece matched to live retail and resale listings.",
   icons: {
     icon: "/favicon.svg",
     shortcut: "/favicon.svg",
   },
   openGraph: {
-    title: "Henry Greelis",
+    title: "In Other News",
     description:
-      "Positioning, product stories, editorial ideas, and selected work by Henry Greelis.",
+      "A weekly menswear edit: one complete uniform, with every piece matched to live retail and resale listings.",
     type: "website",
   },
   twitter: {
     card: "summary",
-    title: "Henry Greelis",
+    title: "In Other News",
     description:
-      "Positioning, product stories, editorial ideas, and selected work by Henry Greelis.",
+      "A weekly menswear edit: one complete uniform, with every piece matched to live retail and resale listings.",
   },
 };
 
