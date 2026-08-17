@@ -1023,34 +1023,40 @@ export default function Uniform() {
             </div>
             {wardrobePicks.map(({ pick, index }) => (
               <article
-                className={
-                  pick.id === "fgs-originals-waffle-crew-socks-m-gray" ||
-                  pick.id === "kiko-kostadinov-farkas-boots"
-                    ? "s-float s-float-up"
-                    : "s-float"
-                }
+                className={`s-editorial-piece${index % 2 ? " is-reversed" : ""}`}
                 key={pick.id}
-                style={WARDROBE_POSITIONS[pick.id]}
               >
                 <button
-                  className="s-float-button"
+                  className="s-editorial-image"
                   type="button"
                   onClick={(event) => openProduct(event, index)}
                   aria-haspopup="dialog"
                   aria-label={`Open details for ${pick.hero.brand} ${pick.hero.item}`}
                 >
                   <ProductImage pick={pick} />
-                  <span className="s-float-number" aria-hidden="true">
+                  <span className="s-editorial-number" aria-hidden="true">
                     {String(index + 1).padStart(2, "0")}
                   </span>
-                  <span className="s-float-label">
-                    <span>{pick.slot}</span>
-                    <strong>{pick.hero.brand}</strong>
-                    <span>{pick.hero.item}</span>
-                    <b>{pick.hero.price}</b>
-                  </span>
+                  <span className="s-editorial-open">View piece ↗</span>
                 </button>
-                <p className="s-float-reason">{pick.reasoning}</p>
+                <div className="s-editorial-copy">
+                  <span className="s-editorial-slot">{pick.slot}</span>
+                  <p className="s-editorial-brand">{pick.hero.brand}</p>
+                  <h2>{pick.hero.item}</h2>
+                  <p className="s-editorial-reason">{pick.reasoning}</p>
+                  <div className="s-editorial-commerce">
+                    <strong>{pick.hero.price}</strong>
+                    <span>{pick.hero.status}</span>
+                  </div>
+                  <button
+                    className="s-editorial-cta"
+                    type="button"
+                    onClick={(event) => openProduct(event, index)}
+                    aria-haspopup="dialog"
+                  >
+                    Explore buying options ↗
+                  </button>
+                </div>
               </article>
             ))}
           </section>
@@ -1266,6 +1272,9 @@ const CSS = `
 @media (max-width:1100px) and (min-width:721px){.s-wardrobe-canvas{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:720px){.s-wardrobe-canvas{grid-template-columns:repeat(2,minmax(0,1fr));gap:38px 18px;padding:42px 0 24px}.s-float-reason{font-size:11px}}
 @media (max-width:560px){.s-wardrobe-canvas{grid-template-columns:1fr;gap:46px;padding-right:0;padding-left:0}.s-float-button>img{height:300px}.s-float-label strong{font-size:12px}.s-float-label>span:nth-of-type(2),.s-float-label b{font-size:10.5px}.s-float-reason{margin-top:15px!important;padding-top:15px;font-size:12px;line-height:1.68}}
+.s-wardrobe-canvas{display:block;min-height:0;padding:46px 0 0}.s-editorial-piece{display:grid;grid-template-columns:minmax(0,1.12fr) minmax(300px,.88fr);min-height:clamp(580px,78svh,820px);border-top:1px solid var(--line)}.s-editorial-image{position:relative;display:flex;min-width:0;align-items:center;justify-content:center;padding:clamp(28px,4vw,72px);border:0;background:rgba(255,255,255,.16);color:var(--fg);cursor:pointer;font-family:var(--f)}.s-editorial-image img{display:block;width:100%;height:min(66svh,680px);object-fit:contain;object-position:center;transition:transform .35s ease}.s-editorial-image:hover img,.s-editorial-image:focus-visible img{transform:scale(1.025)}.s-editorial-number{position:absolute;top:18px;left:18px;color:var(--mid);font-size:9px;font-weight:600;letter-spacing:.12em}.s-editorial-open{position:absolute;right:18px;bottom:16px;border-bottom:1px solid currentColor;font-size:8.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase}.s-editorial-copy{display:flex;min-width:0;flex-direction:column;justify-content:center;padding:clamp(38px,5vw,78px);border-left:1px solid var(--line)}.s-editorial-slot{color:var(--mid);font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase}.s-editorial-brand{margin-top:clamp(26px,4vh,46px)!important;font-size:12px;font-weight:600;letter-spacing:.03em}.s-editorial-copy h2{max-width:10ch;margin:6px 0 0;font-size:clamp(34px,3.8vw,60px);font-weight:500;line-height:.96;letter-spacing:-.05em}.s-editorial-reason{max-width:39ch;margin-top:clamp(28px,4vh,44px)!important;color:#303030;font-size:14px;line-height:1.72}.s-editorial-commerce{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-top:clamp(28px,4vh,44px);padding:12px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}.s-editorial-commerce strong{font-size:13px}.s-editorial-commerce span{color:var(--mid);font-size:8.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase}.s-editorial-cta{width:max-content;max-width:100%;margin-top:20px;padding:0 0 3px;border:0;border-bottom:1px solid var(--fg);background:transparent;color:var(--fg);cursor:pointer;font-family:var(--f);font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase}.s-editorial-cta:hover{color:var(--mid);border-color:var(--mid)}.s-editorial-piece.is-reversed .s-editorial-image{order:2}.s-editorial-piece.is-reversed .s-editorial-copy{order:1;border-right:1px solid var(--line);border-left:0}
+@media (max-width:1050px) and (min-width:721px){.s-editorial-piece{grid-template-columns:1fr;min-height:0;padding-bottom:70px}.s-editorial-piece .s-editorial-image,.s-editorial-piece.is-reversed .s-editorial-image{order:1;min-height:500px}.s-editorial-piece .s-editorial-copy,.s-editorial-piece.is-reversed .s-editorial-copy{order:2;padding:42px 24px 0;border:0}.s-editorial-copy h2{font-size:42px}.s-editorial-reason{font-size:13px}}
+@media (max-width:720px){.s-wardrobe-canvas{display:block;padding:38px 0 0}.s-editorial-piece{grid-template-columns:1fr;min-height:0;padding:0 0 62px}.s-editorial-piece .s-editorial-image,.s-editorial-piece.is-reversed .s-editorial-image{order:1;min-height:0;padding:28px 0}.s-editorial-image img{height:min(58svh,440px)}.s-editorial-piece .s-editorial-copy,.s-editorial-piece.is-reversed .s-editorial-copy{order:2;padding:25px 0 0;border:0}.s-editorial-number{top:10px;left:4px}.s-editorial-open{right:4px;bottom:8px}.s-editorial-brand{margin-top:24px!important}.s-editorial-copy h2{max-width:12ch;font-size:clamp(34px,10vw,44px)}.s-editorial-reason{margin-top:26px!important;font-size:14px;line-height:1.72}.s-editorial-commerce{margin-top:27px}.s-editorial-cta{margin-top:18px}}
 @media (prefers-reduced-motion:reduce){.s-root *{animation:none!important;transition:none!important}}
 `;
 
