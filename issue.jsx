@@ -112,6 +112,8 @@ export const PICKS = [
       "https://www.ebay.com/sch/i.html?_nkw=Kaptain+Sunshine+Traveller+Coat+Navy&_sacat=1059",
     why_selected:
       "Balmacaan collar, raglan shoulder, cut long enough to cover a jacket. The one coat that works over everything else here.",
+    reasoning:
+      "This is the outline everything else works inside. Long enough to read as real outerwear, cut soft enough in the shoulder that it doesn't fight what's under it. That matters more than it sounds: a structured coat forces everything below it to tighten up, and this uniform is supposed to move. Navy rather than black because it sits next to the blue shirt and the black denim without either one looking like a mistake.",
     why_this_source:
       "The proportion and dense cloth are the point, so this specific seasonal listing is the cleanest reference for measurements, fabric, and color before comparing used versions.",
     hero: {
@@ -137,6 +139,8 @@ export const PICKS = [
       "https://www.ebay.com/sch/i.html?_nkw=Ernest+W.+Baker+leather+jacket&_sacat=1059",
     why_selected:
       "The cropped bomber interrupts the long coat and wide trousers with a sharper, shorter shape. Crocodile-embossed black lamb leather adds texture without introducing another color.",
+    reasoning:
+      "The answer to a day that doesn't need the coat. It's cropped, so it doesn't just make the outfit lighter, it changes the proportion completely: a high hem against a long straight trouser is a different silhouette, not a smaller one. The croc emboss is the only loud thing in the issue, which is exactly why it works. One texture doing the talking.",
     why_this_source:
       "The brand has the exact JA27L bomber reduced 44% to roughly $819 with three sizes listed. This is worth checking new while the sale price competes with what a clean used example may cost.",
     hero: {
@@ -162,6 +166,8 @@ export const PICKS = [
       "https://www.ebay.com/sch/i.html?_nkw=Brooks+Brothers+3-Ply+Cashmere+V-Neck+Sweater+Black+MS01260&_sacat=1059",
     why_selected:
       "The deep V leaves the blue shirt visible while the black cashmere connects the top half to the wide trouser and boots. Its clean shape adds warmth without another bulky collar.",
+    reasoning:
+      "Three-ply is the whole reason. Most cashmere in this range is two-ply, which drapes thinner and pills within a season. Three-ply has weight, holds a neckline, and works as the only layer under the coat on a cold morning. The V-neck is deliberate: it shows the shirt collar rather than swallowing it, which is what lets the two layers read as one decision.",
     why_this_source:
       "The dense 3-ply cashmere is the reason to choose this version: it behaves like a proper layer instead of a fragile luxury basic. Buying it new also avoids stretched necklines and hidden knit damage.",
     hero: {
@@ -186,6 +192,8 @@ export const PICKS = [
       "https://www.ebay.com/sch/i.html?_nkw=Prada+UCN596+10IV+F0AB7+Cotton+Shirt&_sacat=1059",
     why_selected:
       "The quiet blue base breaks up the black leather, knit, and trousers. Its sharper collar holds the middle of the look without competing with the outer layers.",
+    reasoning:
+      "Light blue is the only shirt colour that sits under navy without competing with it. White reads formal and anything darker disappears. The collar here is soft enough to sit open under the knit rather than propping against it, which is the difference between looking layered and looking like you put on two shirts.",
     why_this_source:
       "The exact sky blue and sharp collar are doing the work. Retail is the dependable reference for color, fabrication, and a complete size run when used listings are vague.",
     hero: {
@@ -210,6 +218,8 @@ export const PICKS = [
       "https://www.ebay.com/sch/i.html?_nkw=Sunspel+Long+Sleeve+Riviera+Polo+Black&_sacat=1059",
     why_selected:
       "Long-sleeve mesh cotton adds a clean black layer without the bulk of another knit. Its collar sits cleanly under the V-neck and it can replace the blue shirt when the uniform needs one less layer.",
+    reasoning:
+      "The warm-afternoon answer. When the coat comes off and the knit comes off, this still holds the outfit together on its own, which is what makes it part of a system rather than a filler layer. Riviera cotton is a fine, tight knit that doesn't slump the way most long-sleeve polos do by four in the afternoon.",
     why_this_source:
       "This is a repeatable core piece rather than a patina piece. Buying new makes sense when exact size, collar shape, and washable mesh matter more than age.",
     hero: {
@@ -235,6 +245,8 @@ export const PICKS = [
       "https://www.ebay.com/sch/i.html?_nkw=Rick+Owens+denim&_sacat=1059",
     why_selected:
       "The low rise and long, wide leg give the uniform one exaggerated proportion below the coat. Black keeps that volume from competing with the blue and grey layers above it.",
+    reasoning:
+      "Straight through the leg with enough length to break over the boot. The proportion is doing the work here, not the wash or the label. A wide leg would drown the coat and a slim one would date the whole thing. Black rather than indigo because the uniform already has one colour decision in the shirt, and a second would start competing.",
     why_this_source:
       "This version is cut in Japanese twisted wool rather than standard denim. The official listing is the clearest source for the exact fabric, full length, and available waist sizes before comparing used Geth Jeans that may be a different season or cloth.",
     hero: {
@@ -274,6 +286,8 @@ export const PICKS = [
       "https://www.ebay.com/sch/i.html?_nkw=FGS+Originals+Waffle+Crew+Socks+M+Gray&_sacat=11511",
     why_selected:
       "The mid-grey waffle knit adds texture at the ankle without introducing another color. It keeps the navy, black, and blue layers connected.",
+    reasoning:
+      "The cheapest thing in the issue and the one that signals the outfit was composed rather than assembled. There's a gap between the trouser break and the boot, and what fills it is a decision. Waffle texture in mid-grey means something happens there without shouting about it.",
     why_this_source:
       "At $16, buying this exact pair new makes more sense than spending time hunting a close used substitute. The one-size fit also removes most of the sizing risk.",
     hero: {
@@ -299,6 +313,8 @@ export const PICKS = [
       "https://www.ebay.com/sch/i.html?_nkw=Kiko+Kostadinov+Farkas+Boots+261985M228002+Black&_sacat=93427",
     why_selected:
       "The rounded work-boot toe and Vibram sole give the wide Geth hem enough weight underneath it. Polished black leather keeps the boot connected to the trouser while the drawstring collar adds one technical detail.",
+    reasoning:
+      "Everything above this is quiet, so the boot has to say something. The Farkas shape is strange enough to carry the whole look, and it's the piece that keeps the uniform from reading as safe. It also has enough sole presence to sit under a straight leg without disappearing.",
     why_this_source:
       "SSENSE has this exact soot-black pair at 41% off in select sizes. That makes the new listing unusually competitive before considering used pairs, where this current-season model is still scarce.",
     hero: {
@@ -1034,6 +1050,7 @@ export default function Uniform() {
                     <b>{pick.hero.price}</b>
                   </span>
                 </button>
+                <p className="s-float-reason">{pick.reasoning}</p>
               </article>
             ))}
           </section>
@@ -1245,6 +1262,10 @@ const CSS = `
 @media (max-width:560px){.s-root{padding:0 12px}.s-head-meta{gap:12px}.s-head-meta>span{display:none}.s-wardrobe-canvas{gap:24px 10px;padding-right:10px;padding-left:10px}.s-saved{margin-top:60px}.s-saved-list{grid-template-columns:1fr 1fr}.s-drawer-wrap{align-items:flex-end}.s-drawer{width:100%;height:min(88dvh,760px);padding:14px;border-radius:16px 16px 0 0;box-shadow:0 -12px 30px rgba(0,0,0,.14)}.s-drawer h2{font-size:21px}.s-piece-meta{grid-template-columns:1fr}.s-piece-meta span+span{padding:7px 0 0;border-top:1px solid var(--line);border-left:0}.s-piece-actions{grid-template-columns:1fr}.s-piece-editorial{grid-template-columns:1fr}.s-piece-section-head{align-items:flex-start;flex-direction:column}.s-piece-section-head>span{text-align:left}.s-piece-alternative{grid-template-columns:70px minmax(0,1fr) auto;min-height:94px}.s-piece-alternative>img{width:70px;height:94px}.s-ai{padding:17px 14px}.s-ai-chips{display:grid;grid-template-columns:1fr 1fr}.s-ai-chips button{text-align:left}.s-ai-field input{font-size:11px}.s-ai-list .s-used-card{grid-template-columns:62px minmax(0,1fr)}.s-ai-list .s-used-card img{width:62px;height:78px}}
 @media (max-width:560px){.s-drawer>img{height:min(32vh,260px)}.s-drawer-copy{padding-top:14px}.s-drawer-note p{font-size:11px}.s-drawer-link{margin-top:20px}}
 @media (hover:none) and (min-width:721px){.s-float-label{opacity:1;transform:translate(-50%,100%) scale(1)}}
+.s-wardrobe-canvas{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(34px,4vw,62px) clamp(14px,1.6vw,24px);min-height:0;padding:46px 0 26px;overflow:visible}.s-float{position:static;z-index:1;min-width:0;width:auto;transform:none}.s-float:hover,.s-float:focus-within{z-index:1}.s-float-button>img{height:clamp(210px,23vw,350px);aspect-ratio:auto}.s-float-label,.s-float-up .s-float-label{position:static;top:auto;bottom:auto;left:auto;width:100%;max-width:none;padding:10px 0 0;border:0;background:transparent;box-shadow:none;opacity:1;transform:none;transform-origin:center}.s-float-button:hover .s-float-label,.s-float-button:focus-visible .s-float-label,.s-float-up .s-float-button:hover .s-float-label,.s-float-up .s-float-button:focus-visible .s-float-label{transform:none}.s-float-label>span:nth-of-type(2){max-width:none;white-space:normal}.s-float-reason{margin-top:13px!important;padding-top:13px;border-top:1px solid var(--line);color:#333;font-size:10.5px;line-height:1.65}
+@media (max-width:1100px) and (min-width:721px){.s-wardrobe-canvas{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:720px){.s-wardrobe-canvas{grid-template-columns:repeat(2,minmax(0,1fr));gap:38px 18px;padding:42px 0 24px}.s-float-reason{font-size:11px}}
+@media (max-width:560px){.s-wardrobe-canvas{grid-template-columns:1fr;gap:46px;padding-right:0;padding-left:0}.s-float-button>img{height:300px}.s-float-label strong{font-size:12px}.s-float-label>span:nth-of-type(2),.s-float-label b{font-size:10.5px}.s-float-reason{margin-top:15px!important;padding-top:15px;font-size:12px;line-height:1.68}}
 @media (prefers-reduced-motion:reduce){.s-root *{animation:none!important;transition:none!important}}
 `;
 
